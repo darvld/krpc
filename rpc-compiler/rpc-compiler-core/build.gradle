@@ -8,7 +8,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation project(":rpc-compiler-core")
+                implementation project(":rpc-core")
                 implementation kotlin('stdlib-common')
             }
         }

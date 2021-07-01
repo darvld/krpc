@@ -16,5 +16,7 @@ rootProject.name = 'rpc'
 include 'rpc-core'
 include 'rpc-runtime'
 
-include 'rpc-compiler:rpc-compiler-server'
-include 'rpc-compiler:rpc-compiler-client'
+file('rpc-compiler').eachDir {
+    include it.name
+    project(":${it.name}").projectDir = it
+}
