@@ -16,6 +16,5 @@ rootProject.name = 'rpc'
 include 'rpc-core'
 include 'rpc-runtime'
 
-include 'rpc-compiler:rpc-compiler-all'
 include 'rpc-compiler:rpc-compiler-server'
 include 'rpc-compiler:rpc-compiler-client'
