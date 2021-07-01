@@ -1,0 +1,21 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+
+    plugins {
+        id 'org.jetbrains.kotlin.multiplatform' version "${kotlinVersion}"
+        id 'maven-publish'
+    }
+}
+
+rootProject.name = 'rpc'
+
+include 'rpc-core'
+include 'rpc-runtime'
+
+include 'rpc-compiler:rpc-compiler-all'
+include 'rpc-compiler:rpc-compiler-server'
+include 'rpc-compiler:rpc-compiler-client'

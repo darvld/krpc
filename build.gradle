@@ -1,0 +1,14 @@
+group = "${artifactGroup}"
+version = "${libraryVersion}"
+
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+}
+
+subprojects {
+    if (name != 'samples')
+        apply plugin: 'maven-publish'
+}
