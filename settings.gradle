@@ -3,20 +3,20 @@ pluginManagement {
         mavenLocal()
         mavenCentral()
         gradlePluginPortal()
+        google()
     }
 
     plugins {
-        id 'org.jetbrains.kotlin.multiplatform' version "${kotlinVersion}"
+        // Disabled since applying both plugins adds the Kotlin plugin twice (?)
+        // id 'org.jetbrains.kotlin.jvm' version "${kotlinVersion}" apply false
+        // id 'org.jetbrains.kotlin.plugin.serialization' version "${kotlinVersion}" apply false
         id 'maven-publish'
     }
 }
 
-rootProject.name = 'rpc'
+rootProject.name = 'krpc'
 
-include 'rpc-core'
-include 'rpc-runtime'
+include 'krpc-runtime'
+include 'krpc-compiler'
+include 'playground'
 
-file('rpc-compiler').eachDir {
-    include it.name
-    project(":${it.name}").projectDir = it
-}

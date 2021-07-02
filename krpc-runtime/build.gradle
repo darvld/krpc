@@ -1,0 +1,16 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+dependencies {
+    api "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
+
+    api "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+}
+
+sourceSets {
+    main {
+        languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
+    }
+}

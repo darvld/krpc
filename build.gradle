@@ -1,10 +1,16 @@
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform' version '1.5.10' apply false
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.10' apply false
+}
+
 group = "${artifactGroup}"
 version = "${libraryVersion}"
 
 allprojects {
     repositories {
-        mavenLocal()
         mavenCentral()
+        mavenLocal()
+        google()
     }
 }
 

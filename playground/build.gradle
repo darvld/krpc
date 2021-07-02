@@ -1,0 +1,24 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.plugin.serialization'
+    id "com.google.devtools.ksp" version "1.5.10-1.0.0-beta02"
+}
+
+sourceSets {
+    main {
+        languageSettings {
+            useExperimentalAnnotation('kotlin.RequiresOptIn')
+        }
+        kotlin.srcDir(file("build/generated/ksp/main/kotlin"))
+    }
+}
+
+dependencies {
+    implementation project(":krpc-runtime")
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serializationVersion"
+    implementation "io.grpc:grpc-netty:$grpcVersion"
+
+    implementation project(":krpc-compiler")
+    configurations.ksp.dependencies.add(project.dependencies.create(project(":krpc-compiler")))
+}

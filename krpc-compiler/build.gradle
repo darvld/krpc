@@ -1,0 +1,9 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+dependencies {
+    implementation project(":krpc-runtime")
+    implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
+    implementation "com.squareup:kotlinpoet:$kotlinPoetVersion"
+}
