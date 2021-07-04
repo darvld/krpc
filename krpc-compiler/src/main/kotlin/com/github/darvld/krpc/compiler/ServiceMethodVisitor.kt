@@ -17,10 +17,11 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
         throw IllegalStateException("Error while processing service method ${inFunction.qualifiedName?.asString()}: $message")
     }
 
-    private fun KSFunctionDeclaration.requireSuspending() {
-        if (Modifier.SUSPEND !in modifiers) {
+    private fun KSFunctionDeclaration.requireSuspending(required: Boolean) {
+        val isError = if (required) Modifier.SUSPEND !in modifiers else Modifier.SUSPEND in modifiers
+
+        if (isError)
             reportError(this, "Unary and ClientStream rpc methods must be marked with the suspend modifier.")
-        }
     }
 
     override fun defaultHandler(node: KSNode, data: Unit): ServiceMethodDefinition {
@@ -34,15 +35,21 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
         for (annotation in function.annotations) {
             type = when (annotation.shortName.getShortName()) {
                 UnaryCall::class.simpleName -> {
-                    function.requireSuspending()
+                    function.requireSuspending(true)
                     MethodDescriptor.MethodType.UNARY
                 }
-                ServerStream::class.simpleName -> MethodDescriptor.MethodType.SERVER_STREAMING
+                ServerStream::class.simpleName -> {
+                    function.requireSuspending(false)
+                    MethodDescriptor.MethodType.SERVER_STREAMING
+                }
                 ClientStream::class.simpleName -> {
-                    function.requireSuspending()
+                    function.requireSuspending(true)
                     MethodDescriptor.MethodType.CLIENT_STREAMING
                 }
-                BidiStream::class.simpleName -> MethodDescriptor.MethodType.BIDI_STREAMING
+                BidiStream::class.simpleName -> {
+                    function.requireSuspending(false)
+                    MethodDescriptor.MethodType.BIDI_STREAMING
+                }
                 else -> continue
             }
             annotation.arguments.first().value.toString().takeUnless { it.isBlank() }?.let {
