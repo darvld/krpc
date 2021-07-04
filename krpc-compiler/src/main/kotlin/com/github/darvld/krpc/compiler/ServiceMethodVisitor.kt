@@ -17,8 +17,8 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
 
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): ServiceMethodDefinition {
         var type: MethodDescriptor.MethodType = MethodDescriptor.MethodType.UNKNOWN
+        var methodName = function.simpleName.asString()
 
-        // TODO: Use the method name argument in the annotation
         for (annotation in function.annotations) {
             type = when (annotation.shortName.getShortName()) {
                 UnaryCall::class.simpleName -> MethodDescriptor.MethodType.UNARY
@@ -26,6 +26,9 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
                 ClientStream::class.simpleName -> MethodDescriptor.MethodType.CLIENT_STREAMING
                 BidiStream::class.simpleName -> MethodDescriptor.MethodType.BIDI_STREAMING
                 else -> continue
+            }
+            annotation.arguments.first().value.toString().takeUnless { it.isBlank() }?.let {
+                methodName = it
             }
             break
         }
@@ -35,7 +38,7 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
         }
 
         return ServiceMethodDefinition(
-            declaredName = function.simpleName.getShortName(),
+            declaredName = methodName,
             methodName = function.simpleName.getShortName(),
             returnType = function.returnType,
             request = function.parameters.singleOrNull()
