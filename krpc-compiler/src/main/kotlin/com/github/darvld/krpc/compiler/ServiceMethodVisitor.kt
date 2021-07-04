@@ -7,12 +7,24 @@ import com.github.darvld.krpc.UnaryCall
 import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
+import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.visitor.KSEmptyVisitor
 import io.grpc.MethodDescriptor
 
 class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
+
+    private fun reportError(inFunction: KSFunctionDeclaration, message: String): Nothing {
+        throw IllegalStateException("Error while processing service method ${inFunction.qualifiedName?.asString()}: $message")
+    }
+
+    private fun KSFunctionDeclaration.requireSuspending() {
+        if (Modifier.SUSPEND !in modifiers) {
+            reportError(this, "Unary and ClientStream rpc methods must be marked with the suspend modifier.")
+        }
+    }
+
     override fun defaultHandler(node: KSNode, data: Unit): ServiceMethodDefinition {
-        throw IllegalStateException("com.github.darvld.krpc.compiler.model.MethodVisitor should only be used for method generation")
+        throw IllegalStateException("MethodVisitor should only be used to visit function declarations")
     }
 
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): ServiceMethodDefinition {
@@ -21,9 +33,15 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
 
         for (annotation in function.annotations) {
             type = when (annotation.shortName.getShortName()) {
-                UnaryCall::class.simpleName -> MethodDescriptor.MethodType.UNARY
+                UnaryCall::class.simpleName -> {
+                    function.requireSuspending()
+                    MethodDescriptor.MethodType.UNARY
+                }
                 ServerStream::class.simpleName -> MethodDescriptor.MethodType.SERVER_STREAMING
-                ClientStream::class.simpleName -> MethodDescriptor.MethodType.CLIENT_STREAMING
+                ClientStream::class.simpleName -> {
+                    function.requireSuspending()
+                    MethodDescriptor.MethodType.CLIENT_STREAMING
+                }
                 BidiStream::class.simpleName -> MethodDescriptor.MethodType.BIDI_STREAMING
                 else -> continue
             }
@@ -32,17 +50,15 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
             }
             break
         }
-        check(type != MethodDescriptor.MethodType.UNKNOWN) {
-            "Method declarations inside @Service interfaces must provide a call type annotation." +
-                    "(In method: ${function.qualifiedName?.asString()})"
-        }
+        if (type == MethodDescriptor.MethodType.UNKNOWN)
+            reportError(function, "Method declarations inside @Service interfaces must provide a call type annotation.")
 
         return ServiceMethodDefinition(
             declaredName = methodName,
             methodName = function.simpleName.getShortName(),
             returnType = function.returnType,
             request = function.parameters.singleOrNull()
-                ?: throw IllegalStateException("Service methods must declare a single parameter"),
+                ?: reportError(function, "Service methods must have a single parameter."),
             methodType = type
         )
     }
