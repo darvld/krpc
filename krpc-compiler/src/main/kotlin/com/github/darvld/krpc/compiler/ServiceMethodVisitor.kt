@@ -4,19 +4,21 @@ import com.github.darvld.krpc.BidiStream
 import com.github.darvld.krpc.ClientStream
 import com.github.darvld.krpc.ServerStream
 import com.github.darvld.krpc.UnaryCall
+import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.visitor.KSEmptyVisitor
 import io.grpc.MethodDescriptor
 
-class MethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
+class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
     override fun defaultHandler(node: KSNode, data: Unit): ServiceMethodDefinition {
-        throw IllegalStateException("com.github.darvld.krpc.compiler.MethodVisitor should only be used for method generation")
+        throw IllegalStateException("com.github.darvld.krpc.compiler.model.MethodVisitor should only be used for method generation")
     }
 
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): ServiceMethodDefinition {
         var type: MethodDescriptor.MethodType = MethodDescriptor.MethodType.UNKNOWN
 
+        // TODO: Use the method name argument in the annotation
         for (annotation in function.annotations) {
             type = when (annotation.shortName.getShortName()) {
                 UnaryCall::class.simpleName -> MethodDescriptor.MethodType.UNARY
@@ -33,6 +35,7 @@ class MethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
         }
 
         return ServiceMethodDefinition(
+            declaredName = function.simpleName.getShortName(),
             methodName = function.simpleName.getShortName(),
             returnType = function.returnType,
             request = function.parameters.singleOrNull()

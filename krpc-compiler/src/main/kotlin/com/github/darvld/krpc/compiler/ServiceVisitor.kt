@@ -1,6 +1,7 @@
 package com.github.darvld.krpc.compiler
 
 import com.github.darvld.krpc.Service
+import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSNode
@@ -8,7 +9,7 @@ import com.google.devtools.ksp.validate
 import com.google.devtools.ksp.visitor.KSDefaultVisitor
 
 class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
-    private val methodVisitor = MethodVisitor()
+    private val methodVisitor = ServiceMethodVisitor()
 
     override fun defaultHandler(node: KSNode, data: Unit): ServiceDefinition {
         throw IllegalStateException("Service visitor can only visit service definition interfaces")
@@ -27,7 +28,9 @@ class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
         // Provide defaults for the names
         val serviceName = service ?: classDeclaration.simpleName.getShortName()
         val providerName = provider ?: "${serviceName}Provider"
-        val clientName = client ?: serviceName
+        val clientName = client ?: serviceName.replace(Regex("(.+)Service\\z")) {
+            "${it.destructured.component1()}Client"
+        }
 
         // Generate method definitions
         val methods = classDeclaration.getDeclaredFunctions().filter { it.validate() }.map {
@@ -35,6 +38,7 @@ class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
         }
 
         return ServiceDefinition(
+            declaredName = classDeclaration.simpleName.getShortName(),
             packageName = classDeclaration.packageName.asString(),
             serviceName = serviceName,
             clientName = clientName,

@@ -15,7 +15,7 @@ abstract class GpsServiceProvider(
     private val definitions = GpsServiceDefinitions(serializationProvider)
 
     final override fun bindService(): ServerServiceDefinition {
-        return ServerServiceDefinition.builder("generated.GpsService")
+        return ServerServiceDefinition.builder("GpsService")
             .addMethod(
                 ServerCalls.unaryServerMethodDefinition(
                     context = context,

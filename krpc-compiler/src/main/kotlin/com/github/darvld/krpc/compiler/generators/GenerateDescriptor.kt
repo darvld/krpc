@@ -1,8 +1,11 @@
-package com.github.darvld.krpc.compiler
+package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.SerializationProvider
+import com.github.darvld.krpc.compiler.asClassName
+import com.github.darvld.krpc.compiler.markAsGenerated
+import com.github.darvld.krpc.compiler.model.ServiceDefinition
+import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.grpc.MethodDescriptor
@@ -13,18 +16,10 @@ const val SERIALIZATION_PROVIDER_PARAM = "serializationProvider"
 private inline val ClassName.marshallerPropName: String
     get() = "${simpleName.replaceFirstChar { it.lowercaseChar() }}Marshaller"
 
-private fun KSType.asClassName(): ClassName {
-    return ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
-}
-
-fun Resolver.generateDefinitionsHelper(output: OutputStream, service: ServiceDefinition) {
-    //Avoid re-generating the helper
-    if (getClassDeclarationByName(getKSNameFromString(service.definitionsHelperName)) != null)
-        return
-
-    FileSpec.builder(service.packageName, service.definitionsHelperName).apply {
+fun Resolver.generateDescriptorContainer(output: OutputStream, service: ServiceDefinition) {
+    FileSpec.builder(service.packageName, service.descriptorName).apply {
         // Helper class definition
-        val definitionsHelper = TypeSpec.classBuilder(service.definitionsHelperName).apply {
+        val descriptorContainer = TypeSpec.classBuilder(service.descriptorName).apply {
             addModifiers(KModifier.INTERNAL)
             markAsGenerated()
 
@@ -48,11 +43,11 @@ fun Resolver.generateDefinitionsHelper(output: OutputStream, service: ServiceDef
 
             // Generate helper method definitions
             service.methods.forEach {
-                addServiceMethodDescriptor(this@generateDefinitionsHelper, service.serviceName, it)
+                addServiceMethodDescriptor(this@generateDescriptorContainer, service.serviceName, it)
             }
         }.build()
 
-        addType(definitionsHelper)
+        addType(descriptorContainer)
     }.build().let { spec ->
         output.writer().use(spec::writeTo)
     }

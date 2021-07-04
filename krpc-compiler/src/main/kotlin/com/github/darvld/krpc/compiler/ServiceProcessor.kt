@@ -1,6 +1,9 @@
 package com.github.darvld.krpc.compiler
 
 import com.github.darvld.krpc.Service
+import com.github.darvld.krpc.compiler.generators.generateClientImplementation
+import com.github.darvld.krpc.compiler.generators.generateDescriptorContainer
+import com.github.darvld.krpc.compiler.generators.generateServiceProviderBase
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.validate
@@ -8,6 +11,7 @@ import com.google.devtools.ksp.validate
 class ServiceProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     val serviceVisitor = ServiceVisitor()
 
+    // TODO: Support incremental processing adding the appropriate source dependencies
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotated = resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
         val unprocessed = annotated.filterNot { it.validate() }
@@ -17,12 +21,31 @@ class ServiceProcessor(private val environment: SymbolProcessorEnvironment) : Sy
 
             // Each class annotated as a Service gets an internal helper object with method definitions
             environment.codeGenerator.createNewFile(
-                Dependencies(false/*, (declaration as KSClassDeclaration).containingFile!!*/),
+                Dependencies(true),
                 service.packageName,
-                service.definitionsHelperName
+                service.descriptorName
             ).use { stream ->
-                resolver.generateDefinitionsHelper(stream, service)
+                resolver.generateDescriptorContainer(stream, service)
             }
+
+            // Generate the abstract service provider base class
+            environment.codeGenerator.createNewFile(
+                Dependencies(true),
+                service.packageName,
+                service.providerName
+            ).use { stream ->
+                generateServiceProviderBase(stream, service)
+            }
+
+            // Generate the client
+            environment.codeGenerator.createNewFile(
+                Dependencies(false),
+                service.packageName,
+                service.clientName
+            ).use { stream ->
+                generateClientImplementation(stream, service)
+            }
+
         }
 
         return unprocessed.toList()

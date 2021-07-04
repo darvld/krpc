@@ -2,6 +2,7 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id "com.google.devtools.ksp" version "1.5.10-1.0.0-beta02"
+    id 'application'
 }
 
 sourceSets {
@@ -20,5 +21,6 @@ dependencies {
     implementation "io.grpc:grpc-netty:$grpcVersion"
 
     implementation project(":krpc-compiler")
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
     configurations.ksp.dependencies.add(project.dependencies.create(project(":krpc-compiler")))
 }
