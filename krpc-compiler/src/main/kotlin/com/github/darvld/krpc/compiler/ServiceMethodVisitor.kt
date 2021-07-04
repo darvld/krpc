@@ -52,7 +52,8 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
                 }
                 else -> continue
             }
-            annotation.arguments.first().value.toString().takeUnless { it.isBlank() }?.let {
+
+            annotation.arguments.first().value?.toString()?.takeUnless { it.isBlank() }?.let {
                 methodName = it
             }
             break
@@ -61,8 +62,8 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
             reportError(function, "Method declarations inside @Service interfaces must provide a call type annotation.")
 
         return ServiceMethodDefinition(
-            declaredName = methodName,
-            methodName = function.simpleName.getShortName(),
+            declaredName = function.simpleName.getShortName(),
+            methodName = methodName,
             returnType = function.returnType,
             request = function.parameters.singleOrNull()
                 ?: reportError(function, "Service methods must have a single parameter."),
