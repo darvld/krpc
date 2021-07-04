@@ -29,6 +29,9 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
     }
 
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): ServiceMethodDefinition {
+        if (function.parameters.size != 1) reportError(function, "Service methods must have exactly one parameter")
+        if (function.returnType == null) reportError(function, "Service methods must declare a return type.")
+
         var type: MethodDescriptor.MethodType = MethodDescriptor.MethodType.UNKNOWN
         var methodName = function.simpleName.asString()
 
