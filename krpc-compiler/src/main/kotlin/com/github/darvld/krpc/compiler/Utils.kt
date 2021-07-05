@@ -2,9 +2,12 @@ package com.github.darvld.krpc.compiler
 
 import com.google.devtools.ksp.symbol.KSType
 import com.squareup.kotlinpoet.*
+import kotlinx.coroutines.flow.Flow
 import java.io.OutputStream
 import javax.annotation.processing.Generated
 
+val UnitClassName = Unit::class.asClassName()
+val FlowClassName = Flow::class.asClassName()
 
 private val generatedAnnotationSpec = AnnotationSpec.builder(Generated::class)
     .addMember("\"com.github.darvld.krpc\"")

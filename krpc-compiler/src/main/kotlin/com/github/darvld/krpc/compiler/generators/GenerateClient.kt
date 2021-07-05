@@ -10,6 +10,7 @@ import io.grpc.Channel
 import io.grpc.MethodDescriptor.MethodType.*
 import io.grpc.kotlin.AbstractCoroutineStub
 import io.grpc.kotlin.ClientCalls
+import kotlinx.coroutines.flow.Flow
 import java.io.OutputStream
 
 /**Generates a client class implementing both the [service] and [AbstractCoroutineStub].
@@ -90,30 +91,49 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                 addFunction(method.declaredName, KModifier.OVERRIDE) {
                     markAsGenerated()
 
-                    addParameter(method.request.name!!.asString(), method.request.type.resolve().asClassName())
-                    returns(method.returnType!!.resolve().asClassName())
-
                     val callType: String
                     when (method.methodType) {
                         UNARY -> {
                             callType = "unaryRpc"
                             addModifiers(KModifier.SUSPEND)
+
+                            addParameter(method.request.first, method.request.second)
+                            returns(method.returnType)
                         }
                         CLIENT_STREAMING -> {
                             callType = "clientStreamingRpc"
                             addModifiers(KModifier.SUSPEND)
+
+                            addParameter(method.request.first, FlowClassName.parameterizedBy(method.request.second))
+                            returns(method.returnType)
                         }
-                        SERVER_STREAMING -> callType = "serverStreamingRpc"
-                        BIDI_STREAMING -> callType = "bidiStreamingRpc"
-                        UNKNOWN -> throw IllegalStateException("Member type cannot be unknown")
+                        SERVER_STREAMING -> {
+                            callType = "serverStreamingRpc"
+
+                            addParameter(method.request.first, method.request.second)
+                            returns(Flow::class.asClassName().parameterizedBy(method.returnType))
+                        }
+                        BIDI_STREAMING -> {
+                            callType = "bidiStreamingRpc"
+
+                            addParameter(method.request.first, FlowClassName.parameterizedBy(method.request.second))
+                            returns(Flow::class.asClassName().parameterizedBy(method.returnType))
+                        }
+                        UNKNOWN -> reportError(method, "Member type cannot be unknown")
                     }
-                    addCode(
-                        "return %T.%L(channel, descriptor.%L, %L, callOptions)",
+
+                    val body = CodeBlock.builder().add(
+                        "%T.%L(channel, descriptor.%L, %L, callOptions)",
                         ClientCalls::class, // Contains helper builders
                         callType, // The appropriate method to call from ClientCalls
                         method.declaredName, // The descriptor `val` for this method
-                        method.request.name!!.asString() // Pass in the method's argument (request)
-                    )
+                        method.request.first // Pass in the method's argument (request)
+                    ).build()
+
+                    if (!method.returnsUnit)
+                        addCode("return %L", body)
+                    else
+                        addCode(body)
                 }
             }
 

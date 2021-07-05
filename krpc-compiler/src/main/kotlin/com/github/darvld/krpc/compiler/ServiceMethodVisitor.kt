@@ -7,8 +7,11 @@ import com.github.darvld.krpc.UnaryCall
 import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
+import com.google.devtools.ksp.symbol.KSTypeReference
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.visitor.KSEmptyVisitor
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.asClassName
 import io.grpc.MethodDescriptor
 
 /**Function visitor used by [ServiceVisitor] to extract service method definitions from annotated members inside
@@ -21,17 +24,36 @@ import io.grpc.MethodDescriptor
  * @see ServiceProcessor*/
 class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
 
-    /**Throws [IllegalStateException] with the given [message] and signalling [inFunction] as the source of the problem.*/
-    private fun reportError(inFunction: KSFunctionDeclaration, message: String): Nothing {
-        throw IllegalStateException("Error while processing service method ${inFunction.qualifiedName?.asString()}: $message")
-    }
-
     /**If [required] is set to true and this declaration is not marked with the `suspend` modifier (or viceversa), an error will be reported.*/
     private fun KSFunctionDeclaration.requireSuspending(required: Boolean) {
         val isError = if (required) Modifier.SUSPEND !in modifiers else Modifier.SUSPEND in modifiers
 
         if (isError)
             reportError(this, "Unary and ClientStream rpc methods must be marked with the suspend modifier.")
+    }
+
+    /**Extracts the type parameter for this type reference if it is a flow, returns null otherwise.*/
+    private fun KSTypeReference.extractFlowType(): ClassName? {
+        return resolve().let {
+            if (it.declaration.simpleName.asString() != "Flow") return null
+
+            it.arguments.single().type!!.resolve().asClassName()
+        }
+    }
+
+    private fun KSFunctionDeclaration.extractRequest(flow: Boolean): Pair<String, ClassName> {
+        return if (flow) {
+            parameters.singleOrNull()?.let {
+                it.name!!.asString() to (it.type.extractFlowType() ?: return@let null)
+            } ?: reportError(
+                this,
+                "ClientStream and BidiStream methods must have a single Flow parameter"
+            )
+        } else {
+            parameters.singleOrNull()?.let {
+                it.name!!.asString() to it.type.resolve().asClassName()
+            } ?: "unit" to UnitClassName
+        }
     }
 
     override fun defaultHandler(node: KSNode, data: String): ServiceMethodDefinition {
@@ -41,28 +63,45 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: String): ServiceMethodDefinition {
         // Signature check
         if (function.parameters.size != 1) reportError(function, "Service methods must have exactly one parameter")
-        if (function.returnType == null) reportError(function, "Service methods must declare a return type.")
 
         var type: MethodDescriptor.MethodType = MethodDescriptor.MethodType.UNKNOWN
         var methodName = function.simpleName.asString()
+        var returnType: ClassName? = null
+        var request: Pair<String, ClassName>? = null
 
         for (annotation in function.annotations) {
-            type = when (annotation.shortName.getShortName()) {
+            when (annotation.shortName.getShortName()) {
                 UnaryCall::class.simpleName -> {
                     function.requireSuspending(true)
-                    MethodDescriptor.MethodType.UNARY
+
+                    returnType = function.returnType?.resolve()?.asClassName() ?: UnitClassName
+                    request = function.extractRequest(false)
+                    type = MethodDescriptor.MethodType.UNARY
                 }
                 ClientStream::class.simpleName -> {
                     function.requireSuspending(true)
-                    MethodDescriptor.MethodType.CLIENT_STREAMING
+
+                    returnType = function.returnType?.resolve()?.asClassName() ?: Unit::class.asClassName()
+                    request = function.extractRequest(true)
+                    type = MethodDescriptor.MethodType.CLIENT_STREAMING
                 }
                 ServerStream::class.simpleName -> {
                     function.requireSuspending(false)
-                    MethodDescriptor.MethodType.SERVER_STREAMING
+
+                    returnType = function.returnType?.extractFlowType()
+                        ?: reportError(function, "ServerStream and BidiStream rpc methods must return Flow.")
+
+                    request = function.extractRequest(false)
+                    type = MethodDescriptor.MethodType.SERVER_STREAMING
                 }
                 BidiStream::class.simpleName -> {
                     function.requireSuspending(false)
-                    MethodDescriptor.MethodType.BIDI_STREAMING
+
+                    returnType = function.returnType?.extractFlowType()
+                        ?: reportError(function, "ServerStream and BidiStream rpc methods must return Flow.")
+
+                    request = function.extractRequest(true)
+                    type = MethodDescriptor.MethodType.BIDI_STREAMING
                 }
                 else -> continue
             }
@@ -77,12 +116,14 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
         if (type == MethodDescriptor.MethodType.UNKNOWN)
             reportError(function, "Method declarations inside @Service interfaces must provide a call type annotation.")
 
+        if (returnType == null) reportError(function, "Unsupported return type")
+        if (request == null) reportError(function, "Unsupported argument type")
+
         return ServiceMethodDefinition(
             declaredName = function.simpleName.getShortName(),
             methodName = "$data/$methodName",
-            returnType = function.returnType,
-            request = function.parameters.singleOrNull()
-                ?: reportError(function, "Service methods must have a single parameter."),
+            returnType = returnType,
+            request = request,
             methodType = type
         )
     }
