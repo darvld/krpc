@@ -1,8 +1,8 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.SerializationProvider
+import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.addClass
-import com.github.darvld.krpc.compiler.asClassName
 import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
@@ -57,16 +57,20 @@ fun generateDescriptorContainer(output: OutputStream, service: ServiceDefinition
 }
 
 /**Add a marshaller implementation for the given [typeName] to the descriptor container, using the serializationProvider.*/
-private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): PropertySpec {
+private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): String {
+    // Don't generate a marshaller for Unit
+    if (typeName == UnitClassName)
+        return "SerializationProvider.UnitSerializer"
+
     val propName = typeName.marshallerPropName
 
     // Avoid re-generating the same marshaller
-    propertySpecs.find { it.name == propName }?.let { return it }
+    propertySpecs.find { it.name == propName }?.let { return propName }
 
     val marshallerType = MethodDescriptor.Marshaller::class.asTypeName()
         .parameterizedBy(typeName)
 
-    return PropertySpec.builder(propName, marshallerType, KModifier.PRIVATE)
+    PropertySpec.builder(propName, marshallerType, KModifier.PRIVATE)
         .markAsGenerated()
         .addKdoc(
             """
@@ -77,6 +81,8 @@ private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): PropertySpec {
         .initializer("$SERIALIZATION_PROVIDER_PARAM.marshallerFor(serializer())")
         .build()
         .also(::addProperty)
+
+    return propName
 }
 
 /**Add a method descriptor to the container.*/
@@ -106,8 +112,8 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
                 |MethodDescriptor.newBuilder<%T,%T>()
                 |    .setFullMethodName(%S)
                 |    .setType(%L)
-                |    .setRequestMarshaller(%N)
-                |    .setResponseMarshaller(%N)
+                |    .setRequestMarshaller(%L)
+                |    .setResponseMarshaller(%L)
                 |    .build()
                 |""".trimMargin(),
             requestType,
