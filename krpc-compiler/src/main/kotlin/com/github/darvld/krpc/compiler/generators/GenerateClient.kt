@@ -91,7 +91,8 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                     markAsGenerated()
 
                     addParameter(method.request.name!!.asString(), method.request.type.resolve().asClassName())
-                    returns(method.returnType!!.resolve().asClassName())
+
+                    returns(method.returnType)
 
                     val callType: String
                     when (method.methodType) {
@@ -107,13 +108,19 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                         BIDI_STREAMING -> callType = "bidiStreamingRpc"
                         UNKNOWN -> throw IllegalStateException("Member type cannot be unknown")
                     }
-                    addCode(
-                        "return %T.%L(channel, descriptor.%L, %L, callOptions)",
+
+                    val body = CodeBlock.builder().add(
+                        "%T.%L(channel, descriptor.%L, %L, callOptions)",
                         ClientCalls::class, // Contains helper builders
                         callType, // The appropriate method to call from ClientCalls
                         method.declaredName, // The descriptor `val` for this method
                         method.request.name!!.asString() // Pass in the method's argument (request)
-                    )
+                    ).build()
+
+                    if (!method.returnsUnit)
+                        addCode("return %L", body)
+                    else
+                        addCode(body)
                 }
             }
 

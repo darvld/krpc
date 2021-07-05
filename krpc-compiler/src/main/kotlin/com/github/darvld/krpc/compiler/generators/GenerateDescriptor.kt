@@ -84,7 +84,7 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
     definition: ServiceMethodDefinition
 ) {
     val requestType = definition.request.type.resolve().asClassName()
-    val responseType = (definition.returnType!!.resolve()).asClassName()
+    val responseType = definition.returnType
 
     val type = MethodDescriptor::class.asTypeName()
         .parameterizedBy(requestType, responseType)

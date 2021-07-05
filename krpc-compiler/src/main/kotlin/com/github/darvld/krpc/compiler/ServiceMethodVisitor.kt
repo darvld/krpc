@@ -9,6 +9,7 @@ import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.visitor.KSEmptyVisitor
+import com.squareup.kotlinpoet.asClassName
 import io.grpc.MethodDescriptor
 
 /**Function visitor used by [ServiceVisitor] to extract service method definitions from annotated members inside
@@ -41,7 +42,6 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: String): ServiceMethodDefinition {
         // Signature check
         if (function.parameters.size != 1) reportError(function, "Service methods must have exactly one parameter")
-        if (function.returnType == null) reportError(function, "Service methods must declare a return type.")
 
         var type: MethodDescriptor.MethodType = MethodDescriptor.MethodType.UNKNOWN
         var methodName = function.simpleName.asString()
@@ -80,7 +80,7 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
         return ServiceMethodDefinition(
             declaredName = function.simpleName.getShortName(),
             methodName = "$data/$methodName",
-            returnType = function.returnType,
+            returnType = function.returnType?.resolve()?.asClassName() ?: Unit::class.asClassName(),
             request = function.parameters.singleOrNull()
                 ?: reportError(function, "Service methods must have a single parameter."),
             methodType = type

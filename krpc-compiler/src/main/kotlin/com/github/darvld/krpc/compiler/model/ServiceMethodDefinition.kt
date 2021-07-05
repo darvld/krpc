@@ -1,7 +1,7 @@
 package com.github.darvld.krpc.compiler.model
 
-import com.google.devtools.ksp.symbol.KSTypeReference
 import com.google.devtools.ksp.symbol.KSValueParameter
+import com.squareup.kotlinpoet.ClassName
 import io.grpc.MethodDescriptor
 
 /**Model class used by [ServiceProcessor][com.github.darvld.krpc.compiler.ServiceProcessor] to store information
@@ -14,9 +14,11 @@ data class ServiceMethodDefinition(
     /**The "official" GRPC name of this method.*/
     val methodName: String,
     /**Return type of the method.*/
-    val returnType: KSTypeReference?,
+    val returnType: ClassName,
     /**The request parameter, required by GRPC.*/
     val request: KSValueParameter,
     /**The type of rpc call this method represents.*/
     val methodType: MethodDescriptor.MethodType
-)
+) {
+    val returnsUnit: Boolean get() = returnType.simpleName == "Unit"
+}

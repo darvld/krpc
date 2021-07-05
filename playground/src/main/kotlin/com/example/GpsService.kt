@@ -7,4 +7,7 @@ import com.github.darvld.krpc.UnaryCall
 interface GpsService {
     @UnaryCall("customName")
     suspend fun doSomething(message: String): Int
+
+    @UnaryCall
+    suspend fun fireAndForget(message: String)
 }
