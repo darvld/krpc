@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.Flow
 import java.io.OutputStream
 import javax.annotation.processing.Generated
 
-val UnitClassName = Unit::class.asClassName()
-val FlowClassName = Flow::class.asClassName()
+internal val UnitClassName = Unit::class.asClassName()
+internal val FlowClassName = Flow::class.asClassName()
 
 private val generatedAnnotationSpec = AnnotationSpec.builder(Generated::class)
     .addMember("\"com.github.darvld.krpc\"")

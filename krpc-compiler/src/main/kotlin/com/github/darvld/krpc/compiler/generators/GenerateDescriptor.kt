@@ -15,7 +15,6 @@ import java.io.OutputStream
 /**The name of the [SerializationProvider] parameter used in the constructor and as a property.*/
 const val SERIALIZATION_PROVIDER_PARAM = "serializationProvider"
 
-/**The name of the generated marshaller for this type.*/
 private inline val ClassName.marshallerPropName: String
     get() = "${simpleName.replaceFirstChar { it.lowercaseChar() }}Marshaller"
 
@@ -56,7 +55,6 @@ fun generateDescriptorContainer(output: OutputStream, service: ServiceDefinition
     }
 }
 
-/**Add a marshaller implementation for the given [typeName] to the descriptor container, using the serializationProvider.*/
 private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): String {
     // Don't generate a marshaller for Unit
     if (typeName == UnitClassName)
@@ -85,7 +83,6 @@ private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): String {
     return propName
 }
 
-/**Add a method descriptor to the container.*/
 private fun TypeSpec.Builder.addServiceMethodDescriptor(
     definition: ServiceMethodDefinition
 ) {

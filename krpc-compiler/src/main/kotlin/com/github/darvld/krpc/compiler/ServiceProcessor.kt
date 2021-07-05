@@ -15,7 +15,6 @@ import com.google.devtools.ksp.validate
  *
  * @see ServiceVisitor*/
 class ServiceProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
-    /**A visitor used to extract service declarations from annotated interfaces.*/
     private val serviceVisitor = ServiceVisitor()
 
     // TODO: Support incremental processing adding the appropriate source dependencies

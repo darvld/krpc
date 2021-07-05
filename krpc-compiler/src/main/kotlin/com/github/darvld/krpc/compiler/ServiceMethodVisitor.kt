@@ -24,7 +24,6 @@ import io.grpc.MethodDescriptor
  * @see ServiceProcessor*/
 class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
 
-    /**If [required] is set to true and this declaration is not marked with the `suspend` modifier (or viceversa), an error will be reported.*/
     private fun KSFunctionDeclaration.requireSuspending(required: Boolean) {
         val isError = if (required) Modifier.SUSPEND !in modifiers else Modifier.SUSPEND in modifiers
 
@@ -32,7 +31,6 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
             reportError(this, "Unary and ClientStream rpc methods must be marked with the suspend modifier.")
     }
 
-    /**Extracts the type parameter for this type reference if it is a flow, returns null otherwise.*/
     private fun KSTypeReference.extractFlowType(): ClassName? {
         return resolve().let {
             if (it.declaration.simpleName.asString() != "Flow") return null
@@ -42,17 +40,16 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
     }
 
     private fun KSFunctionDeclaration.extractRequest(flow: Boolean): Pair<String, ClassName> {
+        val param = parameters.singleOrNull()
+
         return if (flow) {
-            parameters.singleOrNull()?.let {
-                it.name!!.asString() to (it.type.extractFlowType() ?: return@let null)
-            } ?: reportError(
-                this,
-                "ClientStream and BidiStream methods must have a single Flow parameter"
-            )
+            val type = param?.type?.extractFlowType()
+                ?: reportError(this, "ClientStream and BidiStream methods must have a single Flow parameter")
+
+            param.name!!.asString() to type
         } else {
-            parameters.singleOrNull()?.let {
-                it.name!!.asString() to it.type.resolve().asClassName()
-            } ?: "unit" to UnitClassName
+            if (param == null) return "unit" to UnitClassName
+            param.name!!.asString() to param.type.resolve().asClassName()
         }
     }
 
@@ -60,6 +57,7 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
         throw IllegalStateException("MethodVisitor should only be used to visit function declarations")
     }
 
+    // TODO: Extract into smaller functions
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: String): ServiceMethodDefinition {
         // Signature check
         if (function.parameters.size != 1) reportError(function, "Service methods must have exactly one parameter")
@@ -69,6 +67,7 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
         var returnType: ClassName? = null
         var request: Pair<String, ClassName>? = null
 
+        // TODO: Find a better way to do this
         for (annotation in function.annotations) {
             when (annotation.shortName.getShortName()) {
                 UnaryCall::class.simpleName -> {

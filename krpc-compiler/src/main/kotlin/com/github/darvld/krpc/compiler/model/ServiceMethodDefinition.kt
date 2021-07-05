@@ -1,6 +1,5 @@
 package com.github.darvld.krpc.compiler.model
 
-import com.google.devtools.ksp.symbol.KSValueParameter
 import com.squareup.kotlinpoet.ClassName
 import io.grpc.MethodDescriptor
 
@@ -20,5 +19,6 @@ data class ServiceMethodDefinition(
     /**The type of rpc call this method represents.*/
     val methodType: MethodDescriptor.MethodType
 ) {
+    /**Whether this method returns [Unit].*/
     val returnsUnit: Boolean get() = returnType.simpleName == "Unit"
 }
