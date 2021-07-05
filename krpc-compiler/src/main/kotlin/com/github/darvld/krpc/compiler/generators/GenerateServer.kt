@@ -11,6 +11,31 @@ import java.io.OutputStream
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
+/**Code block body used to add a method to the service descriptor.*/
+const val ADD_METHOD_CODE_BLOCK = """
+addMethod(
+            %T.%L(
+               context = context,
+               descriptor = definitions.%L,
+               implementation = ::%L
+            )
+        )
+"""
+
+/**Code block body used for the server descriptor builder.*/
+const val SERVICE_DEFINITION_BLOCK = """
+return ServerServiceDefinition.builder(%S).run {
+        %L
+    
+        build()    
+    }
+"""
+
+/**Generates a service provider, an abstract class implementing both the [service] and [AbstractCoroutineServerImpl].
+ * The class is written to a file using [output].
+ *
+ * @see generateClientImplementation
+ * @see generateDescriptorContainer*/
 fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition) {
     FileSpec.builder(service.packageName, service.providerName).apply {
         TypeSpec.classBuilder(service.providerName).apply {
@@ -80,21 +105,3 @@ private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
         .build()
         .let(::addFunction)
 }
-
-const val ADD_METHOD_CODE_BLOCK = """
-addMethod(
-            %T.%L(
-               context = context,
-               descriptor = definitions.%L,
-               implementation = ::%L
-            )
-        )
-"""
-
-const val SERVICE_DEFINITION_BLOCK = """
-return ServerServiceDefinition.builder(%S).run {
-        %L
-    
-        build()    
-    }
-"""

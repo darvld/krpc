@@ -11,12 +11,22 @@ import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.visitor.KSEmptyVisitor
 import io.grpc.MethodDescriptor
 
+/**Function visitor used by [ServiceVisitor] to extract service method definitions from annotated members inside
+ * a @Service interface.
+ *
+ * This class should only be used to visit [KSFunctionDeclaration] nodes. Visiting any other type of node will throw
+ * [IllegalStateException].
+ *
+ * @see ServiceVisitor
+ * @see ServiceProcessor*/
 class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
 
+    /**Throws [IllegalStateException] with the given [message] and signalling [inFunction] as the source of the problem.*/
     private fun reportError(inFunction: KSFunctionDeclaration, message: String): Nothing {
         throw IllegalStateException("Error while processing service method ${inFunction.qualifiedName?.asString()}: $message")
     }
 
+    /**If [required] is set to true and this declaration is not marked with the `suspend` modifier (or viceversa), an error will be reported.*/
     private fun KSFunctionDeclaration.requireSuspending(required: Boolean) {
         val isError = if (required) Modifier.SUSPEND !in modifiers else Modifier.SUSPEND in modifiers
 
@@ -29,6 +39,7 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
     }
 
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): ServiceMethodDefinition {
+        // Signature check
         if (function.parameters.size != 1) reportError(function, "Service methods must have exactly one parameter")
         if (function.returnType == null) reportError(function, "Service methods must declare a return type.")
 
@@ -56,11 +67,13 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
                 else -> continue
             }
 
+            // Support custom naming through annotation arguments
             annotation.arguments.first().value?.toString()?.takeUnless { it.isBlank() }?.let {
                 methodName = it
             }
             break
         }
+
         if (type == MethodDescriptor.MethodType.UNKNOWN)
             reportError(function, "Method declarations inside @Service interfaces must provide a call type annotation.")
 

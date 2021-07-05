@@ -15,6 +15,12 @@ import io.grpc.kotlin.AbstractCoroutineStub
 import io.grpc.kotlin.ClientCalls
 import java.io.OutputStream
 
+/**Generates a client class implementing both the [service] and [AbstractCoroutineStub].
+ *
+ * The generated class is *final*.
+ *
+ * @see generateServiceProviderBase
+ * @see generateDescriptorContainer*/
 fun generateClientImplementation(output: OutputStream, service: ServiceDefinition) {
     buildFile(withPackage = service.packageName, fileName = service.clientName, output) {
         addClass {

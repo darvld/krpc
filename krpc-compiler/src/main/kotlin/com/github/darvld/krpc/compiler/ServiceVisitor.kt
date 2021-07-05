@@ -10,9 +10,18 @@ import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.validate
 import com.google.devtools.ksp.visitor.KSDefaultVisitor
 
+/**Class visitor used by [ServiceProcessor] to extract service definitions from annotated interfaces.
+ *
+ * This class should only be used to visit [KSClassDeclaration] nodes. Visiting any other node type will
+ * result in [IllegalStateException] being thrown.
+ *
+ * @see ServiceMethodVisitor
+ * @see [ServiceProcessor]*/
 class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
+    /**Function visitor used to extract service method definitions from members.*/
     private val methodVisitor = ServiceMethodVisitor()
 
+    /**Throws [IllegalStateException] with the given [message] and signalling [inClass] as the source of the problem.*/
     private fun reportError(inClass: KSClassDeclaration, message: String) {
         throw IllegalStateException("Error while processing service definition ${inClass.qualifiedName?.asString()}: $message")
     }

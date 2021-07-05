@@ -11,11 +11,18 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.grpc.MethodDescriptor
 import java.io.OutputStream
 
+/**The name of the [SerializationProvider] parameter used in the constructor and as a property.*/
 const val SERIALIZATION_PROVIDER_PARAM = "serializationProvider"
 
+/**The name of the generated marshaller for this type.*/
 private inline val ClassName.marshallerPropName: String
     get() = "${simpleName.replaceFirstChar { it.lowercaseChar() }}Marshaller"
 
+/**Generate a helper class containing descriptors and marshallers required to implement a [service]. The class is
+ * written to a file through [output].
+ *
+ * @see generateServiceProviderBase
+ * @see generateClientImplementation*/
 fun Resolver.generateDescriptorContainer(output: OutputStream, service: ServiceDefinition) {
     FileSpec.builder(service.packageName, service.descriptorName).apply {
         // Helper class definition
@@ -53,8 +60,8 @@ fun Resolver.generateDescriptorContainer(output: OutputStream, service: ServiceD
     }
 }
 
+/**Add a marshaller implementation for the given [typeName] to the descriptor container, using the serializationProvider.*/
 private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): PropertySpec {
-
     val propName = typeName.marshallerPropName
 
     // Avoid re-generating the same marshaller
@@ -76,6 +83,7 @@ private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): PropertySpec {
         .also(::addProperty)
 }
 
+/**Add a method descriptor to the container.*/
 private fun TypeSpec.Builder.addServiceMethodDescriptor(
     resolver: Resolver,
     serviceName: String,
@@ -95,7 +103,7 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
             |This descriptor is used by generated client and server implementations. It should not be
             |used in general code.
             |""".trimMargin(),
-            "$serviceName.${definition.methodName}"
+            "$serviceName.${definition.declaredName}"
         )
         .markAsGenerated()
         .mutable(false)
