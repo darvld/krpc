@@ -77,6 +77,7 @@ fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition
     }
 }
 
+/**Adds the [AbstractCoroutineServerImpl.bindService] implementation.*/
 private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
     val serverCalls = ServerCalls::class
 
