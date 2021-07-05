@@ -5,7 +5,6 @@ import com.github.darvld.krpc.compiler.asClassName
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
-import com.google.devtools.ksp.processing.Resolver
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.grpc.MethodDescriptor
@@ -23,7 +22,7 @@ private inline val ClassName.marshallerPropName: String
  *
  * @see generateServiceProviderBase
  * @see generateClientImplementation*/
-fun Resolver.generateDescriptorContainer(output: OutputStream, service: ServiceDefinition) {
+fun generateDescriptorContainer(output: OutputStream, service: ServiceDefinition) {
     FileSpec.builder(service.packageName, service.descriptorName).apply {
         // Helper class definition
         val descriptorContainer = TypeSpec.classBuilder(service.descriptorName).apply {
@@ -50,7 +49,7 @@ fun Resolver.generateDescriptorContainer(output: OutputStream, service: ServiceD
 
             // Generate helper method definitions
             service.methods.forEach {
-                addServiceMethodDescriptor(this@generateDescriptorContainer, service.serviceName, it)
+                addServiceMethodDescriptor(it)
             }
         }.build()
 
@@ -85,12 +84,10 @@ private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): PropertySpec {
 
 /**Add a method descriptor to the container.*/
 private fun TypeSpec.Builder.addServiceMethodDescriptor(
-    resolver: Resolver,
-    serviceName: String,
     definition: ServiceMethodDefinition
 ) {
     val requestType = definition.request.type.resolve().asClassName()
-    val responseType = (definition.returnType?.resolve() ?: resolver.builtIns.unitType).asClassName()
+    val responseType = (definition.returnType!!.resolve()).asClassName()
 
     val type = MethodDescriptor::class.asTypeName()
         .parameterizedBy(requestType, responseType)
@@ -103,7 +100,7 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
             |This descriptor is used by generated client and server implementations. It should not be
             |used in general code.
             |""".trimMargin(),
-            "$serviceName.${definition.declaredName}"
+            definition.declaredName
         )
         .markAsGenerated()
         .mutable(false)
@@ -117,7 +114,7 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
                 |    .build()
                 |""".trimMargin(),
             requestType, responseType,
-            "$serviceName/${definition.methodName}", "MethodDescriptor.MethodType.${definition.methodType.name}",
+            definition.methodName, "MethodDescriptor.MethodType.${definition.methodType.name}",
             addMarshaller(requestType), addMarshaller(responseType)
         )
         .build()
