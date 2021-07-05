@@ -10,6 +10,7 @@ import io.grpc.Channel
 import io.grpc.MethodDescriptor.MethodType.*
 import io.grpc.kotlin.AbstractCoroutineStub
 import io.grpc.kotlin.ClientCalls
+import kotlinx.coroutines.flow.Flow
 import java.io.OutputStream
 
 /**Generates a client class implementing both the [service] and [AbstractCoroutineStub].
@@ -92,21 +93,20 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
 
                     addParameter(method.request.name!!.asString(), method.request.type.resolve().asClassName())
 
-                    returns(method.returnType)
+                    if (method.methodType == SERVER_STREAMING || method.methodType == BIDI_STREAMING) {
+                        returns(Flow::class.asClassName().parameterizedBy(method.returnType))
+                    } else {
+                        addModifiers(KModifier.SUSPEND)
+                        returns(method.returnType)
+                    }
 
-                    val callType: String
-                    when (method.methodType) {
-                        UNARY -> {
-                            callType = "unaryRpc"
-                            addModifiers(KModifier.SUSPEND)
-                        }
-                        CLIENT_STREAMING -> {
-                            callType = "clientStreamingRpc"
-                            addModifiers(KModifier.SUSPEND)
-                        }
-                        SERVER_STREAMING -> callType = "serverStreamingRpc"
-                        BIDI_STREAMING -> callType = "bidiStreamingRpc"
-                        UNKNOWN -> throw IllegalStateException("Member type cannot be unknown")
+
+                    val callType = when (method.methodType) {
+                        UNARY -> "unaryRpc"
+                        CLIENT_STREAMING -> "clientStreamingRpc"
+                        SERVER_STREAMING -> "serverStreamingRpc"
+                        BIDI_STREAMING -> "bidiStreamingRpc"
+                        UNKNOWN -> reportError(method, "Member type cannot be unknown")
                     }
 
                     val body = CodeBlock.builder().add(
