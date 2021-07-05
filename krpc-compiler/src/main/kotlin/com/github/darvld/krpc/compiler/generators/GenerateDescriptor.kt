@@ -1,7 +1,9 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.SerializationProvider
+import com.github.darvld.krpc.compiler.addClass
 import com.github.darvld.krpc.compiler.asClassName
+import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
@@ -23,9 +25,8 @@ private inline val ClassName.marshallerPropName: String
  * @see generateServiceProviderBase
  * @see generateClientImplementation*/
 fun generateDescriptorContainer(output: OutputStream, service: ServiceDefinition) {
-    FileSpec.builder(service.packageName, service.descriptorName).apply {
-        // Helper class definition
-        val descriptorContainer = TypeSpec.classBuilder(service.descriptorName).apply {
+    buildFile(service.packageName, service.descriptorName, output) {
+        addClass {
             addModifiers(KModifier.INTERNAL)
             markAsGenerated()
 
@@ -51,11 +52,7 @@ fun generateDescriptorContainer(output: OutputStream, service: ServiceDefinition
             service.methods.forEach {
                 addServiceMethodDescriptor(it)
             }
-        }.build()
-
-        addType(descriptorContainer)
-    }.build().let { spec ->
-        output.writer().use(spec::writeTo)
+        }
     }
 }
 
