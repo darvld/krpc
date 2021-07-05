@@ -31,8 +31,7 @@ class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
     }
 
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): ServiceDefinition {
-        if (classDeclaration.classKind != INTERFACE && Modifier.ABSTRACT !in classDeclaration.modifiers)
-            reportError(classDeclaration, "Service definitions must be interfaces or abstract classes")
+        if (classDeclaration.classKind != INTERFACE) reportError(classDeclaration, "Service definitions must be interfaces")
 
         // The annotation arguments contain the names for the service, the provider and the client (if specified)
         val annotationArgs = classDeclaration.annotations.find {
