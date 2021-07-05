@@ -47,5 +47,5 @@ with the library.
 ## Implementation
 
 The KRPC compiler uses Google's [KSP](https://github.com/google/ksp) to process the annotations and generate code. The
-runtime and generated stubs ae implemented on top of the [grpc-kotlin-stub](https://github.com/grpc/grpc-kotlin)
+runtime and generated stubs are implemented on top of the [grpc-kotlin-stub](https://github.com/grpc/grpc-kotlin)
 runtime.
