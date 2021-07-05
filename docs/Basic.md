@@ -1,8 +1,8 @@
 # Getting started with KRPC
 
-In order to define and then generate a GRPC service, you would normally need to define a ProtoBuf (.proto)
+In order to define and then generate a gRPC service, you would normally need to define a ProtoBuf (.proto)
 definition, including the requests, responses and all necessary data structures. Then you would use the Protoc compiler
-with the GRPC plugin (Java or Kotlin variant) to generate some code you can consume. However, this process generates a
+with the gRPC plugin (Java or Kotlin variant) to generate some code you can consume. However, this process generates a
 lot of exposed boilerplate, namely builders, DSLs for those builders and other utilities.
 
 With KRPC the approach is simpler: you define your service *in Kotlin* as an interface, and then use the KRPC processor
