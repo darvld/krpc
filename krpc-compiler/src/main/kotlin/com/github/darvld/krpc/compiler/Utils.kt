@@ -1,13 +1,15 @@
 package com.github.darvld.krpc.compiler
 
 import com.google.devtools.ksp.symbol.KSType
+import com.google.devtools.ksp.symbol.KSTypeReference
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import kotlinx.coroutines.flow.Flow
 import java.io.OutputStream
 import javax.annotation.processing.Generated
 
-val UnitClassName = Unit::class.asClassName()
-val FlowClassName = Flow::class.asClassName()
+internal val UnitClassName = Unit::class.asClassName()
+internal val FlowClassName = Flow::class.asClassName()
 
 private val generatedAnnotationSpec = AnnotationSpec.builder(Generated::class)
     .addMember("\"com.github.darvld.krpc\"")
@@ -34,10 +36,39 @@ fun PropertySpec.Builder.markAsGenerated(): PropertySpec.Builder {
     }
 }
 
-/**Constructs a [ClassName] from this type's package name and simple name. Note that for generics, type
- * arguments must be added manually.*/
+/**Returns a [ClassName] constructed from this symbol's package name and simple name.*/
 fun KSType.asClassName(): ClassName {
     return ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
+}
+
+/**Resolves this type reference and constructs a [ClassName] from the type's package name and simple name.
+ *
+ *  This extension does not handle generics, use [resolveParameterizedName] instead.*/
+fun KSTypeReference.resolveAsClassName(): ClassName {
+    return resolve().declaration.run {
+        ClassName(packageName.asString(), simpleName.asString())
+    }
+}
+
+/**Maps this ksp [KSType] into a kotlinPoet [TypeName].
+ *
+ * For non-generic types, this method returns a simple [ClassName]. For generics, it recursively resolves
+ * type arguments.*/
+fun KSType.asTypeName(): TypeName {
+    val baseName = ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
+
+    if (arguments.isEmpty()) return baseName
+
+    return baseName.parameterizedBy(arguments.map { it.type?.resolve()?.asTypeName() ?: STAR })
+}
+
+/**Resolves this type references and recursively constructs a properly parameterized type name including the type arguments.*/
+inline fun KSTypeReference.resolveParameterizedName(validate: (KSType) -> Boolean = { true }): ParameterizedTypeName? {
+    return resolve().also { if (!validate(it)) return null }.run {
+        // It *looks* unsafe, but it's actually perfectly safe: if the `asTypeName` call returns a ClassName,
+        // then this will return null, otherwise we get the appropriate parametrized type.
+        asTypeName() as? ParameterizedTypeName
+    }
 }
 
 /**Build a file using [FileSpec.Builder] and write it to [output].*/

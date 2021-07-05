@@ -17,9 +17,7 @@ import com.google.devtools.ksp.visitor.KSDefaultVisitor
  * @see ServiceMethodVisitor
  * @see [ServiceProcessor]*/
 class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
-    /**Function visitor used to extract service method definitions from members.*/
     private val methodVisitor = ServiceMethodVisitor()
-
 
     override fun defaultHandler(node: KSNode, data: Unit): ServiceDefinition {
         throw IllegalStateException("Service visitor can only visit service definition interfaces")

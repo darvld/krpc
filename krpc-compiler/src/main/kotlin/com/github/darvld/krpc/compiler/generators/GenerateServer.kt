@@ -6,7 +6,7 @@ import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.squareup.kotlinpoet.*
-import io.grpc.MethodDescriptor
+import io.grpc.MethodDescriptor.MethodType.*
 import io.grpc.ServerServiceDefinition
 import io.grpc.kotlin.AbstractCoroutineServerImpl
 import io.grpc.kotlin.ServerCalls
@@ -14,8 +14,7 @@ import java.io.OutputStream
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-/**Code block body used to add a method to the service descriptor.*/
-const val ADD_METHOD_CODE_BLOCK = """
+private const val ADD_METHOD_CODE_BLOCK = """
 addMethod(
             %T.%L(
                context = context,
@@ -26,8 +25,7 @@ addMethod(
         
 """
 
-/**Code block body used for the server descriptor builder.*/
-const val SERVICE_DEFINITION_BLOCK = """
+private const val SERVICE_DEFINITION_BLOCK = """
 return ServerServiceDefinition.builder(%S).run {
         %L
     
@@ -81,25 +79,24 @@ fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition
     }
 }
 
-/**Adds the [AbstractCoroutineServerImpl.bindService] implementation.*/
 private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
     val serverCalls = ServerCalls::class
 
-    val methodBuilders = service.methods.fold(CodeBlock.builder()) { block, it ->
-        val definitionBuilderName = when (it.methodType) {
-            MethodDescriptor.MethodType.UNARY -> "unaryServerMethodDefinition"
-            MethodDescriptor.MethodType.CLIENT_STREAMING -> "clientStreamingServerMethodDefinition"
-            MethodDescriptor.MethodType.SERVER_STREAMING -> "serverStreamingServerMethodDefinition"
-            MethodDescriptor.MethodType.BIDI_STREAMING -> "bidiStreamingServerMethodDefinition"
-            MethodDescriptor.MethodType.UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
+    val methodBuilders = service.methods.fold(CodeBlock.builder()) { block, method ->
+        val definitionBuilderName = when (method.methodType) {
+            UNARY -> "unaryServerMethodDefinition"
+            CLIENT_STREAMING -> "clientStreamingServerMethodDefinition"
+            SERVER_STREAMING -> "serverStreamingServerMethodDefinition"
+            BIDI_STREAMING -> "bidiStreamingServerMethodDefinition"
+            UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
         }
 
         block.add(
             ADD_METHOD_CODE_BLOCK.trimMargin(),
             serverCalls,
             definitionBuilderName,
-            it.declaredName,
-            it.declaredName
+            method.declaredName,
+            method.declaredName
         )
     }.build()
 
