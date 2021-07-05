@@ -1,6 +1,7 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.SerializationProvider
+import com.github.darvld.krpc.compiler.markAsGenerated
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.squareup.kotlinpoet.*
 import io.grpc.MethodDescriptor
@@ -39,6 +40,8 @@ return ServerServiceDefinition.builder(%S).run {
 fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition) {
     FileSpec.builder(service.packageName, service.providerName).apply {
         TypeSpec.classBuilder(service.providerName).apply {
+            markAsGenerated()
+
             addModifiers(KModifier.ABSTRACT)
             superclass(AbstractCoroutineServerImpl::class)
 
@@ -100,6 +103,7 @@ private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
     }.build()
 
     FunSpec.builder("bindService")
+        .markAsGenerated()
         .addModifiers(KModifier.FINAL, KModifier.OVERRIDE)
         .addCode(SERVICE_DEFINITION_BLOCK.trimMargin(), service.serviceName, methodBuilders)
         .returns(ServerServiceDefinition::class)

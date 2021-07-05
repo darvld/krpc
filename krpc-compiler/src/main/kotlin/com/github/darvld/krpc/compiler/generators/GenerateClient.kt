@@ -1,16 +1,13 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.SerializationProvider
-import com.github.darvld.krpc.compiler.addClass
-import com.github.darvld.krpc.compiler.addFunction
-import com.github.darvld.krpc.compiler.asClassName
-import com.github.darvld.krpc.compiler.buildFile
+import com.github.darvld.krpc.compiler.*
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.grpc.CallOptions
 import io.grpc.Channel
-import io.grpc.MethodDescriptor
+import io.grpc.MethodDescriptor.MethodType.*
 import io.grpc.kotlin.AbstractCoroutineStub
 import io.grpc.kotlin.ClientCalls
 import java.io.OutputStream
@@ -24,6 +21,8 @@ import java.io.OutputStream
 fun generateClientImplementation(output: OutputStream, service: ServiceDefinition) {
     buildFile(withPackage = service.packageName, fileName = service.clientName, output) {
         addClass {
+            markAsGenerated()
+
             superclass(AbstractCoroutineStub::class.asTypeName().parameterizedBy(ClassName(packageName, name)))
                 .addSuperclassConstructorParameter("channel, callOptions")
 
@@ -47,6 +46,7 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                 .let(::addProperty)
 
             FunSpec.constructorBuilder()
+                .markAsGenerated()
                 .addParameter("channel", Channel::class)
                 .addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
                 .addParameter(
@@ -63,6 +63,7 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                 .let(::addFunction)
 
             addFunction("build") {
+                markAsGenerated()
                 addModifiers(KModifier.OVERRIDE)
 
                 addParameter("channel", Channel::class)
@@ -74,6 +75,8 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
             }
 
             addFunction("withSerializationProvider") {
+                markAsGenerated()
+
                 addParameter("channel", Channel::class)
                 addParameter("callOptions", CallOptions::class)
                 addParameter("provider", SerializationProvider::class)
@@ -84,16 +87,25 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
             }
 
             for (method in service.methods) {
-                addFunction(method.declaredName, KModifier.OVERRIDE, KModifier.SUSPEND) {
+                addFunction(method.declaredName, KModifier.OVERRIDE) {
+                    markAsGenerated()
+
                     addParameter(method.request.name!!.asString(), method.request.type.resolve().asClassName())
                     returns(method.returnType!!.resolve().asClassName())
 
-                    val callType = when (method.methodType) {
-                        MethodDescriptor.MethodType.UNARY -> "unaryRpc"
-                        MethodDescriptor.MethodType.CLIENT_STREAMING -> "clientStreamingRpc"
-                        MethodDescriptor.MethodType.SERVER_STREAMING -> "serverStreamingRpc"
-                        MethodDescriptor.MethodType.BIDI_STREAMING -> "bidiStreamingRpc"
-                        MethodDescriptor.MethodType.UNKNOWN -> throw IllegalStateException("Member type cannot be unknown")
+                    val callType: String
+                    when (method.methodType) {
+                        UNARY -> {
+                            callType = "unaryRpc"
+                            addModifiers(KModifier.SUSPEND)
+                        }
+                        CLIENT_STREAMING -> {
+                            callType = "clientStreamingRpc"
+                            addModifiers(KModifier.SUSPEND)
+                        }
+                        SERVER_STREAMING -> callType = "serverStreamingRpc"
+                        BIDI_STREAMING -> callType = "bidiStreamingRpc"
+                        UNKNOWN -> throw IllegalStateException("Member type cannot be unknown")
                     }
                     addCode(
                         "return %T.%L(channel, descriptor.%L, %L, callOptions)",

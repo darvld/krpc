@@ -52,13 +52,13 @@ class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
                     function.requireSuspending(true)
                     MethodDescriptor.MethodType.UNARY
                 }
-                ServerStream::class.simpleName -> {
-                    function.requireSuspending(false)
-                    MethodDescriptor.MethodType.SERVER_STREAMING
-                }
                 ClientStream::class.simpleName -> {
                     function.requireSuspending(true)
                     MethodDescriptor.MethodType.CLIENT_STREAMING
+                }
+                ServerStream::class.simpleName -> {
+                    function.requireSuspending(false)
+                    MethodDescriptor.MethodType.SERVER_STREAMING
                 }
                 BidiStream::class.simpleName -> {
                     function.requireSuspending(false)
