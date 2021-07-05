@@ -28,9 +28,11 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
         addClass {
             markAsGenerated()
 
+            addSuperinterface(service.className)
             superclass(AbstractCoroutineStub::class.asTypeName().parameterizedBy(ClassName(packageName, name)))
                 .addSuperclassConstructorParameter("$CHANNEL_PARAM, $CALL_OPTIONS_PARAM")
 
+            // Primary constructor (private)
             // Primary constructor (private)
             FunSpec.constructorBuilder()
                 .addModifiers(KModifier.PRIVATE)
@@ -44,7 +46,7 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                 .build()
                 .let(::primaryConstructor)
 
-            // Service descriptor val
+            // Service descriptor val (to be merged into constructor)
             PropertySpec.builder(DESCRIPTOR_PARAM, service.descriptorClassName)
                 .addModifiers(KModifier.PRIVATE)
                 .mutable(false)
@@ -98,8 +100,6 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
 
             // Implement surrogate service methods
             service.methods.forEach(::overrideServiceMethod)
-
-            addSuperinterface(service.className)
         }
     }
 }
@@ -108,48 +108,27 @@ private fun TypeSpec.Builder.overrideServiceMethod(method: ServiceMethodDefiniti
     addFunction(method.declaredName, KModifier.OVERRIDE) {
         markAsGenerated()
 
-        val callType: String
-        when (method.methodType) {
-            UNARY -> {
-                callType = "unaryRpc"
-                addModifiers(KModifier.SUSPEND)
+        if (method.isSuspending) addModifiers(KModifier.SUSPEND)
 
-                addParameter(method.request.first, method.request.second)
-                returns(method.returnType)
-            }
-            CLIENT_STREAMING -> {
-                callType = "clientStreamingRpc"
-                addModifiers(KModifier.SUSPEND)
+        addParameter(method.requestName, method.requestType)
+        returns(method.returnType)
 
-                addParameter(method.request.first, FlowClassName.parameterizedBy(method.request.second))
-                returns(method.returnType)
-            }
-            SERVER_STREAMING -> {
-                callType = "serverStreamingRpc"
-
-                addParameter(method.request.first, method.request.second)
-                returns(FlowClassName.parameterizedBy(method.returnType))
-            }
-            BIDI_STREAMING -> {
-                callType = "bidiStreamingRpc"
-
-                addParameter(method.request.first, FlowClassName.parameterizedBy(method.request.second))
-                returns(FlowClassName.parameterizedBy(method.returnType))
-            }
-            UNKNOWN -> reportError(method, "Member type cannot be unknown")
+        val builderName: String = when (method.methodType) {
+            UNARY -> "unaryRpc"
+            CLIENT_STREAMING -> "clientStreamingRpc"
+            SERVER_STREAMING -> "serverStreamingRpc"
+            BIDI_STREAMING -> "bidiStreamingRpc"
+            UNKNOWN -> reportError(method, "Unknown method type")
         }
 
         val body = CodeBlock.builder().add(
             "%T.%L($CHANNEL_PARAM, $DESCRIPTOR_PARAM.%L, %L, $CALL_OPTIONS_PARAM)",
             ClientCalls::class, // Contains helper builders
-            callType, // The appropriate method to call from ClientCalls
+            builderName, // The appropriate method to call from ClientCalls
             method.declaredName, // The descriptor `val` for this method
-            method.request.first // Pass in the method's argument (request)
+            method.requestName // Pass in the method's argument (request)
         ).build()
 
-        if (!method.returnsUnit)
-            addCode("return %L", body)
-        else
-            addCode(body)
+        if (method.returnType != UnitClassName) addCode("return %L", body) else addCode(body)
     }
 }

@@ -1,10 +1,7 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.SerializationProvider
-import com.github.darvld.krpc.compiler.UnitClassName
-import com.github.darvld.krpc.compiler.addClass
-import com.github.darvld.krpc.compiler.buildFile
-import com.github.darvld.krpc.compiler.markAsGenerated
+import com.github.darvld.krpc.compiler.*
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.squareup.kotlinpoet.*
@@ -55,12 +52,17 @@ fun generateDescriptorContainer(output: OutputStream, service: ServiceDefinition
     }
 }
 
-private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): String {
+private fun TypeSpec.Builder.addMarshaller(typeName: TypeName, method: ServiceMethodDefinition): String {
     // Don't generate a marshaller for Unit
     if (typeName == UnitClassName)
         return "SerializationProvider.UnitSerializer"
 
-    val propName = typeName.marshallerPropName
+    val propName = when (typeName) {
+        is ClassName -> typeName.marshallerPropName
+        is ParameterizedTypeName -> typeName.rawType.marshallerPropName
+        else -> reportError(method, "Unable to generate marshaller for type $typeName")
+    }
+
 
     // Avoid re-generating the same marshaller
     propertySpecs.find { it.name == propName }?.let { return propName }
@@ -83,16 +85,18 @@ private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): String {
     return propName
 }
 
-private fun TypeSpec.Builder.addServiceMethodDescriptor(
-    definition: ServiceMethodDefinition
-) {
-    val requestType = definition.request.second
-    val responseType = definition.returnType
+private fun TypeSpec.Builder.addServiceMethodDescriptor(method: ServiceMethodDefinition) {
+    val requestType = method.requestType.let {
+        if (it is ParameterizedTypeName) it.typeArguments.single() else it
+    }
+    val returnType = method.returnType.let {
+        if (it is ParameterizedTypeName) it.typeArguments.single() else it
+    }
 
     val type = MethodDescriptor::class.asTypeName()
-        .parameterizedBy(requestType, responseType)
+        .parameterizedBy(requestType, returnType)
 
-    PropertySpec.builder(definition.declaredName, type)
+    PropertySpec.builder(method.declaredName, type)
         .addKdoc(
             """
             |A generated [MethodDescriptor] for the [%L] service method.
@@ -100,7 +104,7 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
             |This descriptor is used by generated client and server implementations. It should not be
             |used in general code.
             |""".trimMargin(),
-            definition.declaredName
+            method.declaredName
         )
         .markAsGenerated()
         .mutable(false)
@@ -113,12 +117,15 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
                 |    .setResponseMarshaller(%L)
                 |    .build()
                 |""".trimMargin(),
-            requestType,
-            responseType,
-            definition.methodName, // The "official" name for this method in the GRPC definition
-            "MethodDescriptor.MethodType.${definition.methodType.name}", // The appropriate enum entry
-            addMarshaller(requestType),
-            addMarshaller(responseType)
+            // Type arguments (newBuilder<T1, T2>)
+            requestType, returnType,
+            // The "official" name for this method in the GRPC definition (setFullMethodName)
+            method.methodName,
+            // The appropriate enum entry (setType) TODO: Can we pass the enum constant instead?
+            "MethodDescriptor.MethodType.${method.methodType.name}",
+            // The names of the generated marshallers (setRequestMarshaller/setResponseMarshaller)
+            addMarshaller(requestType, method),
+            addMarshaller(returnType, method)
         )
         .build()
         .let(::addProperty)

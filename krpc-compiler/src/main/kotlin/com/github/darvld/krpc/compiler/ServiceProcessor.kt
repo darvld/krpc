@@ -4,7 +4,10 @@ import com.github.darvld.krpc.Service
 import com.github.darvld.krpc.compiler.generators.generateClientImplementation
 import com.github.darvld.krpc.compiler.generators.generateDescriptorContainer
 import com.github.darvld.krpc.compiler.generators.generateServiceProviderBase
-import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.validate
 
@@ -59,9 +62,3 @@ class ServiceProcessor(private val environment: SymbolProcessorEnvironment) : Sy
     }
 }
 
-/**Provider used as an entry point for [ServiceProcessor]. Required by KSP to instantiate the processor.*/
-class ServiceProcessorProvider : SymbolProcessorProvider {
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return ServiceProcessor(environment)
-    }
-}

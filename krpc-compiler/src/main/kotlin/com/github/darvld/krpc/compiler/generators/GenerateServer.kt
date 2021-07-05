@@ -6,7 +6,6 @@ import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.squareup.kotlinpoet.*
-import io.grpc.MethodDescriptor
 import io.grpc.MethodDescriptor.MethodType.*
 import io.grpc.ServerServiceDefinition
 import io.grpc.kotlin.AbstractCoroutineServerImpl
