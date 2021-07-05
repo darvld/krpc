@@ -1,5 +1,6 @@
 package com.github.darvld.krpc.compiler.model
 
+import com.github.darvld.krpc.BidiStream
 import com.github.darvld.krpc.UnaryCall
 import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.resolveAsClassName
@@ -23,6 +24,7 @@ class UnaryMethod(
     methodType = UNARY
 ) {
     companion object {
+        /**The simple name of the [UnaryCall] annotation.*/
         val AnnotationName = UnaryCall::class.simpleName!!
 
         /**Extracts a [UnaryMethod] from a function [declaration] given the corresponding [UnaryCall] annotation.*/

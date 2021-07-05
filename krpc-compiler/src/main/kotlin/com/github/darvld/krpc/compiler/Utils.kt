@@ -36,7 +36,7 @@ fun PropertySpec.Builder.markAsGenerated(): PropertySpec.Builder {
     }
 }
 
-
+/**Returns a [ClassName] constructed from this symbol's package name and simple name.*/
 fun KSType.asClassName(): ClassName {
     return ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
 }

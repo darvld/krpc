@@ -1,5 +1,6 @@
 package com.github.darvld.krpc.compiler.model
 
+import com.github.darvld.krpc.BidiStream
 import com.github.darvld.krpc.ServerStream
 import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.reportError
@@ -26,6 +27,7 @@ class ServerStreamMethod(
     methodType = SERVER_STREAMING
 ) {
     companion object {
+        /**The simple name of the [ServerStream] annotation.*/
         val AnnotationName = ServerStream::class.simpleName!!
 
         /**Extracts a [ServerStreamMethod] from a function [declaration] given the corresponding [ServerStream] annotation.*/

@@ -23,6 +23,7 @@ class BidiStreamMethod(
     methodType = BIDI_STREAMING
 ) {
     companion object {
+        /**The simple name of the [BidiStream] annotation.*/
         val AnnotationName = BidiStream::class.simpleName!!
 
         /**Extracts a [BidiStreamMethod] from a function [declaration] given the corresponding [BidiStream] annotation.*/
