@@ -23,6 +23,7 @@ addMethod(
                implementation = ::%L
             )
         )
+        
 """
 
 /**Code block body used for the server descriptor builder.*/
