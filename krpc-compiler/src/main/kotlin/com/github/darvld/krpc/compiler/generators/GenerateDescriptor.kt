@@ -92,7 +92,7 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
     val type = MethodDescriptor::class.asTypeName()
         .parameterizedBy(requestType, responseType)
 
-    PropertySpec.builder(definition.methodName, type)
+    PropertySpec.builder(definition.declaredName, type)
         .addKdoc(
             """
             |A generated [MethodDescriptor] for the [%L] service method.
@@ -113,9 +113,12 @@ private fun TypeSpec.Builder.addServiceMethodDescriptor(
                 |    .setResponseMarshaller(%N)
                 |    .build()
                 |""".trimMargin(),
-            requestType, responseType,
-            definition.methodName, "MethodDescriptor.MethodType.${definition.methodType.name}",
-            addMarshaller(requestType), addMarshaller(responseType)
+            requestType,
+            responseType,
+            definition.methodName, // The "official" name for this method in the GRPC definition
+            "MethodDescriptor.MethodType.${definition.methodType.name}", // The appropriate enum entry
+            addMarshaller(requestType),
+            addMarshaller(responseType)
         )
         .build()
         .let(::addProperty)

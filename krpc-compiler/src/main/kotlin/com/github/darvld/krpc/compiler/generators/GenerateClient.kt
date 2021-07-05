@@ -84,7 +84,7 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
             }
 
             for (method in service.methods) {
-                addFunction(method.methodName, KModifier.OVERRIDE, KModifier.SUSPEND) {
+                addFunction(method.declaredName, KModifier.OVERRIDE, KModifier.SUSPEND) {
                     addParameter(method.request.name!!.asString(), method.request.type.resolve().asClassName())
                     returns(method.returnType!!.resolve().asClassName())
 
@@ -97,7 +97,10 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                     }
                     addCode(
                         "return %T.%L(channel, descriptor.%L, %L, callOptions)",
-                        ClientCalls::class, callType, method.methodName, method.request.name!!.asString()
+                        ClientCalls::class, // Contains helper builders
+                        callType, // The appropriate method to call from ClientCalls
+                        method.declaredName, // The descriptor `val` for this method
+                        method.request.name!!.asString() // Pass in the method's argument (request)
                     )
                 }
             }

@@ -12,14 +12,14 @@ import com.google.devtools.ksp.visitor.KSEmptyVisitor
 import io.grpc.MethodDescriptor
 
 /**Function visitor used by [ServiceVisitor] to extract service method definitions from annotated members inside
- * a @Service interface.
+ * a @Service interface. The data passed in when visiting a declaration is the name of the service.
  *
  * This class should only be used to visit [KSFunctionDeclaration] nodes. Visiting any other type of node will throw
  * [IllegalStateException].
  *
  * @see ServiceVisitor
  * @see ServiceProcessor*/
-class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
+class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
 
     /**Throws [IllegalStateException] with the given [message] and signalling [inFunction] as the source of the problem.*/
     private fun reportError(inFunction: KSFunctionDeclaration, message: String): Nothing {
@@ -34,11 +34,11 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
             reportError(this, "Unary and ClientStream rpc methods must be marked with the suspend modifier.")
     }
 
-    override fun defaultHandler(node: KSNode, data: Unit): ServiceMethodDefinition {
+    override fun defaultHandler(node: KSNode, data: String): ServiceMethodDefinition {
         throw IllegalStateException("MethodVisitor should only be used to visit function declarations")
     }
 
-    override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): ServiceMethodDefinition {
+    override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: String): ServiceMethodDefinition {
         // Signature check
         if (function.parameters.size != 1) reportError(function, "Service methods must have exactly one parameter")
         if (function.returnType == null) reportError(function, "Service methods must declare a return type.")
@@ -79,7 +79,7 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
 
         return ServiceMethodDefinition(
             declaredName = function.simpleName.getShortName(),
-            methodName = methodName,
+            methodName = "$data/$methodName",
             returnType = function.returnType,
             request = function.parameters.singleOrNull()
                 ?: reportError(function, "Service methods must have a single parameter."),

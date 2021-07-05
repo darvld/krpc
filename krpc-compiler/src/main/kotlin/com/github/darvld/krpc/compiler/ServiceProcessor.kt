@@ -33,7 +33,7 @@ class ServiceProcessor(private val environment: SymbolProcessorEnvironment) : Sy
                 service.packageName,
                 service.descriptorName
             ).use { stream ->
-                resolver.generateDescriptorContainer(stream, service)
+                generateDescriptorContainer(stream, service)
             }
 
             // Generate the abstract service provider base class

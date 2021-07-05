@@ -93,7 +93,7 @@ private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
             ADD_METHOD_CODE_BLOCK.trimMargin(),
             serverCalls,
             definitionBuilderName,
-            it.methodName,
+            it.declaredName,
             it.declaredName
         )
     }.build()

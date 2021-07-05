@@ -52,7 +52,7 @@ class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
 
         // Generate method definitions
         val methods = classDeclaration.getDeclaredFunctions().filter { it.validate() }.map {
-            it.accept(methodVisitor, Unit)
+            it.accept(methodVisitor, serviceName)
         }
 
         return ServiceDefinition(
