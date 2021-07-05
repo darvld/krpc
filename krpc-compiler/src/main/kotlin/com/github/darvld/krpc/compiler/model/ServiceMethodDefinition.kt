@@ -16,7 +16,7 @@ data class ServiceMethodDefinition(
     /**Return type of the method.*/
     val returnType: ClassName,
     /**The request parameter, required by GRPC.*/
-    val request: KSValueParameter,
+    val request: Pair<String, ClassName>,
     /**The type of rpc call this method represents.*/
     val methodType: MethodDescriptor.MethodType
 ) {

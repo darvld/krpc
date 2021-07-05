@@ -83,7 +83,7 @@ private fun TypeSpec.Builder.addMarshaller(typeName: ClassName): PropertySpec {
 private fun TypeSpec.Builder.addServiceMethodDescriptor(
     definition: ServiceMethodDefinition
 ) {
-    val requestType = definition.request.type.resolve().asClassName()
+    val requestType = definition.request.second
     val responseType = definition.returnType
 
     val type = MethodDescriptor::class.asTypeName()

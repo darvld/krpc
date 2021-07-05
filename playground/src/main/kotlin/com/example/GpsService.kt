@@ -1,8 +1,6 @@
 package com.example
 
-import com.github.darvld.krpc.ServerStream
-import com.github.darvld.krpc.Service
-import com.github.darvld.krpc.UnaryCall
+import com.github.darvld.krpc.*
 import kotlinx.coroutines.flow.Flow
 
 @Service
@@ -13,6 +11,12 @@ interface GpsService {
     @UnaryCall
     suspend fun fireAndForget(message: String)
 
+    @ClientStream
+    suspend fun sendStream(messages: Flow<String>)
+
     @ServerStream
     fun getStream(message: String): Flow<String>
+
+    @BidiStream
+    fun sendAndReceive(messages: Flow<String>): Flow<String>
 }

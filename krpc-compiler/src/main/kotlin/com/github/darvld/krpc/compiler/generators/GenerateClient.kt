@@ -91,21 +91,34 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                 addFunction(method.declaredName, KModifier.OVERRIDE) {
                     markAsGenerated()
 
-                    addParameter(method.request.name!!.asString(), method.request.type.resolve().asClassName())
+                    val callType: String
+                    when (method.methodType) {
+                        UNARY -> {
+                            callType = "unaryRpc"
+                            addModifiers(KModifier.SUSPEND)
 
-                    if (method.methodType == SERVER_STREAMING || method.methodType == BIDI_STREAMING) {
-                        returns(Flow::class.asClassName().parameterizedBy(method.returnType))
-                    } else {
-                        addModifiers(KModifier.SUSPEND)
-                        returns(method.returnType)
-                    }
+                            addParameter(method.request.first, method.request.second)
+                            returns(method.returnType)
+                        }
+                        CLIENT_STREAMING -> {
+                            callType = "clientStreamingRpc"
+                            addModifiers(KModifier.SUSPEND)
 
+                            addParameter(method.request.first, FlowClassName.parameterizedBy(method.request.second))
+                            returns(method.returnType)
+                        }
+                        SERVER_STREAMING -> {
+                            callType = "serverStreamingRpc"
 
-                    val callType = when (method.methodType) {
-                        UNARY -> "unaryRpc"
-                        CLIENT_STREAMING -> "clientStreamingRpc"
-                        SERVER_STREAMING -> "serverStreamingRpc"
-                        BIDI_STREAMING -> "bidiStreamingRpc"
+                            addParameter(method.request.first, method.request.second)
+                            returns(Flow::class.asClassName().parameterizedBy(method.returnType))
+                        }
+                        BIDI_STREAMING -> {
+                            callType = "bidiStreamingRpc"
+
+                            addParameter(method.request.first, FlowClassName.parameterizedBy(method.request.second))
+                            returns(Flow::class.asClassName().parameterizedBy(method.returnType))
+                        }
                         UNKNOWN -> reportError(method, "Member type cannot be unknown")
                     }
 
@@ -114,7 +127,7 @@ fun generateClientImplementation(output: OutputStream, service: ServiceDefinitio
                         ClientCalls::class, // Contains helper builders
                         callType, // The appropriate method to call from ClientCalls
                         method.declaredName, // The descriptor `val` for this method
-                        method.request.name!!.asString() // Pass in the method's argument (request)
+                        method.request.first // Pass in the method's argument (request)
                     ).build()
 
                     if (!method.returnsUnit)
