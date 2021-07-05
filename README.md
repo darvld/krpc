@@ -1,6 +1,6 @@
 # Kotlin RPC
 
-KRPC is a more idiomatic variant of [GRPC-Kotlin](https://github.com/grpc/grpc-kotlin). Its goal is to provide more
+KRPC is a more idiomatic variant of [gRPC-Kotlin](https://github.com/grpc/grpc-kotlin). Its goal is to provide more
 concise ways to define and consume GRPC services in Kotlin, without using Protoc, while integrating seamlessly with the
 kotlinx.serialization API.
 
