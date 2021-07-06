@@ -17,4 +17,7 @@ package com.github.darvld.krpc
  * */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)
-annotation class ClientStream(val methodName: String = "")
+annotation class ClientStream(
+    /**Sets the rpc method's name within gRPC. This argument takes precedence over the declared method name.*/
+    val methodName: String = ""
+)
