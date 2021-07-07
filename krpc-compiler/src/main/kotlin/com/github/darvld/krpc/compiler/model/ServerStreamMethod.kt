@@ -1,6 +1,5 @@
 package com.github.darvld.krpc.compiler.model
 
-import com.github.darvld.krpc.BidiStream
 import com.github.darvld.krpc.ServerStream
 import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.reportError
@@ -17,8 +16,8 @@ class ServerStreamMethod(
     declaredName: String,
     methodName: String,
     requestName: String,
-    override val returnType: ParameterizedTypeName,
-    override val requestType: ClassName
+    override val requestType: ClassName,
+    override val returnType: ParameterizedTypeName
 ) : ServiceMethodDefinition(
     declaredName,
     methodName,
@@ -29,23 +28,23 @@ class ServerStreamMethod(
     companion object {
         /**The simple name of the [ServerStream] annotation.*/
         val AnnotationName = ServerStream::class.simpleName!!
-
+        
         /**Extracts a [ServerStreamMethod] from a function [declaration] given the corresponding [ServerStream] annotation.*/
         fun extractFrom(declaration: KSFunctionDeclaration, annotation: KSAnnotation): ServerStreamMethod {
             val methodName = declaration.extractMethodName(annotation)
             val returnType = declaration.returnType?.resolveParameterizedName {
                 it.declaration.simpleName.asString() == "Flow"
             } ?: reportError(declaration, "ServerStream rpc methods must return a Flow of a serializable type.")
-
+            
             val (requestName, requestType) = declaration.extractRequestInfo { it.resolveAsClassName() }
                 ?: "unit" to UnitClassName
-
+            
             return ServerStreamMethod(
                 declaredName = declaration.simpleName.asString(),
                 methodName,
                 requestName,
-                returnType,
-                requestType
+                requestType,
+                returnType
             )
         }
     }

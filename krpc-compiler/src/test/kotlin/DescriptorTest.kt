@@ -124,13 +124,7 @@ class DescriptorTest : CompilerTest() {
     @Test
     fun `generates unary method descriptor`() {
         val service = serviceDefinition()
-        val method = UnaryMethod(
-            declaredName = "unary",
-            methodName = "officialName",
-            requestName = "request",
-            requestType = Int::class.asClassName(),
-            returnType = String::class.asClassName()
-        )
+        val method = unaryMethod()
         
         val generated = temporaryFolder.newObject("Descriptor") {
             // Placeholder properties so the marshallers are not generated (already covered by another test)
@@ -164,7 +158,7 @@ class DescriptorTest : CompilerTest() {
               @Generated("com.github.darvld.krpc")
               public val unary: MethodDescriptor<Int, String> = MethodDescriptor
                 .newBuilder<Int, String>()
-                .setFullMethodName("TestService/officialName")
+                .setFullMethodName("TestService/unaryTest")
                 .setType(MethodDescriptor.MethodType.UNARY)
                 .setRequestMarshaller(intMarshaller)
                 .setResponseMarshaller(stringMarshaller)
@@ -182,13 +176,7 @@ class DescriptorTest : CompilerTest() {
         // for any streaming method is that the generator must extract the Flow type parameter.
         
         val service = serviceDefinition()
-        val method = BidiStreamMethod(
-            declaredName = "bidiStream",
-            methodName = "officialName",
-            requestName = "request",
-            requestType = FlowClassName.parameterizedBy(Int::class.asClassName()),
-            returnType = FlowClassName.parameterizedBy(String::class.asClassName())
-        )
+        val method = bidiStreamMethod()
         
         val generated = temporaryFolder.newObject("Descriptor") {
             // Placeholder properties so the marshallers are not generated (already covered by another test)
@@ -222,7 +210,7 @@ class DescriptorTest : CompilerTest() {
               @Generated("com.github.darvld.krpc")
               public val bidiStream: MethodDescriptor<Int, String> = MethodDescriptor
                 .newBuilder<Int, String>()
-                .setFullMethodName("TestService/officialName")
+                .setFullMethodName("TestService/bidiStreamTest")
                 .setType(MethodDescriptor.MethodType.BIDI_STREAMING)
                 .setRequestMarshaller(intMarshaller)
                 .setResponseMarshaller(stringMarshaller)

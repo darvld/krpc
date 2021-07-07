@@ -13,8 +13,8 @@ class BidiStreamMethod(
     declaredName: String,
     methodName: String,
     requestName: String,
-    override val returnType: ParameterizedTypeName,
     override val requestType: ParameterizedTypeName,
+    override val returnType: ParameterizedTypeName,
 ) : ServiceMethodDefinition(
     declaredName,
     methodName,
@@ -44,8 +44,8 @@ class BidiStreamMethod(
                 declaredName = declaration.simpleName.asString(),
                 methodName,
                 requestName,
-                returnType,
-                requestType
+                requestType,
+                returnType
             )
         }
     }
