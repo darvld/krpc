@@ -37,7 +37,7 @@ return ServerServiceDefinition.builder(%S).run {
  * The class is written to a file using [output].
  *
  * @see generateClientImplementation
- * @see generateDescriptorContainer*/
+ * @see generateServiceDescriptor*/
 fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition) {
     buildFile(service.packageName, service.providerName, output) {
         addClass {

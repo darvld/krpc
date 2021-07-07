@@ -14,8 +14,8 @@ class UnaryMethod(
     declaredName: String,
     methodName: String,
     requestName: String,
-    override val returnType: ClassName,
-    override val requestType: ClassName
+    override val requestType: ClassName,
+    override val returnType: ClassName
 ) : ServiceMethodDefinition(
     declaredName,
     methodName,
@@ -39,8 +39,8 @@ class UnaryMethod(
                 declaredName = declaration.simpleName.asString(),
                 methodName,
                 requestName,
-                returnType,
-                requestType
+                requestType,
+                returnType
             )
         }
     }

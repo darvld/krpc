@@ -22,10 +22,10 @@ sealed class ServiceMethodDefinition(
     /**The rpc type of this method.*/
     val methodType: MethodDescriptor.MethodType
 ) {
-    /**Return type of the method.*/
-    abstract val returnType: TypeName
     /**The type of the method's request (parameter).*/
     abstract val requestType: TypeName
+    /**Return type of the method.*/
+    abstract val returnType: TypeName
 
     /**Returns the full gRPC name for this method, consisting of the name of the service and the name of the method itself.*/
     fun qualifiedName(serviceName: String): String {

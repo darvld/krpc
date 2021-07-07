@@ -2,7 +2,7 @@ package com.github.darvld.krpc.compiler
 
 import com.github.darvld.krpc.Service
 import com.github.darvld.krpc.compiler.generators.generateClientImplementation
-import com.github.darvld.krpc.compiler.generators.generateDescriptorContainer
+import com.github.darvld.krpc.compiler.generators.generateServiceDescriptor
 import com.github.darvld.krpc.compiler.generators.generateServiceProviderBase
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
@@ -17,8 +17,10 @@ import com.google.devtools.ksp.validate
  * corresponding descriptor, provider and client.
  *
  * @see ServiceVisitor*/
-class ServiceProcessor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
-    private val serviceVisitor = ServiceVisitor()
+class ServiceProcessor(
+    private val environment: SymbolProcessorEnvironment,
+    private val serviceVisitor: ServiceVisitor = ServiceVisitor()
+) : SymbolProcessor {
 
     // TODO: Support incremental processing adding the appropriate source dependencies
     override fun process(resolver: Resolver): List<KSAnnotated> {
@@ -35,7 +37,7 @@ class ServiceProcessor(private val environment: SymbolProcessorEnvironment) : Sy
                 service.packageName,
                 service.descriptorName
             ).use { stream ->
-                generateDescriptorContainer(stream, service)
+                generateServiceDescriptor(stream, service)
             }
 
             // Generate the abstract service provider base class

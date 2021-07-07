@@ -22,7 +22,7 @@ private const val DESCRIPTOR_PARAM = "descriptor"
  * The generated class is *final*.
  *
  * @see generateServiceProviderBase
- * @see generateDescriptorContainer*/
+ * @see generateServiceDescriptor*/
 fun generateClientImplementation(output: OutputStream, service: ServiceDefinition) {
     buildFile(withPackage = service.packageName, fileName = service.clientName, output) {
         addClass {
