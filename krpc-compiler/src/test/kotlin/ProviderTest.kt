@@ -43,6 +43,27 @@ class ProviderTest : CompilerTest() {
         )
     }
     
+    @Test
+    fun `bidi stream`() {
+        val method = bidiStreamMethod()
+        val definition = serviceDefinition(methods = listOf(method))
+        
+        val generated = temporaryFolder.newFile()
+        generated.outputStream().use { stream -> generateServiceProviderBase(stream, definition) }
+        
+        generated.assertContentEquals(
+            providerWithMethods(
+                """addMethod(
+                  ServerCalls.bidiStreamingServerMethodDefinition(
+                    context,
+                    definitions.bidiStream,
+                    ::bidiStream
+                  )
+                )"""
+            )
+        )
+    }
+    
     private fun providerWithMethods(block: String): String {
         return """
         package com.test.generated
