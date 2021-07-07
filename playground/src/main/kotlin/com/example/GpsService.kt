@@ -9,7 +9,7 @@ interface GpsService {
     suspend fun doSomething(message: String): Int
 
     @UnaryCall
-    suspend fun fireAndForget(message: String)
+    suspend fun fireAndForget()
 
     @ClientStream
     suspend fun sendStream(messages: Flow<String>)
