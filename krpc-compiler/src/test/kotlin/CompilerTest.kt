@@ -2,10 +2,16 @@ import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.squareup.kotlinpoet.TypeSpec
+import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
 
 abstract class CompilerTest {
+    
+    @Rule
+    @JvmField
+    val temporaryFolder = TemporaryFolder()
+    
     protected fun serviceDefinition(
         declaredName: String = "TestService",
         packageName: String = "com.test.generated",

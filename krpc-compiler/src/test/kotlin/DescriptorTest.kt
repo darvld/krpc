@@ -8,16 +8,10 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
-import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TemporaryFolder
 import kotlin.test.assertEquals
 
 class DescriptorTest : CompilerTest() {
-    
-    @Rule
-    @JvmField
-    val temporaryFolder = TemporaryFolder()
     
     @Test
     fun `generates descriptor skeleton`() {
