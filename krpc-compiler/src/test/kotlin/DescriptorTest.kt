@@ -168,12 +168,14 @@ class DescriptorTest : CompilerTest() {
                * used in general code.
                */
               @Generated("com.github.darvld.krpc")
-              public val unary: MethodDescriptor<Int, String> = MethodDescriptor.newBuilder<Int, String>()
-                    .setFullMethodName("TestService/officialName")
-                    .setType(MethodDescriptor.MethodType.UNARY)
-                    .setRequestMarshaller(intMarshaller)
-                    .setResponseMarshaller(stringMarshaller)
-                    .build()
+              public val unary: MethodDescriptor<Int, String> = MethodDescriptor
+                .newBuilder<Int, String>()
+                .setFullMethodName("TestService/officialName")
+                .setType(MethodDescriptor.MethodType.UNARY)
+                .setRequestMarshaller(intMarshaller)
+                .setResponseMarshaller(stringMarshaller)
+                .build()
+
             }
             
             """.trimIndent()
