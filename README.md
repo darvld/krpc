@@ -1,7 +1,5 @@
 # Kotlin RPC
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0daed6e6ecde4ca098eb1df22400da0e)](https://app.codacy.com/gh/darvld/krpc?utm_source=github.com&utm_medium=referral&utm_content=darvld/krpc&utm_campaign=Badge_Grade_Settings)
-
 KRPC is a more idiomatic variant of [gRPC-Kotlin](https://github.com/grpc/grpc-kotlin). Its goal is to provide more
 concise ways to define and consume GRPC services in Kotlin, without using Protoc, while integrating seamlessly with the
 kotlinx.serialization API.
