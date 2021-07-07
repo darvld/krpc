@@ -80,38 +80,6 @@ class DescriptorTest : CompilerTest() {
         )
     }
     
-    /* TODO: Support generic request/response types
-    @Test
-    fun `generates marshaller for generic type`() {
-        val generated = temporaryFolder.newObject("Marshallers") {
-            getOrAddMarshaller(Int::class.asTypeName())
-        }
-    
-        generated.assertContentEquals(
-            """
-            package com.test.generated
-            
-            import io.grpc.MethodDescriptor
-            import javax.`annotation`.processing.Generated
-            import kotlin.Int
-            import kotlinx.serialization.serializer
-            
-            public object Marshallers {
-              /**
-               * A generated [MethodDescriptor.Marshaller] obtained using the `serializationProvider`
-               * constructor parameter.
-               */
-              @Generated("com.github.darvld.krpc")
-              private val intMarshaller: MethodDescriptor.Marshaller<Int> =
-                  serializationProvider.marshallerFor(serializer())
-            }
-            
-            """.trimIndent()
-        )
-    }
-
- */
-    
     @Test
     fun `uses built-in marshaller for Unit`() {
         val generated = temporaryFolder.newObject("Marshallers") {
