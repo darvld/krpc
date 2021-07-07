@@ -3,6 +3,7 @@ import com.github.darvld.krpc.compiler.generators.generateServiceProviderBase
 import org.junit.Test
 
 class ProviderTest : CompilerTest() {
+    
     @Test
     fun `unary method`() {
         val definition = serviceDefinition(methods = listOf(unaryMethod()))

@@ -1,12 +1,7 @@
-import com.github.darvld.krpc.compiler.FlowClassName
 import com.github.darvld.krpc.compiler.generators.addServiceMethodDescriptor
 import com.github.darvld.krpc.compiler.generators.generateServiceDescriptor
 import com.github.darvld.krpc.compiler.generators.getOrAddMarshaller
-import com.github.darvld.krpc.compiler.model.BidiStreamMethod
-import com.github.darvld.krpc.compiler.model.UnaryMethod
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import org.junit.Test
 import kotlin.test.assertEquals

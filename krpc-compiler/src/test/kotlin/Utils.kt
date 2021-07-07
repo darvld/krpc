@@ -60,15 +60,6 @@ fun File?.assertExists(mustBeFile: Boolean = true, message: String? = null) {
     assertTrue(exists() && isFile == mustBeFile, "$message (file does not exist)")
 }
 
-/**Asserts that the contents of this source file are the same as the [expected] file.*/
-fun File.assertSourceEquals(
-    @Language("kotlin")
-    expected: File,
-    message: String? = null
-) {
-    assertEquals(expected.readText(), readText(), message)
-}
-
 /**Asserts that the content of this file match the [expected] string.*/
 fun File.assertContentEquals(@Language("kotlin") expected: String, message: String? = null) {
     assertEquals(expected, readText(), message)
