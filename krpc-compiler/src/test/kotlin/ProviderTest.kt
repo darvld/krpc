@@ -1,6 +1,5 @@
 import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.generators.generateServiceProviderBase
-import org.intellij.lang.annotations.Language
 import org.junit.Test
 
 class ProviderTest : CompilerTest() {
@@ -10,7 +9,17 @@ class ProviderTest : CompilerTest() {
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream -> generateServiceProviderBase(stream, definition) }
         
-        generated.assertContentEquals(Model.UNARY_METHOD.trimIndent())
+        generated.assertContentEquals(
+            providerWithMethods(
+                """addMethod(
+                  ServerCalls.unaryServerMethodDefinition(
+                    context,
+                    definitions.unary,
+                    ::unary
+                  )
+                )"""
+            )
+        )
     }
     
     @Test
@@ -21,80 +30,47 @@ class ProviderTest : CompilerTest() {
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream -> generateServiceProviderBase(stream, definition) }
         
-        generated.assertContentEquals(Model.UNARY_EVENT.trimIndent())
-    }
-}
-
-private object Model {
-    @Language("kotlin")
-    const val UNARY_METHOD = """
-    package com.test.generated
-
-    import com.github.darvld.krpc.SerializationProvider
-    import io.grpc.ServerServiceDefinition
-    import io.grpc.kotlin.AbstractCoroutineServerImpl
-    import io.grpc.kotlin.ServerCalls
-    import javax.`annotation`.processing.Generated
-    import kotlin.coroutines.CoroutineContext
-    import kotlin.coroutines.EmptyCoroutineContext
-    
-    @Generated("com.github.darvld.krpc")
-    public abstract class TestServiceProvider(
-      serializationProvider: SerializationProvider,
-      context: CoroutineContext = EmptyCoroutineContext
-    ) : AbstractCoroutineServerImpl(context), TestService {
-      private val definitions: TestServiceDescriptor = TestServiceDescriptor(serializationProvider)
-    
-      @Generated("com.github.darvld.krpc")
-      public final override fun bindService(): ServerServiceDefinition =
-          ServerServiceDefinition.builder("TestService").run {
-            addMethod(
-              ServerCalls.unaryServerMethodDefinition(
-                context,
-                definitions.unary,
-                ::unary
-              )
+        generated.assertContentEquals(
+            providerWithMethods(
+                """addMethod(
+                  ServerCalls.unaryServerMethodDefinition(
+                    context,
+                    definitions.unary,
+                    implementation = { unary() }
+                  )
+                )"""
             )
-
-            build()    
-          }
+        )
     }
-
-    """
     
-    @Language("kotlin")
-    const val UNARY_EVENT = """
-    package com.test.generated
-
-    import com.github.darvld.krpc.SerializationProvider
-    import io.grpc.ServerServiceDefinition
-    import io.grpc.kotlin.AbstractCoroutineServerImpl
-    import io.grpc.kotlin.ServerCalls
-    import javax.`annotation`.processing.Generated
-    import kotlin.coroutines.CoroutineContext
-    import kotlin.coroutines.EmptyCoroutineContext
+    private fun providerWithMethods(block: String): String {
+        return """
+        package com.test.generated
     
-    @Generated("com.github.darvld.krpc")
-    public abstract class TestServiceProvider(
-      serializationProvider: SerializationProvider,
-      context: CoroutineContext = EmptyCoroutineContext
-    ) : AbstractCoroutineServerImpl(context), TestService {
-      private val definitions: TestServiceDescriptor = TestServiceDescriptor(serializationProvider)
+        import com.github.darvld.krpc.SerializationProvider
+        import io.grpc.ServerServiceDefinition
+        import io.grpc.kotlin.AbstractCoroutineServerImpl
+        import io.grpc.kotlin.ServerCalls
+        import javax.`annotation`.processing.Generated
+        import kotlin.coroutines.CoroutineContext
+        import kotlin.coroutines.EmptyCoroutineContext
+        
+        @Generated("com.github.darvld.krpc")
+        public abstract class TestServiceProvider(
+          serializationProvider: SerializationProvider,
+          context: CoroutineContext = EmptyCoroutineContext
+        ) : AbstractCoroutineServerImpl(context), TestService {
+          private val definitions: TestServiceDescriptor = TestServiceDescriptor(serializationProvider)
+        
+          @Generated("com.github.darvld.krpc")
+          public final override fun bindService(): ServerServiceDefinition =
+              ServerServiceDefinition.builder("TestService").run {
+                $block
     
-      @Generated("com.github.darvld.krpc")
-      public final override fun bindService(): ServerServiceDefinition =
-          ServerServiceDefinition.builder("TestService").run {
-            addMethod(
-              ServerCalls.unaryServerMethodDefinition(
-                context,
-                definitions.unary,
-                implementation = { unary() }
-              )
-            )
-
-            build()    
-          }
+                build()    
+              }
+        }
+    
+        """.trimIndent()
     }
-
-    """
 }
