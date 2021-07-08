@@ -8,7 +8,7 @@ class ProviderTest : CompilerTest() {
         val definition = serviceDefinition(methods = listOf(unaryMethod()))
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream -> generateServiceProviderBase(stream, definition) }
-        
+
         generated.assertContentEquals(
             providerWithMethods(
                 """addMethod(
@@ -21,15 +21,15 @@ class ProviderTest : CompilerTest() {
             )
         )
     }
-    
+
     @Test
     fun `unary method no request nor response`() {
         val method = unaryMethod(requestName = "unit", requestType = UnitClassName, returnType = UnitClassName)
         val definition = serviceDefinition(methods = listOf(method))
-        
+
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream -> generateServiceProviderBase(stream, definition) }
-        
+
         generated.assertContentEquals(
             providerWithMethods(
                 """addMethod(
@@ -42,15 +42,15 @@ class ProviderTest : CompilerTest() {
             )
         )
     }
-    
+
     @Test
     fun `bidi stream`() {
         val method = bidiStreamMethod()
         val definition = serviceDefinition(methods = listOf(method))
-        
+
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream -> generateServiceProviderBase(stream, definition) }
-        
+
         generated.assertContentEquals(
             providerWithMethods(
                 """addMethod(
@@ -63,7 +63,7 @@ class ProviderTest : CompilerTest() {
             )
         )
     }
-    
+
     private fun providerWithMethods(block: String): String {
         return """
         package com.test.generated

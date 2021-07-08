@@ -28,17 +28,17 @@ class ServerStreamMethod(
     companion object {
         /**The simple name of the [ServerStream] annotation.*/
         val AnnotationName = ServerStream::class.simpleName!!
-        
+
         /**Extracts a [ServerStreamMethod] from a function [declaration] given the corresponding [ServerStream] annotation.*/
         fun extractFrom(declaration: KSFunctionDeclaration, annotation: KSAnnotation): ServerStreamMethod {
             val methodName = declaration.extractMethodName(annotation)
             val returnType = declaration.returnType?.resolveParameterizedName {
                 it.declaration.simpleName.asString() == "Flow"
             } ?: reportError(declaration, "ServerStream rpc methods must return a Flow of a serializable type.")
-            
+
             val (requestName, requestType) = declaration.extractRequestInfo { it.resolveAsClassName() }
                 ?: "unit" to UnitClassName
-            
+
             return ServerStreamMethod(
                 declaredName = declaration.simpleName.asString(),
                 methodName,

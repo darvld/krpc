@@ -24,10 +24,10 @@ fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition
     buildFile(service.packageName, service.providerName, output) {
         addClass {
             markAsGenerated()
-            
+
             addModifiers(KModifier.ABSTRACT)
             superclass(AbstractCoroutineServerImpl::class)
-            
+
             // Primary constructor
             FunSpec.constructorBuilder()
                 .addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
@@ -38,13 +38,13 @@ fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition
                 )
                 .build()
                 .let(::primaryConstructor)
-            
+
             // Pass the coroutine context to the parent class
             addSuperclassConstructorParameter("context")
-            
+
             // Implement the service interface
             addSuperinterface(ClassName(service.packageName, service.declaredName))
-            
+
             // The method definitions are pulled from here
             val helperType = ClassName(service.packageName, service.descriptorName)
             PropertySpec.builder("definitions", helperType)
@@ -53,7 +53,7 @@ fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition
                 .initializer("%T($SERIALIZATION_PROVIDER_PARAM)", helperType)
                 .build()
                 .let(::addProperty)
-            
+
             // The `bindService` implementation
             addServiceBinder(service)
         }
@@ -62,7 +62,7 @@ fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition
 
 private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
     val serverCalls = ServerCalls::class
-    
+
     val methodBuilders = service.methods.fold(CodeBlock.builder()) { block, method ->
         val definitionBuilderName = when (method.methodType) {
             UNARY -> "unaryServerMethodDefinition"
@@ -71,13 +71,13 @@ private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
             BIDI_STREAMING -> "bidiStreamingServerMethodDefinition"
             UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
         }
-        
+
         val implementation = if (method.requestType == UnitClassName) {
             "implementation = { ${method.declaredName}() }"
         } else {
             "::${method.declaredName}"
         }
-        
+
         block.addStatement(
             """ 
             addMethod(
@@ -93,7 +93,7 @@ private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
             implementation
         )
     }.build()
-    
+
     FunSpec.builder("bindService")
         .markAsGenerated()
         .addModifiers(KModifier.FINAL, KModifier.OVERRIDE)
