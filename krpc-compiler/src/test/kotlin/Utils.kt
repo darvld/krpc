@@ -34,7 +34,7 @@ fun compile(workingDirectory: File, vararg source: SourceFile): KotlinCompilatio
         assertTrue(source.isNotEmpty(), "No sources were provided for compilation")
         sources = source.toList()
         workingDir = workingDirectory
-        
+
         symbolProcessorProviders = listOf(ServiceProcessorProvider())
         kspIncremental = false
         inheritClassPath = true
@@ -55,7 +55,7 @@ fun File?.assertExists(mustBeFile: Boolean = true, message: String? = null) {
     contract {
         returns() implies (this@assertExists != null)
     }
-    
+
     assertNotNull(this, "$message (file is null)")
     assertTrue(exists() && isFile == mustBeFile, "$message (file does not exist)")
 }

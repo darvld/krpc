@@ -7,14 +7,14 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class DescriptorTest : CompilerTest() {
-    
+
     @Test
     fun `generates descriptor skeleton`() {
         val definition = serviceDefinition()
         val file = temporaryFolder.newFile()
-        
+
         file.outputStream().use { stream -> generateServiceDescriptor(stream, definition) }
-        
+
         assertEquals(
             actual = file.readText(),
             expected = """
@@ -39,13 +39,13 @@ class DescriptorTest : CompilerTest() {
             """.trimIndent()
         )
     }
-    
+
     @Test
     fun `generates marshaller for simple type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
             getOrAddMarshaller(Int::class.asTypeName())
         }
-        
+
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -68,13 +68,13 @@ class DescriptorTest : CompilerTest() {
             """.trimIndent()
         )
     }
-    
+
     @Test
     fun `uses built-in marshaller for Unit`() {
         val generated = temporaryFolder.newObject("Marshallers") {
             assertEquals("SerializationProvider.UnitMarshaller", getOrAddMarshaller(Unit::class.asTypeName()))
         }
-        
+
         // Should not generate any marshallers
         generated.assertContentEquals(
             """
@@ -85,14 +85,14 @@ class DescriptorTest : CompilerTest() {
             """.trimIndent()
         )
     }
-    
+
     @Test
     fun `re-uses existing marshaller for same type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
             getOrAddMarshaller(Int::class.asTypeName())
             assertEquals("intMarshaller", getOrAddMarshaller(Int::class.asTypeName()))
         }
-        
+
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -115,20 +115,20 @@ class DescriptorTest : CompilerTest() {
             """.trimIndent()
         )
     }
-    
+
     @Test
     fun `generates unary method descriptor`() {
         val service = serviceDefinition()
         val method = unaryMethod()
-        
+
         val generated = temporaryFolder.newObject("Descriptor") {
             // Placeholder properties so the marshallers are not generated (already covered by another test)
             addProperty(PropertySpec.builder("intMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringMarshaller", Nothing::class).initializer("TODO()").build())
-            
+
             addServiceMethodDescriptor(service, method)
         }
-        
+
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -164,23 +164,23 @@ class DescriptorTest : CompilerTest() {
             """.trimIndent()
         )
     }
-    
+
     @Test
     fun `generates bidi stream method descriptor`() {
         // NOTE: This case covers both client-stream and server-stream, since the only special requirement
         // for any streaming method is that the generator must extract the Flow type parameter.
-        
+
         val service = serviceDefinition()
         val method = bidiStreamMethod()
-        
+
         val generated = temporaryFolder.newObject("Descriptor") {
             // Placeholder properties so the marshallers are not generated (already covered by another test)
             addProperty(PropertySpec.builder("intMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringMarshaller", Nothing::class).initializer("TODO()").build())
-            
+
             addServiceMethodDescriptor(service, method)
         }
-        
+
         generated.assertContentEquals(
             """
             package com.test.generated

@@ -14,11 +14,11 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 
 abstract class CompilerTest {
-    
+
     @Rule
     @JvmField
     val temporaryFolder = TemporaryFolder()
-    
+
     protected fun serviceDefinition(
         declaredName: String = "TestService",
         packageName: String = "com.test.generated",
@@ -34,7 +34,7 @@ abstract class CompilerTest {
         providerName,
         methods
     )
-    
+
     protected fun unaryMethod(
         declaredName: String = "unary",
         methodName: String = "${declaredName}Test",
@@ -48,7 +48,7 @@ abstract class CompilerTest {
         requestType,
         returnType
     )
-    
+
     protected fun bidiStreamMethod(
         declaredName: String = "bidiStream",
         methodName: String = "${declaredName}Test",
@@ -62,7 +62,7 @@ abstract class CompilerTest {
         requestType,
         returnType
     )
-    
+
     protected inline fun TemporaryFolder.newObject(
         name: String,
         block: TypeSpec.Builder.() -> Unit
