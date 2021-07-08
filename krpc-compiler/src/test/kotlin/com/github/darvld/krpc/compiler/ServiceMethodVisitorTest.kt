@@ -27,7 +27,7 @@ import kotlin.test.fail
 class ServiceMethodVisitorTest {
     private val methodVisitor = ServiceMethodVisitor()
     
-    private fun singleMethodExtractionProvider(
+    private fun singleMethodProcessorProvider(
         declaredName: String,
         includeTopLevel: Boolean = true,
         testBlock: KSFunctionDeclaration.() -> Unit
@@ -65,7 +65,7 @@ class ServiceMethodVisitorTest {
             """
         )
         
-        val processorProvider = singleMethodExtractionProvider(declaredName) {
+        val processorProvider = singleMethodProcessorProvider(declaredName) {
             accept(methodVisitor, Unit).assertIs<T>().let {
                 it.declaredName shouldBe declaredName
                 it.methodName shouldBe methodName
@@ -99,7 +99,7 @@ class ServiceMethodVisitorTest {
             """
         )
         
-        val provider = singleMethodExtractionProvider(declaredName) {
+        val provider = singleMethodProcessorProvider(declaredName) {
             accept(methodVisitor, Unit)
         }
         

@@ -22,7 +22,6 @@ class ServiceProcessor(
     private val serviceVisitor: ServiceVisitor = ServiceVisitor()
 ) : SymbolProcessor {
 
-    // TODO: Support incremental processing adding the appropriate source dependencies
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotated = resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
         val unprocessed = annotated.filterNot { it.validate() }
