@@ -28,6 +28,8 @@ class BidiStreamMethod(
 
         /**Extracts a [BidiStreamMethod] from a function [declaration] given the corresponding [BidiStream] annotation.*/
         fun extractFrom(declaration: KSFunctionDeclaration, annotation: KSAnnotation): BidiStreamMethod {
+            declaration.requireSuspending(false, "BidiStream rpc methods must not be marked with 'suspend' modifier.")
+            
             val methodName = declaration.extractMethodName(annotation)
             val returnType = declaration.returnType?.resolveParameterizedName {
                 it.declaration.simpleName.asString() == "Flow"

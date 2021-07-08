@@ -7,6 +7,7 @@ import com.tschuchort.compiletesting.kspIncremental
 import com.tschuchort.compiletesting.symbolProcessorProviders
 import org.intellij.lang.annotations.Language
 import java.io.File
+import java.io.OutputStream
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.test.assertEquals
@@ -22,10 +23,6 @@ val KotlinCompilation.Result.kspGeneratedSources: List<File>
         .mapNotNull { if (it.isFile) it else null }
         .toList()
 
-@Suppress("nothing_to_inline")
-inline fun <T> T?.assertNotNull(message: String? = null): T = assertNotNull(this, message)
-
-
 
 /**Compiles the [source] files provided and returns the result after applying the symbol processor provider by [processorProvider].*/
 fun compile(processorProvider: SymbolProcessorProvider, vararg source: SourceFile): KotlinCompilation.Result {
@@ -33,11 +30,22 @@ fun compile(processorProvider: SymbolProcessorProvider, vararg source: SourceFil
         assertTrue(source.isNotEmpty(), "No sources were provided for compilation")
         sources = source.toList()
         
+        messageOutputStream = OutputStream.nullOutputStream()
+        verbose = false
+        
         symbolProcessorProviders = listOf(processorProvider)
         kspIncremental = false
+        
         inheritClassPath = true
-        verbose = false
     }.compile()
+}
+
+inline fun <R> whenCompiling(
+    using: SymbolProcessorProvider,
+    vararg source: SourceFile,
+    block: KotlinCompilation.Result.() -> R
+): R {
+    return compile(using, *source).run(block)
 }
 
 /**Finds a file by its [name] (without extension) or fails the test with [message].*/
