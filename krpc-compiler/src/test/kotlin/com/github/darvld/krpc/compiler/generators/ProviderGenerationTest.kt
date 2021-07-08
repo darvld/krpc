@@ -1,8 +1,10 @@
+package com.github.darvld.krpc.compiler.generators
+
 import com.github.darvld.krpc.compiler.UnitClassName
-import com.github.darvld.krpc.compiler.generators.generateServiceProviderBase
+import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import org.junit.Test
 
-class ProviderTest : CompilerTest() {
+class ProviderGenerationTest : CodeGenerationTest() {
     
     @Test
     fun `unary method`() {
@@ -89,7 +91,7 @@ class ProviderTest : CompilerTest() {
               ServerServiceDefinition.builder("TestService").run {
                 $block
     
-                build()    
+                build()
               }
         }
     

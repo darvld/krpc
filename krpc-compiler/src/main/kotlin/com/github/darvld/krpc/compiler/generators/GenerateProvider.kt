@@ -79,7 +79,7 @@ private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
         }
 
         block.addStatement(
-            """ 
+            """
             addMethod(
                 %T.%L(
                   context,
@@ -101,7 +101,7 @@ private fun TypeSpec.Builder.addServiceBinder(service: ServiceDefinition) {
             """
             return ServerServiceDefinition.builder(%S).run {
                   %L
-                  build()    
+                  build()
                 }
             """.trimIndent(),
             service.serviceName, methodBuilders

@@ -1,9 +1,10 @@
+package com.github.darvld.krpc.compiler.generators
+
 import com.github.darvld.krpc.compiler.UnitClassName
-import com.github.darvld.krpc.compiler.generators.generateClientImplementation
-import com.github.darvld.krpc.compiler.generators.overrideServiceMethod
+import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import org.junit.Test
 
-class ClientTest : CompilerTest() {
+class ClientGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates client skeleton`() {
         val definition = serviceDefinition()

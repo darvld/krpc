@@ -1,3 +1,5 @@
+package com.github.darvld.krpc.compiler.generators
+
 import com.github.darvld.krpc.compiler.FlowClassName
 import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.model.BidiStreamMethod
@@ -13,7 +15,7 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
 
-abstract class CompilerTest {
+abstract class CodeGenerationTest {
 
     @Rule
     @JvmField

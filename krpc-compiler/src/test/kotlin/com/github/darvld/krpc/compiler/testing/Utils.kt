@@ -1,4 +1,6 @@
-import com.github.darvld.krpc.compiler.ServiceProcessorProvider
+package com.github.darvld.krpc.compiler.testing
+
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import com.tschuchort.compiletesting.kspIncremental
@@ -11,31 +13,27 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-internal val KotlinCompilation.Result.workingDir: File
+val KotlinCompilation.Result.workingDir: File
     get() = checkNotNull(outputDirectory.parentFile)
 
-internal val KotlinCompilation.Result.kspGeneratedSources: List<File>
+val KotlinCompilation.Result.kspGeneratedSources: List<File>
     get() = workingDir.resolve("ksp/sources/")
         .walk()
         .mapNotNull { if (it.isFile) it else null }
         .toList()
 
-internal val testSourcesRoot: File = File("src/test/resources/testCases")
+@Suppress("nothing_to_inline")
+inline fun <T> T?.assertNotNull(message: String? = null): T = assertNotNull(this, message)
 
-internal fun resolveTestResource(path: String): File {
-    return testSourcesRoot.resolve(path)
-}
 
-/**Compiles the [source] files provided and returns the result.
- *
- * This method automatically adds the [ServiceProcessorProvider] to the compiler.*/
-fun compile(workingDirectory: File, vararg source: SourceFile): KotlinCompilation.Result {
+
+/**Compiles the [source] files provided and returns the result after applying the symbol processor provider by [processorProvider].*/
+fun compile(processorProvider: SymbolProcessorProvider, vararg source: SourceFile): KotlinCompilation.Result {
     return KotlinCompilation().apply {
         assertTrue(source.isNotEmpty(), "No sources were provided for compilation")
         sources = source.toList()
-        workingDir = workingDirectory
-
-        symbolProcessorProviders = listOf(ServiceProcessorProvider())
+        
+        symbolProcessorProviders = listOf(processorProvider)
         kspIncremental = false
         inheritClassPath = true
         verbose = false
@@ -55,7 +53,7 @@ fun File?.assertExists(mustBeFile: Boolean = true, message: String? = null) {
     contract {
         returns() implies (this@assertExists != null)
     }
-
+    
     assertNotNull(this, "$message (file is null)")
     assertTrue(exists() && isFile == mustBeFile, "$message (file does not exist)")
 }
@@ -71,6 +69,7 @@ fun KotlinCompilation.Result.assertGeneratedKspSources() {
 }
 
 /**Asserts that the compilation's exit code matches the given [code].*/
-fun KotlinCompilation.Result.assertExitCode(code: KotlinCompilation.ExitCode) {
+fun KotlinCompilation.Result.assertExitCode(code: KotlinCompilation.ExitCode): KotlinCompilation.Result {
     assertEquals(code, exitCode, "Exit code $exitCode does not match the expected: $code")
+    return this
 }

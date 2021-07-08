@@ -1,12 +1,12 @@
-import com.github.darvld.krpc.compiler.generators.addServiceMethodDescriptor
-import com.github.darvld.krpc.compiler.generators.generateServiceDescriptor
-import com.github.darvld.krpc.compiler.generators.getOrAddMarshaller
+package com.github.darvld.krpc.compiler.generators
+
+import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.asTypeName
 import org.junit.Test
 import kotlin.test.assertEquals
 
-class DescriptorTest : CompilerTest() {
+class DescriptorGenerationTest : CodeGenerationTest() {
 
     @Test
     fun `generates descriptor skeleton`() {
