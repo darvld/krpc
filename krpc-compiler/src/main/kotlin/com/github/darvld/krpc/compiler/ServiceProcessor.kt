@@ -1,10 +1,7 @@
 package com.github.darvld.krpc.compiler
 
 import com.github.darvld.krpc.Service
-import com.github.darvld.krpc.compiler.generators.generateClientImplementation
-import com.github.darvld.krpc.compiler.generators.generateServiceDescriptor
-import com.github.darvld.krpc.compiler.generators.generateServiceProviderBase
-import com.google.devtools.ksp.processing.Dependencies
+import com.github.darvld.krpc.compiler.generators.ServiceComponentGenerator
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -17,48 +14,25 @@ import com.google.devtools.ksp.validate
  * corresponding descriptor, provider and client.
  *
  * @see ServiceVisitor*/
-class ServiceProcessor(
+internal class ServiceProcessor(
     private val environment: SymbolProcessorEnvironment,
-    private val serviceVisitor: ServiceVisitor = ServiceVisitor()
+    private val serviceVisitor: ServiceVisitor = ServiceVisitor(),
+    private val generators: List<ServiceComponentGenerator>,
 ) : SymbolProcessor {
-
+    
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotated = resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
         val unprocessed = annotated.filterNot { it.validate() }
-
+        
         annotated.forEach { declaration ->
             // Extract the service definition using the visitor
             val service = declaration.accept(serviceVisitor, Unit)
-
-            // Each class annotated as a Service gets a helper class with method descriptors and marshallers
-            environment.codeGenerator.createNewFile(
-                Dependencies(true),
-                service.packageName,
-                service.descriptorName
-            ).use { stream ->
-                generateServiceDescriptor(stream, service)
+            
+            for (generator in generators) {
+                generator.generate(environment.codeGenerator, service)
             }
-
-            // Generate the abstract service provider base class
-            environment.codeGenerator.createNewFile(
-                Dependencies(true),
-                service.packageName,
-                service.providerName
-            ).use { stream ->
-                generateServiceProviderBase(stream, service)
-            }
-
-            // Generate the client
-            environment.codeGenerator.createNewFile(
-                Dependencies(false),
-                service.packageName,
-                service.clientName
-            ).use { stream ->
-                generateClientImplementation(stream, service)
-            }
-
         }
-
+        
         return unprocessed.toList()
     }
 }

@@ -5,11 +5,13 @@ import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import org.junit.Test
 
 class ClientGenerationTest : CodeGenerationTest() {
+    private val clientGenerator = ClientGenerator()
+    
     @Test
     fun `generates client skeleton`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newFile()
-        generated.outputStream().use { stream -> generateClientImplementation(stream, definition) }
+        generated.outputStream().use { stream -> clientGenerator.generateClientImplementation(stream, definition) }
         
         generated.assertContentEquals(
             """
@@ -56,7 +58,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
             
-            overrideServiceMethod(unaryMethod())
+            addFunction(clientGenerator.buildServiceMethodOverride(unaryMethod()))
         }
         
         generated.assertContentEquals(
@@ -84,9 +86,13 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
             
-            overrideServiceMethod(
-                unaryMethod(requestName = "unit", requestType = UnitClassName, returnType = UnitClassName)
-            )
+            clientGenerator.buildServiceMethodOverride(
+                unaryMethod(
+                    requestName = "unit",
+                    requestType = UnitClassName,
+                    returnType = UnitClassName
+                )
+            ).let(::addFunction)
         }
         
         generated.assertContentEquals(
@@ -114,7 +120,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
             
-            overrideServiceMethod(bidiStreamMethod())
+            addFunction(clientGenerator.buildServiceMethodOverride(bidiStreamMethod()))
         }
         
         generated.assertContentEquals(

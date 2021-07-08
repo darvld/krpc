@@ -1,14 +1,11 @@
 package com.github.darvld.krpc.compiler.generators
 
-import com.github.darvld.krpc.compiler.FlowClassName
 import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.model.BidiStreamMethod
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.github.darvld.krpc.compiler.model.UnaryMethod
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.ParameterizedTypeName
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import org.junit.Rule
@@ -16,11 +13,11 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 
 abstract class CodeGenerationTest {
-
+    
     @Rule
     @JvmField
     val temporaryFolder = TemporaryFolder()
-
+    
     protected fun serviceDefinition(
         declaredName: String = "TestService",
         packageName: String = "com.test.generated",
@@ -36,13 +33,13 @@ abstract class CodeGenerationTest {
         providerName,
         methods
     )
-
+    
     protected fun unaryMethod(
         declaredName: String = "unary",
         methodName: String = "${declaredName}Test",
         requestName: String = "request",
-        requestType: ClassName = Int::class.asClassName(),
-        returnType: ClassName = String::class.asClassName()
+        requestType: TypeName = IntClassName,
+        returnType: TypeName = StringClassName
     ): UnaryMethod = UnaryMethod(
         declaredName,
         methodName,
@@ -50,13 +47,13 @@ abstract class CodeGenerationTest {
         requestType,
         returnType
     )
-
+    
     protected fun bidiStreamMethod(
         declaredName: String = "bidiStream",
         methodName: String = "${declaredName}Test",
         requestName: String = "request",
-        requestType: ParameterizedTypeName = FlowClassName.parameterizedBy(Int::class.asClassName()),
-        returnType: ParameterizedTypeName = FlowClassName.parameterizedBy(String::class.asClassName())
+        requestType: TypeName = IntClassName,
+        returnType: TypeName = StringClassName
     ) = BidiStreamMethod(
         declaredName,
         methodName,
@@ -64,7 +61,7 @@ abstract class CodeGenerationTest {
         requestType,
         returnType
     )
-
+    
     protected inline fun TemporaryFolder.newObject(
         name: String,
         block: TypeSpec.Builder.() -> Unit
@@ -76,5 +73,10 @@ abstract class CodeGenerationTest {
             }
         }
         return file
+    }
+    
+    companion object {
+        val IntClassName by lazy { Int::class.asClassName() }
+        val StringClassName by lazy { String::class.asClassName() }
     }
 }

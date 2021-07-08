@@ -22,13 +22,12 @@ sealed class ServiceMethodDefinition(
     /**Whether the method needs to be marked with the 'suspend' modifier.*/
     val isSuspending: Boolean,
     /**The rpc type of this method.*/
-    val methodType: MethodDescriptor.MethodType
-) {
+    val methodType: MethodDescriptor.MethodType,
     /**The type of the method's request (parameter).*/
-    abstract val requestType: TypeName
-    
+    val requestType: TypeName,
     /**Return type of the method.*/
-    abstract val returnType: TypeName
+    val responseType: TypeName
+) {
     
     /**Returns the full gRPC name for this method, consisting of the name of the service and the name of the method itself.*/
     fun qualifiedName(serviceName: String): String {

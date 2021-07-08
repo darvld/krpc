@@ -1,20 +1,26 @@
 package com.github.darvld.krpc.compiler.generators
 
+import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.asTypeName
+import io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING
+import io.grpc.MethodDescriptor.MethodType.UNARY
 import org.junit.Test
 import kotlin.test.assertEquals
 
 class DescriptorGenerationTest : CodeGenerationTest() {
-
+    private val descriptorGenerator = DescriptorGenerator()
+    
     @Test
     fun `generates descriptor skeleton`() {
         val definition = serviceDefinition()
         val file = temporaryFolder.newFile()
-
-        file.outputStream().use { stream -> generateServiceDescriptor(stream, definition) }
-
+        
+        file.outputStream().use { stream ->
+            descriptorGenerator.generateServiceDescriptor(stream, definition)
+        }
+        
         assertEquals(
             actual = file.readText(),
             expected = """
@@ -39,13 +45,13 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             """.trimIndent()
         )
     }
-
+    
     @Test
     fun `generates marshaller for simple type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            getOrAddMarshaller(Int::class.asTypeName())
+            addMarshaller(Int::class.asTypeName())
         }
-
+        
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -68,13 +74,13 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             """.trimIndent()
         )
     }
-
+    
     @Test
     fun `uses built-in marshaller for Unit`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            assertEquals("SerializationProvider.UnitMarshaller", getOrAddMarshaller(Unit::class.asTypeName()))
+            addMarshaller(UnitClassName)
         }
-
+        
         // Should not generate any marshallers
         generated.assertContentEquals(
             """
@@ -85,14 +91,16 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             """.trimIndent()
         )
     }
-
+    
     @Test
     fun `re-uses existing marshaller for same type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            getOrAddMarshaller(Int::class.asTypeName())
-            assertEquals("intMarshaller", getOrAddMarshaller(Int::class.asTypeName()))
+            Int::class.asTypeName().let {
+                addMarshaller(it)
+                addMarshaller(it)
+            }
         }
-
+        
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -115,20 +123,27 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             """.trimIndent()
         )
     }
-
+    
     @Test
     fun `generates unary method descriptor`() {
         val service = serviceDefinition()
         val method = unaryMethod()
-
+        
         val generated = temporaryFolder.newObject("Descriptor") {
             // Placeholder properties so the marshallers are not generated (already covered by another test)
             addProperty(PropertySpec.builder("intMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringMarshaller", Nothing::class).initializer("TODO()").build())
-
-            addServiceMethodDescriptor(service, method)
+            
+            descriptorGenerator.buildMethodDescriptor(
+                name = "unary",
+                methodName = "unaryTest",
+                methodType = UNARY,
+                service.serviceName,
+                method.requestType,
+                method.responseType
+            ).let(::addProperty)
         }
-
+        
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -144,12 +159,6 @@ class DescriptorGenerationTest : CodeGenerationTest() {
 
               public val stringMarshaller: Void = TODO()
 
-              /**
-               * A generated [MethodDescriptor] for the [TestService.unary] method.
-               *
-               * This descriptor is used by generated client and server implementations. It should not be
-               * used in general code.
-               */
               @Generated("com.github.darvld.krpc")
               public val unary: MethodDescriptor<Int, String> = MethodDescriptor
                 .newBuilder<Int, String>()
@@ -164,23 +173,30 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             """.trimIndent()
         )
     }
-
+    
     @Test
     fun `generates bidi stream method descriptor`() {
         // NOTE: This case covers both client-stream and server-stream, since the only special requirement
         // for any streaming method is that the generator must extract the Flow type parameter.
-
+        
         val service = serviceDefinition()
         val method = bidiStreamMethod()
-
+        
         val generated = temporaryFolder.newObject("Descriptor") {
             // Placeholder properties so the marshallers are not generated (already covered by another test)
             addProperty(PropertySpec.builder("intMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringMarshaller", Nothing::class).initializer("TODO()").build())
-
-            addServiceMethodDescriptor(service, method)
+            
+            descriptorGenerator.buildMethodDescriptor(
+                name = "bidiStream",
+                methodName = "bidiStreamTest",
+                methodType = BIDI_STREAMING,
+                service.serviceName,
+                method.requestType,
+                method.responseType
+            ).let(::addProperty)
         }
-
+        
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -196,12 +212,6 @@ class DescriptorGenerationTest : CodeGenerationTest() {
 
               public val stringMarshaller: Void = TODO()
 
-              /**
-               * A generated [MethodDescriptor] for the [TestService.bidiStream] method.
-               *
-               * This descriptor is used by generated client and server implementations. It should not be
-               * used in general code.
-               */
               @Generated("com.github.darvld.krpc")
               public val bidiStream: MethodDescriptor<Int, String> = MethodDescriptor
                 .newBuilder<Int, String>()

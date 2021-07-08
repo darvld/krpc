@@ -112,7 +112,7 @@ class ServiceVisitorTest {
             methodName shouldBe "unary"
             requestName shouldBe "request"
             requestType shouldBe Int::class.asClassName()
-            returnType shouldBe String::class.asClassName()
+            responseType shouldBe String::class.asClassName()
         }
     }
     
@@ -138,7 +138,7 @@ class ServiceVisitorTest {
             methodName shouldBe "unaryCall"
             requestName shouldBe "request"
             requestType shouldBe Int::class.asClassName()
-            returnType shouldBe String::class.asClassName()
+            responseType shouldBe String::class.asClassName()
         }
     }
 }

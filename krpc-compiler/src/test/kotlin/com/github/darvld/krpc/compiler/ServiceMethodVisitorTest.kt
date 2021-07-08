@@ -11,7 +11,6 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
@@ -49,7 +48,7 @@ class ServiceMethodVisitorTest {
         type: MethodDescriptor.MethodType,
         requestName: String = "request",
         requestType: TypeName = Int::class.asTypeName(),
-        returnType: TypeName = String::class.asTypeName(),
+        responseType: TypeName = String::class.asTypeName(),
         suspending: Boolean,
         @Language("kotlin") imports: String = "",
         @Language("kotlin") definitionBlock: String
@@ -72,7 +71,7 @@ class ServiceMethodVisitorTest {
                 it.methodType shouldBe type
                 it.requestName shouldBe requestName
                 it.requestType shouldBe requestType
-                it.returnType shouldBe returnType
+                it.responseType shouldBe responseType
                 it.isSuspending shouldBe suspending
             }
         }
@@ -226,7 +225,7 @@ class ServiceMethodVisitorTest {
             declaredName = "unary",
             methodName = "unaryCall",
             type = UNARY,
-            returnType = UnitClassName,
+            responseType = UnitClassName,
             suspending = true,
             definitionBlock = """
             @UnaryCall("unaryCall")
@@ -241,7 +240,7 @@ class ServiceMethodVisitorTest {
             methodName = "serverStream",
             type = SERVER_STREAMING,
             suspending = false,
-            returnType = FlowClassName.parameterizedBy(String::class.asTypeName()),
+            responseType = String::class.asTypeName(),
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ServerStream("serverStream")
@@ -258,7 +257,7 @@ class ServiceMethodVisitorTest {
             requestName = "unit",
             requestType = UnitClassName,
             suspending = false,
-            returnType = FlowClassName.parameterizedBy(String::class.asTypeName()),
+            responseType = String::class.asTypeName(),
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ServerStream("serverStream")
@@ -273,7 +272,7 @@ class ServiceMethodVisitorTest {
             methodName = "clientStream",
             type = CLIENT_STREAMING,
             suspending = true,
-            requestType = FlowClassName.parameterizedBy(Int::class.asTypeName()),
+            requestType = Int::class.asTypeName(),
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ClientStream("clientStream")
@@ -288,8 +287,8 @@ class ServiceMethodVisitorTest {
             methodName = "clientStream",
             type = CLIENT_STREAMING,
             suspending = true,
-            requestType = FlowClassName.parameterizedBy(Int::class.asClassName()),
-            returnType = UnitClassName,
+            requestType = Int::class.asClassName(),
+            responseType = UnitClassName,
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ClientStream("clientStream")
@@ -303,8 +302,8 @@ class ServiceMethodVisitorTest {
         methodName = "bidiStream",
         type = BIDI_STREAMING,
         suspending = false,
-        requestType = FlowClassName.parameterizedBy(Int::class.asTypeName()),
-        returnType = FlowClassName.parameterizedBy(String::class.asTypeName()),
+        requestType = Int::class.asTypeName(),
+        responseType = String::class.asTypeName(),
         imports = "import kotlinx.coroutines.flow.Flow",
         definitionBlock = """
         @BidiStream("bidiStream")

@@ -1,32 +1,46 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.compiler.UnitClassName
+import com.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.grpc.MethodDescriptor
 
-internal fun TypeSpec.Builder.getOrAddMarshaller(typeName: TypeName): String {
-    // Don't generate a marshaller for Unit
-    if (typeName == UnitClassName) return "SerializationProvider.UnitMarshaller"
-
-    val propName = when (typeName) {
-        is ClassName -> typeName.marshallerPropName
-        is ParameterizedTypeName -> typeName.rawType.marshallerPropName
-        else -> throw IllegalStateException("Unable to generate marshaller for type $typeName")
+internal val TypeName.uniqueSimpleName: String
+    get() {
+        return when (this) {
+            is ClassName -> simpleName
+            is ParameterizedTypeName -> {
+                typeArguments.joinToString("") { it.uniqueSimpleName } + rawType.simpleName
+            }
+            else -> throw UnsupportedOperationException()
+        }
     }
 
-    // Avoid re-generating the same marshaller
-    propertySpecs.find { it.name == propName }?.let { return propName }
+internal val TypeName.marshallerPropName: String
+    get() = if (this == UnitClassName) {
+        "SerializationProvider.UnitMarshaller"
+    } else {
+        "${uniqueSimpleName.replaceFirstChar { it.lowercaseChar() }}Marshaller"
+    }
 
-    addProperty(buildMarshaller(propName, typeName))
-    return propName
+internal fun TypeSpec.Builder.addMarshaller(typeName: TypeName) {
+    // Don't generate a marshaller for Unit
+    if (typeName == UnitClassName) return
+    
+    val propName = typeName.marshallerPropName
+    
+    // Avoid re-generating the same marshaller
+    propertySpecs.find { it.name == propName }?.let { return }
+    
+    addProperty(buildMarshaller(typeName, propName))
 }
 
-internal fun buildMarshaller(name: String, type: TypeName): PropertySpec {
+internal fun buildMarshaller(type: TypeName, name: String = type.marshallerPropName): PropertySpec {
     val marshallerType = MethodDescriptor.Marshaller::class.asTypeName()
         .parameterizedBy(type)
-
+    
     return PropertySpec.builder(name, marshallerType, KModifier.PRIVATE)
         .markAsGenerated()
         .addKdoc(

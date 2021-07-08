@@ -4,11 +4,10 @@ import com.github.darvld.krpc.ClientStream
 import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.reportError
 import com.github.darvld.krpc.compiler.resolveAsClassName
-import com.github.darvld.krpc.compiler.resolveParameterizedName
+import com.github.darvld.krpc.compiler.resolveAsParameterizedName
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.TypeName
 import io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING
 
 /**Contains information about a service method annotated with [ClientStream].*/
@@ -16,14 +15,15 @@ class ClientStreamMethod(
     declaredName: String,
     methodName: String,
     requestName: String,
-    override val requestType: ParameterizedTypeName,
-    override val returnType: ClassName
+    requestType: TypeName,
+    responseType: TypeName
 ) : ServiceMethodDefinition(
     declaredName,
     methodName,
     requestName,
     isSuspending = true,
-    methodType = CLIENT_STREAMING
+    methodType = CLIENT_STREAMING,
+    requestType, responseType
 ) {
     companion object {
         /**The simple name of the [ClientStream] annotation.*/
@@ -34,20 +34,22 @@ class ClientStreamMethod(
             declaration.requireSuspending(true, "ClientStream rpc methods must be marked with 'suspend' modifier.")
             
             val methodName = declaration.extractMethodName(annotation)
-            val returnType = declaration.returnType?.resolveAsClassName() ?: UnitClassName
+            val responseType = declaration.returnType?.resolveAsClassName() ?: UnitClassName
             
-            val (requestName, requestType) = declaration.extractRequestInfo { it.resolveParameterizedName() }
-                ?: reportError(
-                    declaration,
-                    message = "ClientStream rpc methods must declare a Flow of a serializable type as the only parameter."
-                )
+            val (requestName, requestType) = declaration.extractRequestInfo { reference ->
+                // Resolve the request type, which should be a Flow<T>, and extract the 'T' type name.
+                reference.resolveAsParameterizedName()?.typeArguments?.singleOrNull()
+            } ?: reportError(
+                declaration,
+                message = "ClientStream rpc methods must declare a Flow of a serializable type as the only parameter."
+            )
             
             return ClientStreamMethod(
                 declaredName = declaration.simpleName.asString(),
                 methodName,
                 requestName,
                 requestType,
-                returnType
+                responseType
             )
         }
     }
