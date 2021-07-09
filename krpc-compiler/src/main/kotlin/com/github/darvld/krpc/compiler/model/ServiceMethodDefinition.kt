@@ -60,7 +60,7 @@ sealed class ServiceMethodDefinition(
             // For now, only zero or one parameters are allowed
             return parameters.singleOrNull()?.let { param ->
                 val resolvedType = resolver(param.type) ?: return null
-                param.name!!.asString() to (resolvedType)
+                param.name!!.asString() to resolvedType
             }
         }
     }
