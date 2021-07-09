@@ -8,7 +8,7 @@ import com.squareup.kotlinpoet.TypeName
 
 internal fun interface ServiceComponentGenerator {
     fun generate(codeGenerator: CodeGenerator, definition: ServiceDefinition)
-    
+
     companion object {
         val ServiceMethodDefinition.parameterType: TypeName
             get() = if (this is ClientStreamMethod || this is BidiStreamMethod) {
@@ -16,7 +16,7 @@ internal fun interface ServiceComponentGenerator {
             } else {
                 requestType
             }
-        
+
         val ServiceMethodDefinition.returnType: TypeName
             get() = if (this is ServerStreamMethod || this is BidiStreamMethod) {
                 FlowClassName.parameterizedBy(responseType)

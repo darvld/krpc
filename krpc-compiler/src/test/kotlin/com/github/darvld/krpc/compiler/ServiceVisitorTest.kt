@@ -19,7 +19,7 @@ import kotlin.test.fail
 
 class ServiceVisitorTest {
     private val serviceVisitor = ServiceVisitor()
-    
+
     private fun singleServiceProcessorProvider(
         testBlock: KSAnnotated.() -> Unit
     ): SymbolProcessorProvider = SymbolProcessorProvider {
@@ -28,12 +28,12 @@ class ServiceVisitorTest {
                 resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
                     .single()
                     .testBlock()
-                
+
                 return emptyList()
             }
         }
     }
-    
+
     private fun assertExtractionFailsWith(
         errorMessage: String,
         @Language("kotlin") imports: String = "",
@@ -49,15 +49,15 @@ class ServiceVisitorTest {
             $definitionBlock
             """
         )
-        
+
         val provider = singleServiceProcessorProvider { accept(serviceVisitor, Unit) }
-        
+
         whenCompiling(using = provider, source) {
             exitCode shouldBe COMPILATION_ERROR
             messages shouldContain errorMessage
         }
     }
-    
+
     private fun validateServiceExtraction(
         @Language("kotlin") imports: String = "",
         @Language("kotlin") definitionBlock: String,
@@ -73,14 +73,14 @@ class ServiceVisitorTest {
             $definitionBlock
             """
         )
-        
+
         val provider = singleServiceProcessorProvider { accept(serviceVisitor, Unit).validate() }
-        
+
         whenCompiling(using = provider, source) {
             if (exitCode != OK) fail(messages)
         }
     }
-    
+
     @Test
     fun `fails for non-interface declaration`() = assertExtractionFailsWith(
         errorMessage = "Service definitions must be interfaces.",
@@ -89,7 +89,7 @@ class ServiceVisitorTest {
         abstract class TestService
         """.trimIndent()
     )
-    
+
     @Test
     fun `extracts valid service definition`() = validateServiceExtraction(
         definitionBlock = """
@@ -102,11 +102,11 @@ class ServiceVisitorTest {
     ) {
         declaredName shouldBe "TestService"
         packageName shouldBe "com.test.generated"
-        
+
         serviceName shouldBe declaredName
         clientName shouldBe "TestClient"
         providerName shouldBe "TestServiceProvider"
-        
+
         methods.single().run {
             declaredName shouldBe "unary"
             methodName shouldBe "unary"
@@ -115,7 +115,7 @@ class ServiceVisitorTest {
             responseType shouldBe String::class.asClassName()
         }
     }
-    
+
     @Test
     fun `extracts valid service definition with custom names`() = validateServiceExtraction(
         definitionBlock = """
@@ -128,11 +128,11 @@ class ServiceVisitorTest {
     ) {
         declaredName shouldBe "TestService"
         packageName shouldBe "com.test.generated"
-        
+
         serviceName shouldBe "GpsService"
         clientName shouldBe "GpsDevice"
         providerName shouldBe "GpsServer"
-        
+
         methods.single().run {
             declaredName shouldBe "unary"
             methodName shouldBe "unaryCall"

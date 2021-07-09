@@ -29,13 +29,13 @@ fun compile(processorProvider: SymbolProcessorProvider, vararg source: SourceFil
     return KotlinCompilation().apply {
         assertTrue(source.isNotEmpty(), "No sources were provided for compilation")
         sources = source.toList()
-        
+
         messageOutputStream = OutputStream.nullOutputStream()
         verbose = false
-        
+
         symbolProcessorProviders = listOf(processorProvider)
         kspIncremental = false
-        
+
         inheritClassPath = true
     }.compile()
 }
@@ -61,7 +61,7 @@ fun File?.assertExists(mustBeFile: Boolean = true, message: String? = null) {
     contract {
         returns() implies (this@assertExists != null)
     }
-    
+
     assertNotNull(this, "$message (file is null)")
     assertTrue(exists() && isFile == mustBeFile, "$message (file does not exist)")
 }

@@ -11,7 +11,7 @@ internal val FlowClassName by lazy { Flow::class.asClassName() }
 
 /**Resolves this type reference and constructs a [ClassName] from the type's package name and simple name.
  *
- *  This extension does not handle generics, use [resolveParameterizedName] instead.*/
+ *  This extension does not handle generics, use [resolveAsParameterizedName] instead.*/
 internal fun KSTypeReference.resolveAsClassName(): ClassName {
     return resolve().declaration.run {
         ClassName(packageName.asString(), simpleName.asString())
@@ -29,8 +29,8 @@ internal fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName
  * type arguments.*/
 internal fun KSType.asTypeName(): TypeName {
     val baseName = ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
-    
+
     if (arguments.isEmpty()) return baseName
-    
+
     return baseName.parameterizedBy(arguments.map { it.type?.resolve()?.asTypeName() ?: STAR })
 }

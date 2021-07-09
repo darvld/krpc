@@ -2,7 +2,6 @@
 
 package com.github.darvld.krpc.compiler.testing
 
-import com.tschuchort.compiletesting.KotlinCompilation
 import org.jetbrains.kotlin.utils.addToStdlib.assertedCast
 import kotlin.test.assertContains
 import kotlin.test.assertEquals

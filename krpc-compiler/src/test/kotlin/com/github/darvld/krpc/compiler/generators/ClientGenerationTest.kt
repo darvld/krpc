@@ -6,13 +6,13 @@ import org.junit.Test
 
 class ClientGenerationTest : CodeGenerationTest() {
     private val clientGenerator = ClientGenerator()
-    
+
     @Test
     fun `generates client skeleton`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream -> clientGenerator.generateClientImplementation(stream, definition) }
-        
+
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -51,16 +51,16 @@ class ClientGenerationTest : CodeGenerationTest() {
             """.trimIndent()
         )
     }
-    
+
     @Test
     fun `overrides unary method`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
-            
+
             addFunction(clientGenerator.buildServiceMethodOverride(unaryMethod()))
         }
-        
+
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -79,13 +79,13 @@ class ClientGenerationTest : CodeGenerationTest() {
             """.trimIndent()
         )
     }
-    
+
     @Test
     fun `overrides unary method (no request, no response)`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
-            
+
             clientGenerator.buildServiceMethodOverride(
                 unaryMethod(
                     requestName = "unit",
@@ -94,7 +94,7 @@ class ClientGenerationTest : CodeGenerationTest() {
                 )
             ).let(::addFunction)
         }
-        
+
         generated.assertContentEquals(
             """
             package com.test.generated
@@ -113,16 +113,16 @@ class ClientGenerationTest : CodeGenerationTest() {
             """.trimIndent()
         )
     }
-    
+
     @Test
     fun `overrides bidi stream method`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
-            
+
             addFunction(clientGenerator.buildServiceMethodOverride(bidiStreamMethod()))
         }
-        
+
         generated.assertContentEquals(
             """
             package com.test.generated

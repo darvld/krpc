@@ -19,7 +19,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 internal class ServiceProviderGenerator : ServiceComponentGenerator {
-    
+
     override fun generate(codeGenerator: CodeGenerator, definition: ServiceDefinition) {
         codeGenerator.createNewFile(
             Dependencies(true),
@@ -29,15 +29,15 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
             generateServiceProviderBase(stream, definition)
         }
     }
-    
+
     fun generateServiceProviderBase(output: OutputStream, service: ServiceDefinition) {
         buildFile(service.packageName, service.providerName, output) {
             addClass {
                 markAsGenerated()
-                
+
                 addModifiers(KModifier.ABSTRACT)
                 superclass(AbstractCoroutineServerImpl::class)
-                
+
                 // Primary constructor
                 FunSpec.constructorBuilder()
                     .addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
@@ -48,13 +48,13 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                     )
                     .build()
                     .let(::primaryConstructor)
-                
+
                 // Pass the coroutine context to the parent class
                 addSuperclassConstructorParameter("context")
-                
+
                 // Implement the service interface
                 addSuperinterface(ClassName(service.packageName, service.declaredName))
-                
+
                 // The method definitions are pulled from here
                 val helperType = ClassName(service.packageName, service.descriptorName)
                 PropertySpec.builder("definitions", helperType)
@@ -63,13 +63,13 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                     .initializer("%T($SERIALIZATION_PROVIDER_PARAM)", helperType)
                     .build()
                     .let(::addProperty)
-                
+
                 // The `bindService` implementation
                 overrideServiceBinder(service)
             }
         }
     }
-    
+
     private fun TypeSpec.Builder.overrideServiceBinder(service: ServiceDefinition) {
         FunSpec.builder("bindService")
             .markAsGenerated()
@@ -87,11 +87,11 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
             .build()
             .let(::addFunction)
     }
-    
+
     private fun buildServiceBinderFor(service: ServiceDefinition): CodeBlock {
         // Cache this so it isn't resolver in every iteration
         val serverCalls = ServerCalls::class
-        
+
         return service.methods.fold(CodeBlock.builder()) { block, method ->
             val definitionBuilderName = when (method.methodType) {
                 UNARY -> "unaryServerMethodDefinition"
@@ -100,13 +100,13 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                 BIDI_STREAMING -> "bidiStreamingServerMethodDefinition"
                 UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
             }
-            
+
             val implementation = if (method.requestType == UnitClassName) {
                 "implementation = { ${method.declaredName}() }"
             } else {
                 "::${method.declaredName}"
             }
-            
+
             block.addStatement(
                 """
             addMethod(
@@ -123,5 +123,5 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
             )
         }.build()
     }
-    
+
 }

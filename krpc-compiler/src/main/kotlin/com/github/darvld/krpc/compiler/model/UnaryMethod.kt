@@ -26,17 +26,17 @@ class UnaryMethod(
     companion object {
         /**The simple name of the [UnaryCall] annotation.*/
         val AnnotationName = UnaryCall::class.simpleName!!
-        
+
         /**Extracts a [UnaryMethod] from a function [declaration] given the corresponding [UnaryCall] annotation.*/
         fun extractFrom(declaration: KSFunctionDeclaration, annotation: KSAnnotation): UnaryMethod {
             declaration.requireSuspending(true, "UnaryCall rpc methods must be marked with 'suspend' modifier.")
-            
+
             val methodName = declaration.extractMethodName(annotation)
             val returnType = declaration.returnType?.resolveAsClassName() ?: UnitClassName
-            
+
             val (requestName, requestType) = declaration.extractRequestInfo { it.resolveAsClassName() }
                 ?: "unit" to UnitClassName
-            
+
             return UnaryMethod(
                 declaredName = declaration.simpleName.asString(),
                 methodName,

@@ -19,20 +19,20 @@ internal class ServiceProcessor(
     private val serviceVisitor: ServiceVisitor = ServiceVisitor(),
     private val generators: List<ServiceComponentGenerator>,
 ) : SymbolProcessor {
-    
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotated = resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
         val unprocessed = annotated.filterNot { it.validate() }
-        
+
         annotated.forEach { declaration ->
             // Extract the service definition using the visitor
             val service = declaration.accept(serviceVisitor, Unit)
-            
+
             for (generator in generators) {
                 generator.generate(environment.codeGenerator, service)
             }
         }
-        
+
         return unprocessed.toList()
     }
 }

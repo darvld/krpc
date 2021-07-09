@@ -28,14 +28,14 @@ class ClientStreamMethod(
     companion object {
         /**The simple name of the [ClientStream] annotation.*/
         val AnnotationName = ClientStream::class.simpleName!!
-        
+
         /**Extracts a [ClientStreamMethod] from a function [declaration] given the corresponding [ClientStream] annotation.*/
         fun extractFrom(declaration: KSFunctionDeclaration, annotation: KSAnnotation): ClientStreamMethod {
             declaration.requireSuspending(true, "ClientStream rpc methods must be marked with 'suspend' modifier.")
-            
+
             val methodName = declaration.extractMethodName(annotation)
             val responseType = declaration.returnType?.resolveAsClassName() ?: UnitClassName
-            
+
             val (requestName, requestType) = declaration.extractRequestInfo { reference ->
                 // Resolve the request type, which should be a Flow<T>, and extract the 'T' type name.
                 reference.resolveAsParameterizedName()?.typeArguments?.singleOrNull()
@@ -43,7 +43,7 @@ class ClientStreamMethod(
                 declaration,
                 message = "ClientStream rpc methods must declare a Flow of a serializable type as the only parameter."
             )
-            
+
             return ClientStreamMethod(
                 declaredName = declaration.simpleName.asString(),
                 methodName,

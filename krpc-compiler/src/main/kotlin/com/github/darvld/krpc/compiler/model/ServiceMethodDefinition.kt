@@ -28,12 +28,12 @@ sealed class ServiceMethodDefinition(
     /**Return type of the method.*/
     val responseType: TypeName
 ) {
-    
+
     /**Returns the full gRPC name for this method, consisting of the name of the service and the name of the method itself.*/
     fun qualifiedName(serviceName: String): String {
         return "$serviceName/$methodName"
     }
-    
+
     companion object {
         /**Checks that this declaration is marked with the 'suspend' modifier.*/
         fun KSFunctionDeclaration.requireSuspending(required: Boolean, message: String) {
@@ -42,7 +42,7 @@ sealed class ServiceMethodDefinition(
             else if (!required && Modifier.SUSPEND in modifiers)
                 reportError(this, message)
         }
-        
+
         /**Extracts the name of a service method given its declaration and the corresponding [annotation].
          *
          * The method name defined through annotation parameters will be used if present, otherwise the declared
@@ -51,7 +51,7 @@ sealed class ServiceMethodDefinition(
             return annotation.arguments.first().value?.toString()?.takeUnless { it.isBlank() }
                 ?: simpleName.asString()
         }
-        
+
         /**Extract the request information for a method declaration, using [resolver] to obtain the desired [TypeName].
          *
          * Returns a pair containing the parameter name and the resolved type, or null if there are no parameters or

@@ -13,11 +13,11 @@ import org.junit.rules.TemporaryFolder
 import java.io.File
 
 abstract class CodeGenerationTest {
-    
+
     @Rule
     @JvmField
     val temporaryFolder = TemporaryFolder()
-    
+
     protected inline fun TemporaryFolder.newObject(
         name: String,
         block: TypeSpec.Builder.() -> Unit
@@ -30,11 +30,11 @@ abstract class CodeGenerationTest {
         }
         return file
     }
-    
+
     companion object {
         val IntClassName by lazy { Int::class.asClassName() }
         val StringClassName by lazy { String::class.asClassName() }
-    
+
         fun serviceDefinition(
             declaredName: String = "TestService",
             packageName: String = "com.test.generated",
@@ -50,7 +50,7 @@ abstract class CodeGenerationTest {
             providerName,
             methods
         )
-    
+
         fun unaryMethod(
             declaredName: String = "unary",
             methodName: String = "${declaredName}Test",
@@ -64,7 +64,7 @@ abstract class CodeGenerationTest {
             requestType,
             returnType
         )
-    
+
         fun bidiStreamMethod(
             declaredName: String = "bidiStream",
             methodName: String = "${declaredName}Test",

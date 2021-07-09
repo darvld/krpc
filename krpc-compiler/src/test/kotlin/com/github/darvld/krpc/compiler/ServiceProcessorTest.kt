@@ -11,11 +11,11 @@ import kotlin.test.assertEquals
 import kotlin.test.fail
 
 class ServiceProcessorTest {
-    
+
     @Test
     fun `processes valid definition`() {
         val expected = serviceDefinition()
-        
+
         val source = SourceFile.kotlin(
             name = "TestService.kt",
             contents = """
@@ -26,15 +26,15 @@ class ServiceProcessorTest {
             interface TestService
             """
         )
-        
+
         val mockGenerator = ServiceComponentGenerator { _, definition ->
             assertEquals(expected, definition)
         }
-        
+
         val provider = SymbolProcessorProvider {
             ServiceProcessor(it, generators = listOf(mockGenerator))
         }
-        
+
         whenCompiling(provider, source) {
             if (exitCode != OK) fail(messages)
         }

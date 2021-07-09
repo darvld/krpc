@@ -25,7 +25,7 @@ import kotlin.test.fail
 
 class ServiceMethodVisitorTest {
     private val methodVisitor = ServiceMethodVisitor()
-    
+
     private fun singleMethodProcessorProvider(
         declaredName: String,
         includeTopLevel: Boolean = true,
@@ -36,12 +36,12 @@ class ServiceMethodVisitorTest {
                 resolver.getFunctionDeclarationsByName("com.test.generated.$declaredName", includeTopLevel)
                     .single()
                     .testBlock()
-                
+
                 return emptyList()
             }
         }
     }
-    
+
     private inline fun <reified T : ServiceMethodDefinition> validateMethodExtraction(
         declaredName: String,
         methodName: String,
@@ -63,7 +63,7 @@ class ServiceMethodVisitorTest {
             $definitionBlock
             """
         )
-        
+
         val processorProvider = singleMethodProcessorProvider(declaredName) {
             accept(methodVisitor, Unit).assertIs<T>().let {
                 it.declaredName shouldBe declaredName
@@ -75,12 +75,12 @@ class ServiceMethodVisitorTest {
                 it.isSuspending shouldBe suspending
             }
         }
-        
+
         whenCompiling(processorProvider, definition) {
             if (exitCode != OK) fail(messages)
         }
     }
-    
+
     private fun assertExtractionFailsWith(
         errorMessage: String,
         declaredName: String = "invalid",
@@ -97,23 +97,23 @@ class ServiceMethodVisitorTest {
             $definitionBlock
             """
         )
-        
+
         val provider = singleMethodProcessorProvider(declaredName) {
             accept(methodVisitor, Unit)
         }
-        
+
         whenCompiling(using = provider, source) {
             exitCode shouldBe COMPILATION_ERROR
             messages shouldContain errorMessage
         }
     }
-    
+
     @Test
     fun `fails for method without annotations`() = assertExtractionFailsWith(
         errorMessage = "Service methods must provide the corresponding type annotation",
         definitionBlock = "suspend fun invalid(request: Int): String",
     )
-    
+
     @Test
     fun `fails to extract unary call without suspend modifier`() = assertExtractionFailsWith(
         errorMessage = "UnaryCall rpc methods must be marked with 'suspend' modifier",
@@ -122,7 +122,7 @@ class ServiceMethodVisitorTest {
         fun invalid(request: Int): String
         """.trimIndent()
     )
-    
+
     @Test
     fun `fails to extract client stream call without suspend modifier`() = assertExtractionFailsWith(
         errorMessage = "ClientStream rpc methods must be marked with 'suspend' modifier",
@@ -132,7 +132,7 @@ class ServiceMethodVisitorTest {
         fun invalid(request: Flow<Int>): String
         """.trimIndent()
     )
-    
+
     @Test
     fun `fails to extract client stream call with non-flow request`() = assertExtractionFailsWith(
         errorMessage = "ClientStream rpc methods must declare a Flow of a serializable type as the only parameter.",
@@ -142,7 +142,7 @@ class ServiceMethodVisitorTest {
         suspend fun invalid(request: Int): String
         """.trimIndent()
     )
-    
+
     @Test
     fun `fails to extract server stream call with non-flow return type`() = assertExtractionFailsWith(
         errorMessage = "ServerStream rpc methods must return a Flow of a serializable type.",
@@ -151,7 +151,7 @@ class ServiceMethodVisitorTest {
         fun invalid(request: Int): String
         """.trimIndent()
     )
-    
+
     @Test
     fun `fails to extract server stream call with suspend modifier`() = assertExtractionFailsWith(
         errorMessage = "ServerStream rpc methods must not be marked with 'suspend' modifier.",
@@ -161,7 +161,7 @@ class ServiceMethodVisitorTest {
         suspend fun invalid(request: Int): Flow<String>
         """.trimIndent()
     )
-    
+
     @Test
     fun `fails to extract bidi stream call with non-flow request`() = assertExtractionFailsWith(
         errorMessage = "BidiStream rpc methods must declare a Flow of a serializable type as the only parameter.",
@@ -171,7 +171,7 @@ class ServiceMethodVisitorTest {
         fun invalid(request: Int): Flow<String>
         """.trimIndent()
     )
-    
+
     @Test
     fun `fails to extract bidi stream call with non-flow return type`() = assertExtractionFailsWith(
         errorMessage = "BidiStream rpc methods must return a Flow of a serializable type.",
@@ -181,7 +181,7 @@ class ServiceMethodVisitorTest {
         fun invalid(request: Flow<Int>): String
         """.trimIndent()
     )
-    
+
     @Test
     fun `fails to extract bidi stream call with suspend modifier`() = assertExtractionFailsWith(
         errorMessage = "BidiStream rpc methods must not be marked with 'suspend' modifier.",
@@ -191,7 +191,7 @@ class ServiceMethodVisitorTest {
         suspend fun invalid(request: Flow<Int>): Flow<String>
         """.trimIndent()
     )
-    
+
     @Test
     fun `extracts valid unary call definition`() = validateMethodExtraction<UnaryMethod>(
         declaredName = "unary",
@@ -203,7 +203,7 @@ class ServiceMethodVisitorTest {
         suspend fun unary(request: Int): String
         """.trimIndent()
     )
-    
+
     @Test
     fun `extracts valid unary call definition without arguments`() =
         validateMethodExtraction<UnaryMethod>(
@@ -218,7 +218,7 @@ class ServiceMethodVisitorTest {
             suspend fun unary(): String
             """.trimIndent()
         )
-    
+
     @Test
     fun `extracts valid unary call definition without return type`() =
         validateMethodExtraction<UnaryMethod>(
@@ -232,7 +232,7 @@ class ServiceMethodVisitorTest {
             suspend fun unary(request: Int)
             """.trimIndent()
         )
-    
+
     @Test
     fun `extracts valid server stream call definition`() =
         validateMethodExtraction<ServerStreamMethod>(
@@ -247,7 +247,7 @@ class ServiceMethodVisitorTest {
             fun stream(request: Int): Flow<String>
             """.trimIndent()
         )
-    
+
     @Test
     fun `extracts valid server stream call definition without arguments`() =
         validateMethodExtraction<ServerStreamMethod>(
@@ -264,7 +264,7 @@ class ServiceMethodVisitorTest {
             fun stream(): Flow<String>
             """.trimIndent()
         )
-    
+
     @Test
     fun `extracts valid client stream call definition`() =
         validateMethodExtraction<ClientStreamMethod>(
@@ -279,7 +279,7 @@ class ServiceMethodVisitorTest {
             suspend fun stream(request: Flow<Int>): String
             """.trimIndent()
         )
-    
+
     @Test
     fun `extracts valid client stream call definition without return type`() =
         validateMethodExtraction<ClientStreamMethod>(
@@ -295,7 +295,7 @@ class ServiceMethodVisitorTest {
             suspend fun stream(request: Flow<Int>)
             """.trimIndent()
         )
-    
+
     @Test
     fun `extracts valid bidi stream call definition`() = validateMethodExtraction<BidiStreamMethod>(
         declaredName = "stream",

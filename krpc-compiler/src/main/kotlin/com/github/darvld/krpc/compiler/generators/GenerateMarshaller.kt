@@ -28,19 +28,19 @@ internal val TypeName.marshallerPropName: String
 internal fun TypeSpec.Builder.addMarshaller(typeName: TypeName) {
     // Don't generate a marshaller for Unit
     if (typeName == UnitClassName) return
-    
+
     val propName = typeName.marshallerPropName
-    
+
     // Avoid re-generating the same marshaller
     propertySpecs.find { it.name == propName }?.let { return }
-    
+
     addProperty(buildMarshaller(typeName, propName))
 }
 
 internal fun buildMarshaller(type: TypeName, name: String = type.marshallerPropName): PropertySpec {
     val marshallerType = MethodDescriptor.Marshaller::class.asTypeName()
         .parameterizedBy(type)
-    
+
     return PropertySpec.builder(name, marshallerType, KModifier.PRIVATE)
         .markAsGenerated()
         .addKdoc(
