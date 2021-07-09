@@ -6,7 +6,7 @@ import com.google.devtools.ksp.processing.CodeGenerator
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 
-internal interface ServiceComponentGenerator {
+internal fun interface ServiceComponentGenerator {
     fun generate(codeGenerator: CodeGenerator, definition: ServiceDefinition)
     
     companion object {

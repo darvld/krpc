@@ -18,50 +18,6 @@ abstract class CodeGenerationTest {
     @JvmField
     val temporaryFolder = TemporaryFolder()
     
-    protected fun serviceDefinition(
-        declaredName: String = "TestService",
-        packageName: String = "com.test.generated",
-        serviceName: String = declaredName,
-        clientName: String = "TestClient",
-        providerName: String = "TestServiceProvider",
-        methods: List<ServiceMethodDefinition> = emptyList()
-    ): ServiceDefinition = ServiceDefinition(
-        declaredName,
-        packageName,
-        serviceName,
-        clientName,
-        providerName,
-        methods
-    )
-    
-    protected fun unaryMethod(
-        declaredName: String = "unary",
-        methodName: String = "${declaredName}Test",
-        requestName: String = "request",
-        requestType: TypeName = IntClassName,
-        returnType: TypeName = StringClassName
-    ): UnaryMethod = UnaryMethod(
-        declaredName,
-        methodName,
-        requestName,
-        requestType,
-        returnType
-    )
-    
-    protected fun bidiStreamMethod(
-        declaredName: String = "bidiStream",
-        methodName: String = "${declaredName}Test",
-        requestName: String = "request",
-        requestType: TypeName = IntClassName,
-        returnType: TypeName = StringClassName
-    ) = BidiStreamMethod(
-        declaredName,
-        methodName,
-        requestName,
-        requestType,
-        returnType
-    )
-    
     protected inline fun TemporaryFolder.newObject(
         name: String,
         block: TypeSpec.Builder.() -> Unit
@@ -78,5 +34,49 @@ abstract class CodeGenerationTest {
     companion object {
         val IntClassName by lazy { Int::class.asClassName() }
         val StringClassName by lazy { String::class.asClassName() }
+    
+        fun serviceDefinition(
+            declaredName: String = "TestService",
+            packageName: String = "com.test.generated",
+            serviceName: String = declaredName,
+            clientName: String = "TestClient",
+            providerName: String = "TestServiceProvider",
+            methods: List<ServiceMethodDefinition> = emptyList()
+        ): ServiceDefinition = ServiceDefinition(
+            declaredName,
+            packageName,
+            serviceName,
+            clientName,
+            providerName,
+            methods
+        )
+    
+        fun unaryMethod(
+            declaredName: String = "unary",
+            methodName: String = "${declaredName}Test",
+            requestName: String = "request",
+            requestType: TypeName = IntClassName,
+            returnType: TypeName = StringClassName
+        ): UnaryMethod = UnaryMethod(
+            declaredName,
+            methodName,
+            requestName,
+            requestType,
+            returnType
+        )
+    
+        fun bidiStreamMethod(
+            declaredName: String = "bidiStream",
+            methodName: String = "${declaredName}Test",
+            requestName: String = "request",
+            requestType: TypeName = IntClassName,
+            returnType: TypeName = StringClassName
+        ) = BidiStreamMethod(
+            declaredName,
+            methodName,
+            requestName,
+            requestType,
+            returnType
+        )
     }
 }
