@@ -1,8 +1,10 @@
 package com.github.darvld.krpc.compiler.model
 
+import com.github.darvld.krpc.compiler.reportError
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSTypeReference
+import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.TypeName
 import io.grpc.MethodDescriptor
 
@@ -20,12 +22,12 @@ sealed class ServiceMethodDefinition(
     /**Whether the method needs to be marked with the 'suspend' modifier.*/
     val isSuspending: Boolean,
     /**The rpc type of this method.*/
-    val methodType: MethodDescriptor.MethodType
-) {
-    /**Return type of the method.*/
-    abstract val returnType: TypeName
+    val methodType: MethodDescriptor.MethodType,
     /**The type of the method's request (parameter).*/
-    abstract val requestType: TypeName
+    val requestType: TypeName,
+    /**Return type of the method.*/
+    val responseType: TypeName
+) {
 
     /**Returns the full gRPC name for this method, consisting of the name of the service and the name of the method itself.*/
     fun qualifiedName(serviceName: String): String {
@@ -33,6 +35,14 @@ sealed class ServiceMethodDefinition(
     }
 
     companion object {
+        /**Checks that this declaration is marked with the 'suspend' modifier.*/
+        fun KSFunctionDeclaration.requireSuspending(required: Boolean, message: String) {
+            if (required && Modifier.SUSPEND !in modifiers)
+                reportError(this, message)
+            else if (!required && Modifier.SUSPEND in modifiers)
+                reportError(this, message)
+        }
+
         /**Extracts the name of a service method given its declaration and the corresponding [annotation].
          *
          * The method name defined through annotation parameters will be used if present, otherwise the declared

@@ -6,4 +6,13 @@ dependencies {
     implementation project(":krpc-runtime")
     implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
     implementation "com.squareup:kotlinpoet:$kotlinPoetVersion"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "com.github.tschuchortdev:kotlin-compile-testing-ksp:$compileTestingVersion"
+}
+
+sourceSets {
+    all {
+        languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
+    }
 }

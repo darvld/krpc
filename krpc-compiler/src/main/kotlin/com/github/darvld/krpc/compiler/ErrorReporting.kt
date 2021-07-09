@@ -16,6 +16,6 @@ fun reportError(inMethod: ServiceMethodDefinition, message: String): Nothing {
 }
 
 /**Throws [IllegalStateException] with the given [message] and signalling [inClass] as the source of the problem.*/
-fun reportError(inClass: KSClassDeclaration, message: String) {
+fun reportError(inClass: KSClassDeclaration, message: String): Nothing {
     throw IllegalStateException("Error while processing service definition ${inClass.qualifiedName?.asString()}: $message")
 }

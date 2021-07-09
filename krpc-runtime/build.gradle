@@ -10,7 +10,7 @@ dependencies {
 }
 
 sourceSets {
-    main {
+    all {
         languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
     }
 }

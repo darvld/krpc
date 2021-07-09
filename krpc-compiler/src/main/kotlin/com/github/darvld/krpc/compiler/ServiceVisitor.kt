@@ -24,12 +24,15 @@ class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
     }
 
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): ServiceDefinition {
-        if (classDeclaration.classKind != INTERFACE) reportError(classDeclaration, "Service definitions must be interfaces")
+        if (classDeclaration.classKind != INTERFACE) reportError(
+            classDeclaration,
+            "Service definitions must be interfaces."
+        )
 
         // The annotation arguments contain the names for the service, the provider and the client (if specified)
         val annotationArgs = classDeclaration.annotations.find {
             it.shortName.getShortName() == Service::class.simpleName
-        }!!.arguments
+        }?.arguments ?: reportError(classDeclaration, "Service definitions must be annotated with @Service.")
 
         val (service, provider, client) = annotationArgs.map { name ->
             name.value?.toString()?.takeUnless { it.isBlank() }
@@ -44,7 +47,7 @@ class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
 
         // Generate method definitions
         val methods = classDeclaration.getDeclaredFunctions().filter { it.validate() }.map {
-            it.accept(methodVisitor, serviceName)
+            it.accept(methodVisitor, Unit)
         }
 
         return ServiceDefinition(

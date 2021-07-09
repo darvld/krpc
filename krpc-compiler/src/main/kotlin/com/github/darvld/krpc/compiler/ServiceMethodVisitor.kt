@@ -13,13 +13,13 @@ import com.google.devtools.ksp.visitor.KSEmptyVisitor
  *
  * @see ServiceVisitor
  * @see ServiceProcessor*/
-class ServiceMethodVisitor : KSEmptyVisitor<String, ServiceMethodDefinition>() {
+class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
 
-    override fun defaultHandler(node: KSNode, data: String): ServiceMethodDefinition {
+    override fun defaultHandler(node: KSNode, data: Unit): ServiceMethodDefinition {
         throw IllegalStateException("MethodVisitor should only be used to visit function declarations")
     }
 
-    override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: String): ServiceMethodDefinition {
+    override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): ServiceMethodDefinition {
         for (annotation in function.annotations) {
             val definition = when (annotation.shortName.getShortName()) {
                 UnaryMethod.AnnotationName -> UnaryMethod.extractFrom(function, annotation)
