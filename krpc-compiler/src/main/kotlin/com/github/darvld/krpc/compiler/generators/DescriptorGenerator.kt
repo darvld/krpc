@@ -57,6 +57,9 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
                         method.requestType,
                         method.responseType
                     )
+                    addMarshaller(method.requestType)
+                    addMarshaller(method.responseType)
+
                     addProperty(descriptor)
                 }
             }
