@@ -16,7 +16,11 @@ private const val SERVER_ADDRESS = "localhost"
 private const val SERVER_PORT = 8980
 
 fun main(vararg args: String) = runBlocking {
-    if ("-ci" in args) Simulation.ciRun = true
+    if ("-ci" in args) {
+        println("---[Running sample in CI mode]---")
+        println("In this mode, delays for the Simulation methods are disabled in order to speed up execution.")
+        Simulation.ciRun = true
+    }
 
     // Create a GpsServer using ProtoBuf to encode/decode requests and responses
     val gpsServer = GpsServer(ProtoBufSerializationProvider)
