@@ -36,7 +36,9 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
                          
                     This class provides method descriptors for other generated service components.
                     It should not be used in general code.
-
+                    
+                    @constructor Constructs a new [${service.descriptorName}] using a [SerializationProvider]
+                    to create the marshallers for method requests/responses.
                     @param $SERIALIZATION_PROVIDER_PARAM A provider implementing a serialization format.
                     Used to generate marshallers for rpc methods.
                     """.trimIndent(),

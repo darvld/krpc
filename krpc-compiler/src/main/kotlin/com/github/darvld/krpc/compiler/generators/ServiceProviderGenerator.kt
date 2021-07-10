@@ -39,19 +39,28 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                 addModifiers(KModifier.ABSTRACT)
                 superclass(AbstractCoroutineServerImpl::class)
 
+                addKdoc(
+                    "Generated [%T] provider. Subclass this stub and override the service methods" +
+                            " to provide your implementation of the service.",
+                    service.className,
+                )
+
                 // Primary constructor
-                FunSpec.constructorBuilder()
-                    .addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
-                    .addParameter(
-                        ParameterSpec.builder("context", CoroutineContext::class)
-                            .defaultValue("%T", EmptyCoroutineContext::class)
-                            .build()
-                    )
-                    .build()
-                    .let(::primaryConstructor)
+                FunSpec.constructorBuilder().run {
+                    ParameterSpec.builder(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
+                        .build()
+                        .let(::addParameter)
+
+                    ParameterSpec.builder(COROUTINE_CONTEXT_PARAM, CoroutineContext::class)
+                        .defaultValue("%T", EmptyCoroutineContext::class)
+                        .build()
+                        .let(::addParameter)
+                    build()
+                }.let(::primaryConstructor)
+
 
                 // Pass the coroutine context to the parent class
-                addSuperclassConstructorParameter("context")
+                addSuperclassConstructorParameter(COROUTINE_CONTEXT_PARAM)
 
                 // Implement the service interface
                 addSuperinterface(service.className)
@@ -125,7 +134,7 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                 """
                 .addMethod(
               %T.${builder}ServerMethodDefinition(
-                context,
+                $COROUTINE_CONTEXT_PARAM,
                 definitions.${method.declaredName},
                 $implementation
               )
@@ -134,5 +143,9 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                 serverCalls,
             )
         }.build()
+    }
+
+    private companion object {
+        const val COROUTINE_CONTEXT_PARAM = "context"
     }
 }
