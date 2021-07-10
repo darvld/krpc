@@ -7,6 +7,7 @@ import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
+import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.squareup.kotlinpoet.*
@@ -53,14 +54,13 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                 addSuperclassConstructorParameter("context")
 
                 // Implement the service interface
-                addSuperinterface(ClassName(service.packageName, service.declaredName))
+                addSuperinterface(service.className)
 
                 // The method definitions are pulled from here
-                val helperType = ClassName(service.packageName, service.descriptorName)
-                PropertySpec.builder("definitions", helperType)
+                PropertySpec.builder("definitions", service.descriptorClassName)
                     .addModifiers(KModifier.PRIVATE)
                     .mutable(false)
-                    .initializer("%T($SERIALIZATION_PROVIDER_PARAM)", helperType)
+                    .initializer("%T($SERIALIZATION_PROVIDER_PARAM)", service.descriptorClassName)
                     .build()
                     .let(::addProperty)
 
@@ -75,29 +75,29 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
             .markAsGenerated()
             .addModifiers(KModifier.FINAL, KModifier.OVERRIDE)
             .addCode(
-                """
-            return ServerServiceDefinition.builder(%S).run {
-                  %L
-                  build()
-                }
-            """.trimIndent(),
-                service.serviceName, buildServiceBinderFor(service)
+                CodeBlock.builder()
+                    .beginControlFlow("return run {")
+                    .addStatement("ServerServiceDefinition.builder(%S)", service.serviceName)
+                    .add(buildServiceBinderFor(service.methods))
+                    .addStatement("    .build()")
+                    .endControlFlow()
+                    .build()
             )
             .returns(ServerServiceDefinition::class)
             .build()
             .let(::addFunction)
     }
 
-    private fun buildServiceBinderFor(service: ServiceDefinition): CodeBlock {
-        // Cache this so it isn't resolver in every iteration
+    private fun buildServiceBinderFor(methods: List<ServiceMethodDefinition>): CodeBlock {
+        // Cache this so it isn't resolved in every iteration
         val serverCalls = ServerCalls::class
 
-        return service.methods.fold(CodeBlock.builder()) { block, method ->
-            val definitionBuilderName = when (method.methodType) {
-                UNARY -> "unaryServerMethodDefinition"
-                CLIENT_STREAMING -> "clientStreamingServerMethodDefinition"
-                SERVER_STREAMING -> "serverStreamingServerMethodDefinition"
-                BIDI_STREAMING -> "bidiStreamingServerMethodDefinition"
+        return methods.fold(CodeBlock.builder()) { block, method ->
+            val builder = when (method.methodType) {
+                UNARY -> "unary"
+                CLIENT_STREAMING -> "clientStreaming"
+                SERVER_STREAMING -> "serverStreaming"
+                BIDI_STREAMING -> "bidiStreaming"
                 UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
             }
 
@@ -107,21 +107,32 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                 "::${method.declaredName}"
             }
 
+            /*
+            Note: the indentation inside the raw string below *looks* wrong, but when used by KotlinPoet,
+            it will generate code with the correct format. Please don't touch it.
+            It should generate something like this:
+            ```
+            .addMethod(
+                ServerCalls.unaryServerMethodDefinition(
+                  context,
+                  definitions.unaryCall,
+                  ::unaryCall
+                )
+            )
+            ```
+             */
             block.addStatement(
                 """
-            addMethod(
-                %T.%L(
-                  context,
-                  definitions.%L,
-                  %L
-                )
-              )""".trimIndent(),
+                .addMethod(
+              %T.${builder}ServerMethodDefinition(
+                context,
+                definitions.${method.declaredName},
+                $implementation
+              )
+            )
+                """.trimIndent(),
                 serverCalls,
-                definitionBuilderName,
-                method.declaredName,
-                implementation
             )
         }.build()
     }
-
 }
