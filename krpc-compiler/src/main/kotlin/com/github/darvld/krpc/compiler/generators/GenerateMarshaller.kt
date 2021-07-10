@@ -43,11 +43,6 @@ internal fun buildMarshaller(type: TypeName, name: String = type.marshallerPropN
 
     return PropertySpec.builder(name, marshallerType, KModifier.PRIVATE)
         .markAsGenerated()
-        .addKdoc(
-            """
-            |A generated [MethodDescriptor.Marshaller] obtained using the `serializationProvider` constructor parameter.
-            |""".trimMargin(),
-        )
         .mutable(false)
         .initializer(
             "$SERIALIZATION_PROVIDER_PARAM.marshallerFor(%M())",
