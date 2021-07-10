@@ -6,7 +6,7 @@ plugins {
 }
 
 sourceSets {
-    main {
+    all {
         languageSettings {
             useExperimentalAnnotation('kotlin.RequiresOptIn')
         }
