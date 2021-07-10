@@ -6,7 +6,6 @@ import com.example.model.Location
 import com.example.model.Vehicle
 import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.take
@@ -67,7 +66,7 @@ suspend fun showcaseClient() {
             location = location.copy(latitude = location.latitude + 0.001)
 
             // Simulate update delay
-            delay(1_000)
+            Simulation.moderateDelay()
         }
     })
 
@@ -75,7 +74,7 @@ suspend fun showcaseClient() {
     val tracked = flow { // Track 3 different vehicles in total, for 5 seconds each
         repeat(3) {
             emit(Vehicle(1L + it, "SampleVehicle-#${it + 1}"))
-            delay(5_000)
+            Simulation.longDelay()
         }
     }
     client.continuousTracking(tracked).collect {

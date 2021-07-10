@@ -1,6 +1,7 @@
 package com.example.backend
 
 import com.example.GpsServiceProvider
+import com.example.Simulation
 import com.example.model.Location
 import com.example.model.Vehicle
 import com.github.darvld.krpc.SerializationProvider
@@ -20,7 +21,7 @@ class GpsServer(
 
     override suspend fun locationForVehicle(vehicle: Vehicle): Location {
         // Pretend we're doing something here
-        delay(250)
+        Simulation.shortDelay()
         return randomLocation()
     }
 
@@ -30,8 +31,8 @@ class GpsServer(
 
         // Endlessly track this vehicle until the rpc is cancelled
         while (true) {
-            // Simulate some delay between location updates
-            delay(1_000)
+            // Add delay between location updates
+            Simulation.moderateDelay()
             // Move it a little (~10m) in a straight line
             emit(location.copy(latitude = location.latitude + 0.001).also { location = it })
         }
@@ -44,7 +45,7 @@ class GpsServer(
         route.collect {
             println("[Server] Received $it from route stream #$routeCode")
             // Pretend we did something useful with the location
-            delay(500)
+            Simulation.shortDelay()
         }
         return true
     }
