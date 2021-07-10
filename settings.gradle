@@ -18,5 +18,5 @@ rootProject.name = 'krpc'
 
 include 'krpc-runtime'
 include 'krpc-compiler'
-include 'playground'
+include 'sample'
 
