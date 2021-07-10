@@ -1,19 +1,16 @@
 package com.github.darvld.krpc.compiler
 
 import com.github.darvld.krpc.compiler.model.*
-import com.github.darvld.krpc.compiler.testing.assertIs
-import com.github.darvld.krpc.compiler.testing.shouldBe
-import com.github.darvld.krpc.compiler.testing.shouldContain
-import com.github.darvld.krpc.compiler.testing.whenCompiling
+import com.github.darvld.krpc.compiler.testing.*
 import com.google.devtools.ksp.getFunctionDeclarationsByName
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asClassName
-import com.squareup.kotlinpoet.asTypeName
 import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.COMPILATION_ERROR
 import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
 import com.tschuchort.compiletesting.SourceFile
@@ -47,8 +44,8 @@ class ServiceMethodVisitorTest {
         methodName: String,
         type: MethodDescriptor.MethodType,
         requestName: String = "request",
-        requestType: TypeName = Int::class.asTypeName(),
-        responseType: TypeName = String::class.asTypeName(),
+        requestType: TypeName = ClassNames.Int,
+        responseType: TypeName = ClassNames.String,
         suspending: Boolean,
         @Language("kotlin") imports: String = "",
         @Language("kotlin") definitionBlock: String
@@ -234,13 +231,43 @@ class ServiceMethodVisitorTest {
         )
 
     @Test
+    fun `extracts valid unary call definition with generic argument`() =
+        validateMethodExtraction<UnaryMethod>(
+            declaredName = "unary",
+            methodName = "unaryCall",
+            type = UNARY,
+            requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
+            suspending = true,
+            imports = "import kotlin.collections.List",
+            definitionBlock = """
+            @UnaryCall("unaryCall")
+            suspend fun unary(request: List<Int>): String
+            """.trimIndent()
+        )
+
+    @Test
+    fun `extracts valid unary call definition with generic return type`() =
+        validateMethodExtraction<UnaryMethod>(
+            declaredName = "unary",
+            methodName = "unaryCall",
+            type = UNARY,
+            responseType = ClassNames.List.parameterizedBy(ClassNames.String),
+            suspending = true,
+            imports = "import kotlin.collections.List",
+            definitionBlock = """
+            @UnaryCall("unaryCall")
+            suspend fun unary(request: Int): List<String>
+            """.trimIndent()
+        )
+
+    @Test
     fun `extracts valid server stream call definition`() =
         validateMethodExtraction<ServerStreamMethod>(
             declaredName = "stream",
             methodName = "serverStream",
             type = SERVER_STREAMING,
             suspending = false,
-            responseType = String::class.asTypeName(),
+            responseType = ClassNames.String,
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ServerStream("serverStream")
@@ -257,11 +284,29 @@ class ServiceMethodVisitorTest {
             requestName = "unit",
             requestType = UnitClassName,
             suspending = false,
-            responseType = String::class.asTypeName(),
+            responseType = ClassNames.String,
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ServerStream("serverStream")
             fun stream(): Flow<String>
+            """.trimIndent()
+        )
+
+    @Test
+    fun `extracts valid server stream call definition with generic return type`() =
+        validateMethodExtraction<ServerStreamMethod>(
+            declaredName = "stream",
+            methodName = "serverStream",
+            type = SERVER_STREAMING,
+            suspending = false,
+            responseType = ClassNames.List.parameterizedBy(ClassNames.String),
+            imports = """
+            import kotlin.collections.List
+            import kotlinx.coroutines.flow.Flow
+            """.trimIndent(),
+            definitionBlock = """
+            @ServerStream("serverStream")
+            fun stream(request: Int): Flow<List<String>>
             """.trimIndent()
         )
 
@@ -272,11 +317,29 @@ class ServiceMethodVisitorTest {
             methodName = "clientStream",
             type = CLIENT_STREAMING,
             suspending = true,
-            requestType = Int::class.asTypeName(),
+            requestType = ClassNames.Int,
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ClientStream("clientStream")
             suspend fun stream(request: Flow<Int>): String
+            """.trimIndent()
+        )
+
+    @Test
+    fun `extracts valid client stream call definition with generic request type`() =
+        validateMethodExtraction<ClientStreamMethod>(
+            declaredName = "stream",
+            methodName = "clientStream",
+            type = CLIENT_STREAMING,
+            suspending = true,
+            requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
+            imports = """
+            import kotlin.collections.List
+            import kotlinx.coroutines.flow.Flow
+            """.trimIndent(),
+            definitionBlock = """
+            @ClientStream("clientStream")
+            suspend fun stream(request: Flow<List<Int>>): String
             """.trimIndent()
         )
 
@@ -302,12 +365,30 @@ class ServiceMethodVisitorTest {
         methodName = "bidiStream",
         type = BIDI_STREAMING,
         suspending = false,
-        requestType = Int::class.asTypeName(),
-        responseType = String::class.asTypeName(),
+        requestType = ClassNames.Int,
+        responseType = ClassNames.String,
         imports = "import kotlinx.coroutines.flow.Flow",
         definitionBlock = """
         @BidiStream("bidiStream")
         fun stream(request: Flow<Int>): Flow<String>
+        """.trimIndent()
+    )
+
+    @Test
+    fun `extracts valid bidi stream call definition with generic types`() = validateMethodExtraction<BidiStreamMethod>(
+        declaredName = "stream",
+        methodName = "bidiStream",
+        type = BIDI_STREAMING,
+        suspending = false,
+        requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
+        responseType = ClassNames.List.parameterizedBy(ClassNames.String),
+        imports = """
+        import kotlin.collections.List
+        import kotlinx.coroutines.flow.Flow
+        """.trimIndent(),
+        definitionBlock = """
+        @BidiStream("bidiStream")
+        fun stream(request: Flow<List<Int>>): Flow<List<String>>
         """.trimIndent()
     )
 }

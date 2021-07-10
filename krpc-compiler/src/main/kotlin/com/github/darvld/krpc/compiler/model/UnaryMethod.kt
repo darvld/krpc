@@ -2,7 +2,7 @@ package com.github.darvld.krpc.compiler.model
 
 import com.github.darvld.krpc.UnaryCall
 import com.github.darvld.krpc.compiler.UnitClassName
-import com.github.darvld.krpc.compiler.resolveAsClassName
+import com.github.darvld.krpc.compiler.resolveAsTypeName
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.TypeName
@@ -32,9 +32,9 @@ class UnaryMethod(
             declaration.requireSuspending(true, "UnaryCall rpc methods must be marked with 'suspend' modifier.")
 
             val methodName = declaration.extractMethodName(annotation)
-            val returnType = declaration.returnType?.resolveAsClassName() ?: UnitClassName
+            val returnType = declaration.returnType?.resolveAsTypeName() ?: UnitClassName
 
-            val (requestName, requestType) = declaration.extractRequestInfo { it.resolveAsClassName() }
+            val (requestName, requestType) = declaration.extractRequestInfo { it.resolveAsTypeName() }
                 ?: "unit" to UnitClassName
 
             return UnaryMethod(

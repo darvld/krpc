@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.Flow
 @Service
 interface GpsService {
 
+    /**Returns a list of all the vehicles currently tracked by this service.*/
+    @UnaryCall
+    suspend fun listVehicles(): List<Vehicle>
+
     /**Returns the last known location of a given [vehicle].*/
     @UnaryCall
     suspend fun locationForVehicle(vehicle: Vehicle): Location

@@ -1,12 +1,13 @@
 package com.example.backend
 
 import com.example.GpsServiceProvider
-import com.example.Simulation
+import com.example.Simulation.moderateDelay
+import com.example.Simulation.randomLocation
+import com.example.Simulation.shortDelay
 import com.example.model.Location
 import com.example.model.Vehicle
 import com.github.darvld.krpc.SerializationProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlin.random.Random
 
@@ -15,13 +16,16 @@ class GpsServer(
     serializationProvider: SerializationProvider,
 ) : GpsServiceProvider(serializationProvider) {
 
-    private fun randomLocation(): Location {
-        return Location(Random.nextDouble(-180.0, 180.0), Random.nextDouble(-180.0, 180.0))
+    override suspend fun listVehicles(): List<Vehicle> {
+        // Return a list of randomly generated vehicles
+        return List(5) {
+            Vehicle(Random.nextLong(1000, 9999), "SampleVehicle-SV$it")
+        }
     }
 
     override suspend fun locationForVehicle(vehicle: Vehicle): Location {
         // Pretend we're doing something here
-        Simulation.shortDelay()
+        shortDelay()
         return randomLocation()
     }
 
@@ -32,7 +36,7 @@ class GpsServer(
         // Endlessly track this vehicle until the rpc is cancelled
         while (true) {
             // Add delay between location updates
-            Simulation.moderateDelay()
+            moderateDelay()
             // Move it a little (~10m) in a straight line
             emit(location.copy(latitude = location.latitude + 0.001).also { location = it })
         }
@@ -45,7 +49,7 @@ class GpsServer(
         route.collect {
             println("[Server] Received $it from route stream #$routeCode")
             // Pretend we did something useful with the location
-            Simulation.shortDelay()
+            shortDelay()
         }
         return true
     }

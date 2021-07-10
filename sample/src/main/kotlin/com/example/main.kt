@@ -1,9 +1,11 @@
 package com.example
 
+import com.example.Simulation.longDelay
+import com.example.Simulation.moderateDelay
+import com.example.Simulation.randomLocation
 import com.example.backend.GpsServer
 import com.example.backend.ProtoBufSerializationProvider
 import com.example.model.Location
-import com.example.model.Vehicle
 import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
 import kotlinx.coroutines.flow.collect
@@ -48,23 +50,31 @@ suspend fun showcaseClient() {
         .build()
 
     val client = GpsClient(channel, ProtoBufSerializationProvider)
-    val vehicle = Vehicle(id = 8, info = "SampleVehicle")
+    // Get a list of vehicles to work with
+    val vehicles = client.listVehicles()
 
-    // Retrieve location
-    val lastLocation = client.locationForVehicle(vehicle)
-    println("$vehicle is at $lastLocation")
+    println("Vehicles tracked by the server:")
+    vehicles.forEach { println("  - $it") }
+
+    with(vehicles.random()) {
+        // Retrieve location
+        val lastLocation = client.locationForVehicle(this)
+        println("$this is at $lastLocation")
+    }
 
     // Receive route stream, collect 5 values and cancel
-    val route = client.trackVehicle(vehicle)
-    println("Tracking $vehicle:")
-    route.take(5).collect {
-        println(" - $it")
+    with(vehicles.random()) {
+        val route = client.trackVehicle(this)
+        println("Tracking $this:")
+        route.take(5).collect {
+            println(" - $it")
+        }
+        println("Stopped tracking $this")
     }
-    println("Stopped tracking $vehicle")
 
     // Stream a route to the server (5 iterations, then stop)
     client.streamRoute(flow {
-        var location = lastLocation
+        var location = randomLocation()
         repeat(5) {
             emit(location)
 
@@ -72,15 +82,15 @@ suspend fun showcaseClient() {
             location = location.copy(latitude = location.latitude + 0.001)
 
             // Simulate update delay
-            Simulation.moderateDelay()
+            moderateDelay()
         }
     })
 
     // Continuous tracking mode
     val tracked = flow { // Track 3 different vehicles in total, for 5 seconds each
         repeat(3) {
-            emit(Vehicle(1L + it, "SampleVehicle-#${it + 1}"))
-            Simulation.longDelay()
+            emit(vehicles.random())
+            longDelay()
         }
     }
     client.continuousTracking(tracked).collect {
