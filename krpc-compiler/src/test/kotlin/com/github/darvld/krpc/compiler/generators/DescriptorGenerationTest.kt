@@ -55,7 +55,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates marshaller for simple type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(Int::class.asTypeName())
+            addMarshaller(Int)
         }
 
         generated.assertContentEquals(
