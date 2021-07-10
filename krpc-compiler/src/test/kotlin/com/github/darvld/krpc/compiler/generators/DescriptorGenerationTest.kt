@@ -1,7 +1,10 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.compiler.UnitClassName
+import com.github.darvld.krpc.compiler.testing.ClassNames.Int
+import com.github.darvld.krpc.compiler.testing.ClassNames.List
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.asTypeName
 import org.junit.Test
@@ -74,6 +77,60 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     }
 
     @Test
+    fun `generates marshaller for generic type`() {
+        val generated = temporaryFolder.newObject("Marshallers") {
+            addMarshaller(List.parameterizedBy(Int))
+        }
+
+        generated.assertContentEquals(
+            """
+            package com.test.generated
+            
+            import io.grpc.MethodDescriptor
+            import javax.`annotation`.processing.Generated
+            import kotlin.Int
+            import kotlin.collections.List
+            import kotlinx.serialization.serializer
+            
+            public object Marshallers {
+              @Generated("com.github.darvld.krpc")
+              private val intListMarshaller: MethodDescriptor.Marshaller<List<Int>> =
+                  serializationProvider.marshallerFor(serializer())
+            }
+            
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `generates marshaller for complex generic type`() {
+        val generated = temporaryFolder.newObject("Marshallers") {
+            addMarshaller(Map::class.asTypeName().parameterizedBy(Long::class.asTypeName(), List.parameterizedBy(Int)))
+        }
+
+        generated.assertContentEquals(
+            """
+            package com.test.generated
+            
+            import io.grpc.MethodDescriptor
+            import javax.`annotation`.processing.Generated
+            import kotlin.Int
+            import kotlin.Long
+            import kotlin.collections.List
+            import kotlin.collections.Map
+            import kotlinx.serialization.serializer
+            
+            public object Marshallers {
+              @Generated("com.github.darvld.krpc")
+              private val longIntListMapMarshaller: MethodDescriptor.Marshaller<Map<Long, List<Int>>> =
+                  serializationProvider.marshallerFor(serializer())
+            }
+            
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun `uses built-in marshaller for Unit`() {
         val generated = temporaryFolder.newObject("Marshallers") {
             addMarshaller(UnitClassName)
@@ -93,7 +150,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `re-uses existing marshaller for same type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            Int::class.asTypeName().let {
+            Int.let {
                 addMarshaller(it)
                 addMarshaller(it)
             }

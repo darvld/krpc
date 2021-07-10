@@ -1,13 +1,7 @@
 package com.github.darvld.krpc.compiler
 
-import com.github.darvld.krpc.compiler.generators.CodeGenerationTest.Companion.IntClassName
-import com.github.darvld.krpc.compiler.generators.CodeGenerationTest.Companion.ListClassName
-import com.github.darvld.krpc.compiler.generators.CodeGenerationTest.Companion.StringClassName
 import com.github.darvld.krpc.compiler.model.*
-import com.github.darvld.krpc.compiler.testing.assertIs
-import com.github.darvld.krpc.compiler.testing.shouldBe
-import com.github.darvld.krpc.compiler.testing.shouldContain
-import com.github.darvld.krpc.compiler.testing.whenCompiling
+import com.github.darvld.krpc.compiler.testing.*
 import com.google.devtools.ksp.getFunctionDeclarationsByName
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -50,8 +44,8 @@ class ServiceMethodVisitorTest {
         methodName: String,
         type: MethodDescriptor.MethodType,
         requestName: String = "request",
-        requestType: TypeName = IntClassName,
-        responseType: TypeName = StringClassName,
+        requestType: TypeName = ClassNames.Int,
+        responseType: TypeName = ClassNames.String,
         suspending: Boolean,
         @Language("kotlin") imports: String = "",
         @Language("kotlin") definitionBlock: String
@@ -242,7 +236,7 @@ class ServiceMethodVisitorTest {
             declaredName = "unary",
             methodName = "unaryCall",
             type = UNARY,
-            requestType = ListClassName.parameterizedBy(IntClassName),
+            requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
             suspending = true,
             imports = "import kotlin.collections.List",
             definitionBlock = """
@@ -257,7 +251,7 @@ class ServiceMethodVisitorTest {
             declaredName = "unary",
             methodName = "unaryCall",
             type = UNARY,
-            responseType = ListClassName.parameterizedBy(StringClassName),
+            responseType = ClassNames.List.parameterizedBy(ClassNames.String),
             suspending = true,
             imports = "import kotlin.collections.List",
             definitionBlock = """
@@ -273,7 +267,7 @@ class ServiceMethodVisitorTest {
             methodName = "serverStream",
             type = SERVER_STREAMING,
             suspending = false,
-            responseType = StringClassName,
+            responseType = ClassNames.String,
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ServerStream("serverStream")
@@ -290,7 +284,7 @@ class ServiceMethodVisitorTest {
             requestName = "unit",
             requestType = UnitClassName,
             suspending = false,
-            responseType = StringClassName,
+            responseType = ClassNames.String,
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ServerStream("serverStream")
@@ -305,7 +299,7 @@ class ServiceMethodVisitorTest {
             methodName = "serverStream",
             type = SERVER_STREAMING,
             suspending = false,
-            responseType = ListClassName.parameterizedBy(StringClassName),
+            responseType = ClassNames.List.parameterizedBy(ClassNames.String),
             imports = """
             import kotlin.collections.List
             import kotlinx.coroutines.flow.Flow
@@ -323,7 +317,7 @@ class ServiceMethodVisitorTest {
             methodName = "clientStream",
             type = CLIENT_STREAMING,
             suspending = true,
-            requestType = IntClassName,
+            requestType = ClassNames.Int,
             imports = "import kotlinx.coroutines.flow.Flow",
             definitionBlock = """
             @ClientStream("clientStream")
@@ -338,7 +332,7 @@ class ServiceMethodVisitorTest {
             methodName = "clientStream",
             type = CLIENT_STREAMING,
             suspending = true,
-            requestType = ListClassName.parameterizedBy(IntClassName),
+            requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
             imports = """
             import kotlin.collections.List
             import kotlinx.coroutines.flow.Flow
@@ -371,8 +365,8 @@ class ServiceMethodVisitorTest {
         methodName = "bidiStream",
         type = BIDI_STREAMING,
         suspending = false,
-        requestType = IntClassName,
-        responseType = StringClassName,
+        requestType = ClassNames.Int,
+        responseType = ClassNames.String,
         imports = "import kotlinx.coroutines.flow.Flow",
         definitionBlock = """
         @BidiStream("bidiStream")
@@ -386,8 +380,8 @@ class ServiceMethodVisitorTest {
         methodName = "bidiStream",
         type = BIDI_STREAMING,
         suspending = false,
-        requestType = ListClassName.parameterizedBy(IntClassName),
-        responseType = ListClassName.parameterizedBy(StringClassName),
+        requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
+        responseType = ClassNames.List.parameterizedBy(ClassNames.String),
         imports = """
         import kotlin.collections.List
         import kotlinx.coroutines.flow.Flow

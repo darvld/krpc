@@ -5,9 +5,9 @@ import com.github.darvld.krpc.compiler.model.BidiStreamMethod
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
 import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.github.darvld.krpc.compiler.model.UnaryMethod
+import com.github.darvld.krpc.compiler.testing.ClassNames
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asClassName
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
@@ -32,9 +32,7 @@ abstract class CodeGenerationTest {
     }
 
     companion object {
-        val ListClassName by lazy { List::class.asClassName() }
-        val IntClassName by lazy { Int::class.asClassName() }
-        val StringClassName by lazy { String::class.asClassName() }
+
 
         fun serviceDefinition(
             declaredName: String = "TestService",
@@ -56,8 +54,8 @@ abstract class CodeGenerationTest {
             declaredName: String = "unary",
             methodName: String = "${declaredName}Test",
             requestName: String = "request",
-            requestType: TypeName = IntClassName,
-            returnType: TypeName = StringClassName
+            requestType: TypeName = ClassNames.Int,
+            returnType: TypeName = ClassNames.String
         ): UnaryMethod = UnaryMethod(
             declaredName,
             methodName,
@@ -70,8 +68,8 @@ abstract class CodeGenerationTest {
             declaredName: String = "bidiStream",
             methodName: String = "${declaredName}Test",
             requestName: String = "request",
-            requestType: TypeName = IntClassName,
-            returnType: TypeName = StringClassName
+            requestType: TypeName = ClassNames.Int,
+            returnType: TypeName = ClassNames.String
         ) = BidiStreamMethod(
             declaredName,
             methodName,
