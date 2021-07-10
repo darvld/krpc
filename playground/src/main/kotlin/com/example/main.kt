@@ -15,7 +15,9 @@ import kotlinx.coroutines.yield
 private const val SERVER_ADDRESS = "localhost"
 private const val SERVER_PORT = 8980
 
-fun main() = runBlocking {
+fun main(vararg args: String) = runBlocking {
+    if ("-ci" in args) Simulation.ciRun = true
+
     // Create a GpsServer using ProtoBuf to encode/decode requests and responses
     val gpsServer = GpsServer(ProtoBufSerializationProvider)
 

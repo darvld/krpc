@@ -4,8 +4,8 @@ import kotlinx.coroutines.delay
 
 /**Helper object used to simulate some execution behaviours.*/
 object Simulation {
-    /** When running CI tests, this will be set to false to speed up test execution.*/
-    private val ciRun = System.getenv("ci") == "true"
+    /** When running CI tests, this can be set to false to speed up test execution.*/
+    var ciRun = false
 
     /**Calls [delay] only if the current environment isn't part of a CI build.*/
     suspend fun adjustedDelay(reference: Long) {
