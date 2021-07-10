@@ -1,9 +1,8 @@
 package com.github.darvld.krpc.compiler.model
 
 import com.github.darvld.krpc.ClientStream
+import com.github.darvld.krpc.compiler.*
 import com.github.darvld.krpc.compiler.UnitClassName
-import com.github.darvld.krpc.compiler.reportError
-import com.github.darvld.krpc.compiler.resolveAsClassName
 import com.github.darvld.krpc.compiler.resolveAsParameterizedName
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -34,7 +33,7 @@ class ClientStreamMethod(
             declaration.requireSuspending(true, "ClientStream rpc methods must be marked with 'suspend' modifier.")
 
             val methodName = declaration.extractMethodName(annotation)
-            val responseType = declaration.returnType?.resolveAsClassName() ?: UnitClassName
+            val responseType = declaration.returnType?.resolveAsTypeName() ?: UnitClassName
 
             val (requestName, requestType) = declaration.extractRequestInfo { reference ->
                 // Resolve the request type, which should be a Flow<T>, and extract the 'T' type name.

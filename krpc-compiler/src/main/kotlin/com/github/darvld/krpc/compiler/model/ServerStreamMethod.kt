@@ -1,9 +1,8 @@
 package com.github.darvld.krpc.compiler.model
 
 import com.github.darvld.krpc.ServerStream
+import com.github.darvld.krpc.compiler.*
 import com.github.darvld.krpc.compiler.UnitClassName
-import com.github.darvld.krpc.compiler.reportError
-import com.github.darvld.krpc.compiler.resolveAsClassName
 import com.github.darvld.krpc.compiler.resolveAsParameterizedName
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
@@ -44,7 +43,7 @@ class ServerStreamMethod(
                     message = "ServerStream rpc methods must return a Flow of a serializable type."
                 )
 
-            val (requestName, requestType) = declaration.extractRequestInfo { it.resolveAsClassName() }
+            val (requestName, requestType) = declaration.extractRequestInfo { it.resolveAsTypeName() }
                 ?: "unit" to UnitClassName
 
             return ServerStreamMethod(
