@@ -1,5 +1,6 @@
 # Kotlin RPC
 [![CodeFactor](https://www.codefactor.io/repository/github/darvld/krpc/badge/main)](https://www.codefactor.io/repository/github/darvld/krpc/overview/main)
+[![CI](https://github.com/darvld/krpc/actions/workflows/ci.yml/badge.svg)](https://github.com/darvld/krpc/actions/workflows/ci.yml)
 
 KRPC is a more idiomatic variant of [gRPC-Kotlin](https://github.com/grpc/grpc-kotlin). Its goal is to provide more
 concise ways to define and consume GRPC services in Kotlin, without using Protoc, while integrating seamlessly with the
