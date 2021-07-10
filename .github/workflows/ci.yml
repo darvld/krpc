@@ -29,8 +29,12 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Build with Gradle
-        run: ./gradlew check --info --stacktrace
+      - name: Run compiler tests
+        # Internal compiler tests, should reveal most bugs
+        run: ./gradlew krpc-compiler:check --info --stacktrace
+      - name: Run sample
+        # In case the compiler tests miss something, building and running the sample should reveal it.
+        run: ./gradlew sample:run --args="-ci" --info --stacktrace
       - name: Cleanup Gradle Cache
         # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
         # Restoring these files from a GitHub Actions cache might cause problems for future builds.

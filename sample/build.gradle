@@ -6,7 +6,7 @@ plugins {
 }
 
 sourceSets {
-    main {
+    all {
         languageSettings {
             useExperimentalAnnotation('kotlin.RequiresOptIn')
         }
@@ -24,4 +24,8 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     ksp project(":krpc-compiler")
     // configurations.ksp.dependencies.add(project.dependencies.create(project(":krpc-compiler")))
+}
+
+application {
+    mainClass = 'com.example.MainKt'
 }
