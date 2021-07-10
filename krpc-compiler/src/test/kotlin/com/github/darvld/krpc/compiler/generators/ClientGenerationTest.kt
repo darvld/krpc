@@ -1,7 +1,9 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.compiler.UnitClassName
+import com.github.darvld.krpc.compiler.testing.ClassNames
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.junit.Test
 
 class ClientGenerationTest : CodeGenerationTest() {
@@ -85,6 +87,40 @@ class ClientGenerationTest : CodeGenerationTest() {
     }
 
     @Test
+    fun `overrides unary method with generic request and response`() {
+        val method = unaryMethod(
+            requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
+            returnType = ClassNames.List.parameterizedBy(ClassNames.String)
+        )
+        val definition = serviceDefinition(methods = listOf(method))
+
+        val generated = temporaryFolder.newObject("Client") {
+            addSuperinterface(definition.className)
+
+            addFunction(clientGenerator.buildServiceMethodOverride(method))
+        }
+
+        generated.assertContentEquals(
+            """
+            package com.test.generated
+
+            import io.grpc.kotlin.ClientCalls
+            import javax.`annotation`.processing.Generated
+            import kotlin.Int
+            import kotlin.String
+            import kotlin.collections.List
+            
+            public object Client : TestService {
+              @Generated("com.github.darvld.krpc")
+              public override suspend fun unary(request: List<Int>): List<String> =
+                  ClientCalls.unaryRpc(channel, descriptor.unary, request, callOptions)
+            }
+
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun `overrides unary method (no request, no response)`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newObject("Client") {
@@ -140,6 +176,41 @@ class ClientGenerationTest : CodeGenerationTest() {
             public object Client : TestService {
               @Generated("com.github.darvld.krpc")
               public override fun bidiStream(request: Flow<Int>): Flow<String> =
+                  ClientCalls.bidiStreamingRpc(channel, descriptor.bidiStream, request, callOptions)
+            }
+
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `overrides bidi stream method with generic request and response`() {
+        val method = bidiStreamMethod(
+            requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
+            returnType = ClassNames.List.parameterizedBy(ClassNames.String)
+        )
+        val definition = serviceDefinition(methods = listOf(method))
+
+        val generated = temporaryFolder.newObject("Client") {
+            addSuperinterface(definition.className)
+
+            addFunction(clientGenerator.buildServiceMethodOverride(method))
+        }
+
+        generated.assertContentEquals(
+            """
+            package com.test.generated
+
+            import io.grpc.kotlin.ClientCalls
+            import javax.`annotation`.processing.Generated
+            import kotlin.Int
+            import kotlin.String
+            import kotlin.collections.List
+            import kotlinx.coroutines.flow.Flow
+            
+            public object Client : TestService {
+              @Generated("com.github.darvld.krpc")
+              public override fun bidiStream(request: Flow<List<Int>>): Flow<List<String>> =
                   ClientCalls.bidiStreamingRpc(channel, descriptor.bidiStream, request, callOptions)
             }
 
