@@ -32,6 +32,7 @@ abstract class CodeGenerationTest {
     }
 
     companion object {
+        val ListClassName by lazy { List::class.asClassName() }
         val IntClassName by lazy { Int::class.asClassName() }
         val StringClassName by lazy { String::class.asClassName() }
 
