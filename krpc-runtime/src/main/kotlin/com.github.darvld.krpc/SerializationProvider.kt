@@ -4,7 +4,7 @@ import io.grpc.MethodDescriptor
 import kotlinx.serialization.KSerializer
 import java.io.InputStream
 
-/**Abstraction used by KRPC to create format-agnostic [MethodDescriptor.Marshaller] implementations.
+/**Abstraction used by kRPC to create format-agnostic [MethodDescriptor.Marshaller] implementations.
  *
  * Every [SerializationProvider] is required to provide a factory method used to create a marshaller for
  * a serializable type. You could implement a provider like the following:

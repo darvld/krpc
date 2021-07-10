@@ -1,6 +1,6 @@
 package com.github.darvld.krpc
 
-/**Marker for KRPC service definitions. This annotation serves as an entry point for the KRPC symbol processor.
+/**Marker for kRPC service definitions. This annotation serves as an entry point for the kRPC symbol processor.
  *
  * See the annotation arguments for customization options.
  *

@@ -8,7 +8,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.validate
 
-/**Main symbol processor used by the KRPC compiler.
+/**Main symbol processor used by the kRPC compiler.
  *
  * This processor selects all declarations marked with the [@Service][Service] annotation and generates the
  * corresponding descriptor, provider and client.
