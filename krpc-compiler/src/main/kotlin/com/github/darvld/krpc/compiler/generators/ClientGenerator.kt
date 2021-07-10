@@ -34,6 +34,14 @@ internal class ClientGenerator : ServiceComponentGenerator {
             addClass {
                 markAsGenerated()
 
+                addKdoc(
+                    """
+                    Generated [%T] client implementation using a specific [SerializationProvider]
+                    to marshall requests and responses.
+                    """.trimIndent(),
+                    service.className
+                )
+
                 addSuperinterface(service.className)
                 superclass(AbstractCoroutineStub::class.asTypeName().parameterizedBy(ClassName(packageName, name)))
                     .addSuperclassConstructorParameter("$CHANNEL_PARAM, $CALL_OPTIONS_PARAM")
@@ -94,8 +102,8 @@ internal class ClientGenerator : ServiceComponentGenerator {
                 addFunction("withSerializationProvider") {
                     markAsGenerated()
 
-                    addParameter(CHANNEL_PARAM, Channel::class)
-                    addParameter(CALL_OPTIONS_PARAM, CallOptions::class)
+                    addKdoc("Returns a new client using [serializationProvider] to marshall requests and responses.")
+
                     addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
 
                     returns(service.clientClassName)

@@ -23,6 +23,10 @@ class ClientGenerationTest : CodeGenerationTest() {
             import io.grpc.kotlin.AbstractCoroutineStub
             import javax.`annotation`.processing.Generated
 
+            /**
+             * Generated [TestService] client implementation using a specific [SerializationProvider]
+             * to marshall requests and responses.
+             */
             @Generated("com.github.darvld.krpc")
             public class TestClient private constructor(
               channel: Channel,
@@ -40,12 +44,12 @@ class ClientGenerationTest : CodeGenerationTest() {
               public override fun build(channel: Channel, callOptions: CallOptions): TestClient =
                   TestClient(channel, callOptions, descriptor)
 
+              /**
+               * Returns a new client using [serializationProvider] to marshall requests and responses.
+               */
               @Generated("com.github.darvld.krpc")
-              public fun withSerializationProvider(
-                channel: Channel,
-                callOptions: CallOptions,
-                serializationProvider: SerializationProvider
-              ): TestClient = TestClient(channel, callOptions, TestServiceDescriptor(serializationProvider))
+              public fun withSerializationProvider(serializationProvider: SerializationProvider): TestClient =
+                  TestClient(channel, callOptions, TestServiceDescriptor(serializationProvider))
             }
 
             """.trimIndent()
