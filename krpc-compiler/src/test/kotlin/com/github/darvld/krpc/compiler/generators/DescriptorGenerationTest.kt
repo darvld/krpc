@@ -4,8 +4,6 @@ import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.asTypeName
-import io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING
-import io.grpc.MethodDescriptor.MethodType.UNARY
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -62,10 +60,6 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             import kotlinx.serialization.serializer
             
             public object Marshallers {
-              /**
-               * A generated [MethodDescriptor.Marshaller] obtained using the `serializationProvider`
-               * constructor parameter.
-               */
               @Generated("com.github.darvld.krpc")
               private val intMarshaller: MethodDescriptor.Marshaller<Int> =
                   serializationProvider.marshallerFor(serializer())
@@ -111,10 +105,6 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             import kotlinx.serialization.serializer
             
             public object Marshallers {
-              /**
-               * A generated [MethodDescriptor.Marshaller] obtained using the `serializationProvider`
-               * constructor parameter.
-               */
               @Generated("com.github.darvld.krpc")
               private val intMarshaller: MethodDescriptor.Marshaller<Int> =
                   serializationProvider.marshallerFor(serializer())
@@ -134,14 +124,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             addProperty(PropertySpec.builder("intMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringMarshaller", Nothing::class).initializer("TODO()").build())
 
-            descriptorGenerator.buildMethodDescriptor(
-                name = "unary",
-                methodName = "unaryTest",
-                methodType = UNARY,
-                service.serviceName,
-                method.requestType,
-                method.responseType
-            ).let(::addProperty)
+            descriptorGenerator.buildMethodDescriptor(method, service).let(::addProperty)
         }
 
         generated.assertContentEquals(
@@ -149,6 +132,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             package com.test.generated
             
             import io.grpc.MethodDescriptor
+            import io.grpc.MethodDescriptor.MethodType.UNARY
             import java.lang.Void
             import javax.`annotation`.processing.Generated
             import kotlin.Int
@@ -159,11 +143,17 @@ class DescriptorGenerationTest : CodeGenerationTest() {
 
               public val stringMarshaller: Void = TODO()
 
+              /**
+               * Generated gRPC [MethodDescriptor] for the
+               * [TestService.unary][com.test.generated.TestService.unary] method.
+               *
+               * This descriptor is used by generated service components and should not be used in general code.
+               */
               @Generated("com.github.darvld.krpc")
               public val unary: MethodDescriptor<Int, String> = MethodDescriptor
                 .newBuilder<Int, String>()
                 .setFullMethodName("TestService/unaryTest")
-                .setType(MethodDescriptor.MethodType.UNARY)
+                .setType(UNARY)
                 .setRequestMarshaller(intMarshaller)
                 .setResponseMarshaller(stringMarshaller)
                 .build()
@@ -187,36 +177,36 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             addProperty(PropertySpec.builder("intMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringMarshaller", Nothing::class).initializer("TODO()").build())
 
-            descriptorGenerator.buildMethodDescriptor(
-                name = "bidiStream",
-                methodName = "bidiStreamTest",
-                methodType = BIDI_STREAMING,
-                service.serviceName,
-                method.requestType,
-                method.responseType
-            ).let(::addProperty)
+            descriptorGenerator.buildMethodDescriptor(method, service).let(::addProperty)
         }
 
         generated.assertContentEquals(
             """
             package com.test.generated
-            
+
             import io.grpc.MethodDescriptor
+            import io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING
             import java.lang.Void
             import javax.`annotation`.processing.Generated
             import kotlin.Int
             import kotlin.String
-            
+
             public object Descriptor {
               public val intMarshaller: Void = TODO()
 
               public val stringMarshaller: Void = TODO()
 
+              /**
+               * Generated gRPC [MethodDescriptor] for the
+               * [TestService.bidiStream][com.test.generated.TestService.bidiStream] method.
+               *
+               * This descriptor is used by generated service components and should not be used in general code.
+               */
               @Generated("com.github.darvld.krpc")
               public val bidiStream: MethodDescriptor<Int, String> = MethodDescriptor
                 .newBuilder<Int, String>()
                 .setFullMethodName("TestService/bidiStreamTest")
-                .setType(MethodDescriptor.MethodType.BIDI_STREAMING)
+                .setType(BIDI_STREAMING)
                 .setRequestMarshaller(intMarshaller)
                 .setResponseMarshaller(stringMarshaller)
                 .build()

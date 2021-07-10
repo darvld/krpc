@@ -5,6 +5,7 @@ import com.github.darvld.krpc.compiler.addClass
 import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
+import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.squareup.kotlinpoet.*
@@ -49,14 +50,8 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
 
                 // Generate helper method definitions
                 for (method in service.methods) {
-                    val descriptor = buildMethodDescriptor(
-                        method.declaredName,
-                        method.methodName,
-                        method.methodType,
-                        service.serviceName,
-                        method.requestType,
-                        method.responseType
-                    )
+                    val descriptor = buildMethodDescriptor(method, service)
+
                     addMarshaller(method.requestType)
                     addMarshaller(method.responseType)
 
@@ -67,34 +62,26 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
     }
 
     fun buildMethodDescriptor(
-        name: String,
-        methodName: String,
-        methodType: MethodDescriptor.MethodType,
-        serviceName: String,
-        requestType: TypeName,
-        responseType: TypeName,
-    ): PropertySpec {
-        /*.addKdoc(
-            """
-            A generated [MethodDescriptor] for the [%L] method.
-
-            This descriptor is used by generated client and server implementations. It should not be
-            used in general code.
-            """.trimIndent(),
-            "${service.declaredName}.${method.declaredName}"
-        )*/
+        method: ServiceMethodDefinition,
+        service: ServiceDefinition,
+    ): PropertySpec = with(method) {
         return PropertySpec.builder(
-            name,
+            method.declaredName,
             MethodDescriptor::class.asTypeName().parameterizedBy(requestType, responseType)
         ).run {
             markAsGenerated()
             mutable(false)
+            addKdoc(
+                DESCRIPTOR_KDOC.trimIndent(),
+                "${service.declaredName}.${method.declaredName}",
+                "${service.packageName}.${service.declaredName}.${method.declaredName}"
+            )
             initializer(
                 CodeBlock.builder()
                     .addStatement("MethodDescriptor")
                     .addStatement("  .newBuilder<%T, %T>()", requestType, responseType)
-                    .addStatement("  .setFullMethodName(%S)", "$serviceName/$methodName")
-                    .addStatement("  .setType(%L)", "MethodDescriptor.MethodType.${methodType.name}")
+                    .addStatement("  .setFullMethodName(%S)", qualifiedName(service.serviceName))
+                    .addStatement("  .setType(%M)", methodType.asMember())
                     .addStatement("  .setRequestMarshaller(%L)", requestType.marshallerPropName)
                     .addStatement("  .setResponseMarshaller(%L)", responseType.marshallerPropName)
                     .addStatement("  .build()")
@@ -106,5 +93,15 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
 
     companion object {
         const val SERIALIZATION_PROVIDER_PARAM = "serializationProvider"
+
+        const val DESCRIPTOR_KDOC = """
+        Generated gRPC [MethodDescriptor] for the [%L][%L] method.
+        
+        This descriptor is used by generated service components and should not be used in general code.
+        """
+
+        private fun MethodDescriptor.MethodType.asMember(): MemberName {
+            return MemberName(ClassName("io.grpc", "MethodDescriptor", "MethodType"), name)
+        }
     }
 }
