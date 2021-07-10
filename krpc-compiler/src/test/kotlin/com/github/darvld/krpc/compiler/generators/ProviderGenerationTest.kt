@@ -18,7 +18,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
 
         generated.assertContentEquals(
             providerWithMethods(
-                """addMethod(
+                """.addMethod(
                   ServerCalls.unaryServerMethodDefinition(
                     context,
                     definitions.unary,
@@ -41,7 +41,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
 
         generated.assertContentEquals(
             providerWithMethods(
-                """addMethod(
+                """.addMethod(
                   ServerCalls.unaryServerMethodDefinition(
                     context,
                     definitions.unary,
@@ -64,7 +64,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
 
         generated.assertContentEquals(
             providerWithMethods(
-                """addMethod(
+                """.addMethod(
                   ServerCalls.bidiStreamingServerMethodDefinition(
                     context,
                     definitions.bidiStream,
@@ -87,6 +87,10 @@ class ProviderGenerationTest : CodeGenerationTest() {
         import kotlin.coroutines.CoroutineContext
         import kotlin.coroutines.EmptyCoroutineContext
         
+        /**
+         * Generated [TestService] provider. Subclass this stub and override the service methods to provide
+         * your implementation of the service.
+         */
         @Generated("com.github.darvld.krpc")
         public abstract class TestServiceProvider(
           serializationProvider: SerializationProvider,
@@ -95,12 +99,11 @@ class ProviderGenerationTest : CodeGenerationTest() {
           private val definitions: TestServiceDescriptor = TestServiceDescriptor(serializationProvider)
         
           @Generated("com.github.darvld.krpc")
-          public final override fun bindService(): ServerServiceDefinition =
-              ServerServiceDefinition.builder("TestService").run {
+          public final override fun bindService(): ServerServiceDefinition = run {
+            ServerServiceDefinition.builder("TestService")
                 $block
-    
-                build()
-              }
+                .build()
+          }
         }
     
         """.trimIndent()

@@ -5,12 +5,12 @@ definition, including the requests, responses and all necessary data structures.
 with the gRPC plugin (Java or Kotlin variant) to generate some code you can consume. However, this process generates a
 lot of exposed boilerplate, namely builders, DSLs for those builders and other utilities.
 
-With KRPC the approach is simpler: you define your service *in Kotlin* as an interface, and then use the KRPC processor
+With kRPC the approach is simpler: you define your service *in Kotlin* as an interface, and then use the kRPC processor
 to generate the server and client implementations.
 
-## Adding KRPC to your project
+## Adding kRPC to your project
 
-Simply apply Google's KSP gradle plugin and add KRPC as a dependency:
+Simply apply Google's KSP gradle plugin and add kRPC as a dependency:
 
 ```groovy
 plugins {

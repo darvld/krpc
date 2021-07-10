@@ -11,8 +11,8 @@ integration providers.
 
 ## Overview
 
-Instead of using Protoc and .proto files to define services, KRPC uses Kotlin's interfaces and annotations. Any
-interface annotated with `@Service` will be recognized as a definition by the KRPC compiler:
+Instead of using Protoc and .proto files to define services, kRPC uses Kotlin's interfaces and annotations. Any
+interface annotated with `@Service` will be recognized as a definition by the kRPC compiler:
 
 ```kotlin
 @Service
@@ -47,6 +47,6 @@ with the library.
 
 ## Implementation
 
-The KRPC compiler uses Google's [KSP](https://github.com/google/ksp) to process the annotations and generate code. The
+The kRPC compiler uses Google's [KSP](https://github.com/google/ksp) to process the annotations and generate code. The
 runtime and generated stubs are implemented on top of the [grpc-kotlin-stub](https://github.com/grpc/grpc-kotlin)
 runtime.
