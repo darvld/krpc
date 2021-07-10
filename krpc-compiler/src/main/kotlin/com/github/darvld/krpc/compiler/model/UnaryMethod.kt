@@ -28,16 +28,15 @@ import io.grpc.MethodDescriptor.MethodType.UNARY
 class UnaryMethod(
     declaredName: String,
     methodName: String,
-    requestName: String,
-    requestType: TypeName,
+    request: RequestInfo,
     responseType: TypeName
 ) : ServiceMethodDefinition(
     declaredName,
     methodName,
-    requestName,
     isSuspending = true,
     methodType = UNARY,
-    requestType, responseType
+    request,
+    responseType
 ) {
     companion object {
         /**The simple name of the [UnaryCall] annotation.*/
@@ -47,18 +46,11 @@ class UnaryMethod(
         fun extractFrom(declaration: KSFunctionDeclaration, annotation: KSAnnotation): UnaryMethod {
             declaration.requireSuspending(true, "UnaryCall rpc methods must be marked with 'suspend' modifier.")
 
-            val methodName = declaration.extractMethodName(annotation)
-            val returnType = declaration.returnType?.resolveAsTypeName() ?: UnitClassName
-
-            val (requestName, requestType) = declaration.extractRequestInfo { it.resolveAsTypeName() }
-                ?: "unit" to UnitClassName
-
             return UnaryMethod(
                 declaredName = declaration.simpleName.asString(),
-                methodName,
-                requestName,
-                requestType,
-                returnType
+                methodName = declaration.extractMethodName(annotation),
+                request = RequestInfo.extractFrom(declaration),
+                responseType = declaration.returnType?.resolveAsTypeName() ?: UnitClassName
             )
         }
     }
