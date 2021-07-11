@@ -23,7 +23,6 @@ dependencies {
     implementation project(":krpc-compiler")
     testImplementation "org.jetbrains.kotlin:kotlin-test"
     ksp project(":krpc-compiler")
-    // configurations.ksp.dependencies.add(project.dependencies.create(project(":krpc-compiler")))
 }
 
 application {

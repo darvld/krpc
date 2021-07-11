@@ -1,19 +1,29 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    id 'org.jetbrains.kotlin.multiplatform'
 }
 
-dependencies {
-    api "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
+kotlin {
+    jvm()
 
-    api "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
-    api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    sourceSets {
+        all {
+            languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
+        }
 
-    testImplementation "org.jetbrains.kotlin:kotlin-test"
-    testImplementation "io.grpc:grpc-netty:$grpcVersion"
-}
+        jvmMain {
+            dependencies {
+                api "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
 
-sourceSets {
-    all {
-        languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
+                api "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
+                api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-test"
+                implementation "io.grpc:grpc-netty:$grpcVersion"
+            }
+        }
     }
 }
+
