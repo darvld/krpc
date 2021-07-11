@@ -29,15 +29,15 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Runtime tests
-        run: ./gradlew krpc-runtime:check --info --stacktrace
-      - name: Compiler tests
+      - name: (JVM) Runtime tests
+        run: ./gradlew krpc-runtime:jvmTest --info --stacktrace
+      - name: (JVM) Compiler tests
         # Internal compiler tests, should reveal most bugs
-        run: ./gradlew krpc-compiler:check --info --stacktrace
+        run: ./gradlew krpc-compiler:jvmTest --info --stacktrace
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v2
         with:
-          report_paths: '**/build/test-results/test/TEST-*.xml'
+          report_paths: '**/TEST-*.xml'
       - name: Run sample
         # In case the compiler tests miss something, building and running the sample should reveal it.
         run: ./gradlew sample:run --args="-ci" --info --stacktrace
