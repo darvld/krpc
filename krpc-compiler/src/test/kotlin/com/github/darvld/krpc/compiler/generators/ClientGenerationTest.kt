@@ -17,9 +17,14 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.compiler.UnitClassName
-import com.github.darvld.krpc.compiler.testing.ClassNames
+import com.github.darvld.krpc.compiler.model.CompositeRequest
+import com.github.darvld.krpc.compiler.model.NoRequest
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.LIST
+import com.squareup.kotlinpoet.LONG
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.STRING
 import org.junit.Test
 
 class ClientGenerationTest : CodeGenerationTest() {
@@ -80,7 +85,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(unaryMethod()))
+            addFunction(clientGenerator.buildServiceMethodOverride(unaryMethod(), definition.descriptorName))
         }
 
         generated.assertContentEquals(
@@ -105,15 +110,15 @@ class ClientGenerationTest : CodeGenerationTest() {
     @Test
     fun `overrides unary method with generic request and response`() {
         val method = unaryMethod(
-            requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
-            returnType = ClassNames.List.parameterizedBy(ClassNames.String)
+            request = simpleRequest(type = LIST.parameterizedBy(INT)),
+            returnType = LIST.parameterizedBy(STRING)
         )
         val definition = serviceDefinition(methods = listOf(method))
 
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(method))
+            addFunction(clientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
         }
 
         generated.assertContentEquals(
@@ -137,17 +142,49 @@ class ClientGenerationTest : CodeGenerationTest() {
     }
 
     @Test
+    fun `overrides unary method with multiple arguments`() {
+        val args = mapOf("id" to LONG, "name" to STRING, "age" to INT)
+        val method = unaryMethod(request = CompositeRequest(args, "UnaryRequest"))
+
+        val definition = serviceDefinition(methods = listOf(method))
+        val generated = temporaryFolder.newObject("Client") {
+            addSuperinterface(definition.className)
+
+            addFunction(clientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
+        }
+
+        generated.assertContentEquals(
+            """
+            package com.test.generated
+
+            import io.grpc.kotlin.ClientCalls
+            import javax.`annotation`.processing.Generated
+            import kotlin.Int
+            import kotlin.Long
+            import kotlin.String
+            
+            public object Client : TestService {
+              @Generated("com.github.darvld.krpc")
+              public override suspend fun unary(
+                id: Long,
+                name: String,
+                age: Int
+              ): String = ClientCalls.unaryRpc(channel, descriptor.unary, TestServiceDescriptor.UnaryRequest(id,
+                  name, age), callOptions)
+            }
+
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun `overrides unary method (no request, no response)`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
             clientGenerator.buildServiceMethodOverride(
-                unaryMethod(
-                    requestName = "unit",
-                    requestType = UnitClassName,
-                    returnType = UnitClassName
-                )
+                unaryMethod(request = NoRequest, returnType = UnitClassName), definition.descriptorName
             ).let(::addFunction)
         }
 
@@ -176,7 +213,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(bidiStreamMethod()))
+            addFunction(clientGenerator.buildServiceMethodOverride(bidiStreamMethod(), definition.descriptorName))
         }
 
         generated.assertContentEquals(
@@ -202,15 +239,15 @@ class ClientGenerationTest : CodeGenerationTest() {
     @Test
     fun `overrides bidi stream method with generic request and response`() {
         val method = bidiStreamMethod(
-            requestType = ClassNames.List.parameterizedBy(ClassNames.Int),
-            returnType = ClassNames.List.parameterizedBy(ClassNames.String)
+            request = simpleRequest(type = LIST.parameterizedBy(INT)),
+            returnType = LIST.parameterizedBy(STRING)
         )
         val definition = serviceDefinition(methods = listOf(method))
 
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(method))
+            addFunction(clientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
         }
 
         generated.assertContentEquals(

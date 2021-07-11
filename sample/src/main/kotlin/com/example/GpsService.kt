@@ -29,6 +29,10 @@ interface GpsService {
     @UnaryCall
     suspend fun listVehicles(): List<Vehicle>
 
+    /**Registers a new vehicle with the service.*/
+    @UnaryCall
+    suspend fun addVehicle(id: Long, info: String, location: Location): Boolean
+
     /**Returns the last known location of a given [vehicle].*/
     @UnaryCall
     suspend fun locationForVehicle(vehicle: Vehicle): Location

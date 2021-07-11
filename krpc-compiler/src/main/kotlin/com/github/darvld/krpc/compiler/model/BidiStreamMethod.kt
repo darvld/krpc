@@ -28,16 +28,15 @@ import io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING
 class BidiStreamMethod(
     declaredName: String,
     methodName: String,
-    requestName: String,
-    requestType: TypeName,
+    request: RequestInfo,
     responseType: TypeName,
 ) : ServiceMethodDefinition(
     declaredName,
     methodName,
-    requestName,
     isSuspending = false,
     methodType = BIDI_STREAMING,
-    requestType, responseType
+    request,
+    responseType
 ) {
     companion object {
         /**The simple name of the [BidiStream] annotation.*/
@@ -46,8 +45,6 @@ class BidiStreamMethod(
         /**Extracts a [BidiStreamMethod] from a function [declaration] given the corresponding [BidiStream] annotation.*/
         fun extractFrom(declaration: KSFunctionDeclaration, annotation: KSAnnotation): BidiStreamMethod {
             declaration.requireSuspending(false, "BidiStream rpc methods must not be marked with 'suspend' modifier.")
-
-            val methodName = declaration.extractMethodName(annotation)
 
             // Resolve the return type, which should yield a Flow<T>, and extract the 'T' type name.
             val responseType = declaration.returnType?.resolveAsParameterizedName()
@@ -58,20 +55,11 @@ class BidiStreamMethod(
                     message = "BidiStream rpc methods must return a Flow of a serializable type."
                 )
 
-            val (requestName, requestType) = declaration.extractRequestInfo { reference ->
-                // Resolve the request type, which should be a Flow<T>, and extract the 'T' type name.
-                reference.resolveAsParameterizedName()?.typeArguments?.singleOrNull()
-            } ?: reportError(
-                declaration,
-                message = "BidiStream rpc methods must declare a Flow of a serializable type as the only parameter."
-            )
-
             return BidiStreamMethod(
                 declaredName = declaration.simpleName.asString(),
-                methodName,
-                requestName,
-                requestType,
-                responseType
+                methodName = declaration.extractMethodName(annotation),
+                request = RequestInfo.extractFrom(declaration, flowExpected = true),
+                responseType = responseType
             )
         }
     }

@@ -32,11 +32,20 @@ class GpsServer(
     serializationProvider: SerializationProvider,
 ) : GpsServiceProvider(serializationProvider) {
 
+    private val vehicles = MutableList(5) {
+        Vehicle(Random.nextLong(1000, 9999), "SampleVehicle-SV$it")
+    }
+
+    override suspend fun addVehicle(id: Long, info: String, location: Location): Boolean {
+        println("[Server] Adding vehicle with id=$id, info=$info at $location")
+        // Ignore the location, this is just an example
+        vehicles.add(Vehicle(id, info))
+        return true
+    }
+
     override suspend fun listVehicles(): List<Vehicle> {
         // Return a list of randomly generated vehicles
-        return List(5) {
-            Vehicle(Random.nextLong(1000, 9999), "SampleVehicle-SV$it")
-        }
+        return vehicles
     }
 
     override suspend fun locationForVehicle(vehicle: Vehicle): Location {

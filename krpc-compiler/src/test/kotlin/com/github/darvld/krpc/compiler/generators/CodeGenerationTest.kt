@@ -17,11 +17,9 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.compiler.buildFile
-import com.github.darvld.krpc.compiler.model.BidiStreamMethod
-import com.github.darvld.krpc.compiler.model.ServiceDefinition
-import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
-import com.github.darvld.krpc.compiler.model.UnaryMethod
-import com.github.darvld.krpc.compiler.testing.ClassNames
+import com.github.darvld.krpc.compiler.model.*
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import org.junit.Rule
@@ -49,6 +47,9 @@ abstract class CodeGenerationTest {
 
     companion object {
 
+        fun simpleRequest(name: String = "request", type: TypeName = INT): SimpleRequest {
+            return SimpleRequest(name, type)
+        }
 
         fun serviceDefinition(
             declaredName: String = "TestService",
@@ -69,28 +70,24 @@ abstract class CodeGenerationTest {
         fun unaryMethod(
             declaredName: String = "unary",
             methodName: String = "${declaredName}Test",
-            requestName: String = "request",
-            requestType: TypeName = ClassNames.Int,
-            returnType: TypeName = ClassNames.String
+            request: RequestInfo = simpleRequest(),
+            returnType: TypeName = STRING
         ): UnaryMethod = UnaryMethod(
             declaredName,
             methodName,
-            requestName,
-            requestType,
+            request,
             returnType
         )
 
         fun bidiStreamMethod(
             declaredName: String = "bidiStream",
             methodName: String = "${declaredName}Test",
-            requestName: String = "request",
-            requestType: TypeName = ClassNames.Int,
-            returnType: TypeName = ClassNames.String
+            request: RequestInfo = simpleRequest(),
+            returnType: TypeName = STRING
         ) = BidiStreamMethod(
             declaredName,
             methodName,
-            requestName,
-            requestType,
+            request,
             returnType
         )
     }
