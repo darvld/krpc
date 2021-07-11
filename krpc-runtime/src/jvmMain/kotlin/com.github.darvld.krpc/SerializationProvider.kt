@@ -40,7 +40,7 @@ import java.io.InputStream
  * }
  * ```
  * */
-interface SerializationProvider {
+actual interface SerializationProvider {
     /**Contract method used to generate a marshaller for a serializable type.*/
     fun <T> marshallerFor(serializer: KSerializer<T>): MethodDescriptor.Marshaller<T>
 

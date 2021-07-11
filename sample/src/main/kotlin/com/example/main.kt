@@ -65,9 +65,12 @@ suspend fun showcaseClient() {
         .build()
 
     val client = GpsClient(channel, ProtoBufSerializationProvider)
+
+    // Register a vehicle with the server (multiple arguments use case)
+    client.addVehicle(4, "ManuallyAdded-MA1", randomLocation())
+
     // Get a list of vehicles to work with
     val vehicles = client.listVehicles()
-    client.addVehicle(4, "ManuallyAdded-MA1", randomLocation())
 
     println("Vehicles tracked by the server:")
     vehicles.forEach { println("  - $it") }
