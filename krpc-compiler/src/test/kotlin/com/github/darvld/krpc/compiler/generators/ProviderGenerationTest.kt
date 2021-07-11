@@ -17,6 +17,7 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.compiler.UnitClassName
+import com.github.darvld.krpc.compiler.model.NoRequest
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import org.junit.Test
 
@@ -47,7 +48,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
 
     @Test
     fun `unary method no request nor response`() {
-        val method = unaryMethod(requestName = "unit", requestType = UnitClassName, returnType = UnitClassName)
+        val method = unaryMethod(request = NoRequest, returnType = UnitClassName)
         val definition = serviceDefinition(methods = listOf(method))
 
         val generated = temporaryFolder.newFile()

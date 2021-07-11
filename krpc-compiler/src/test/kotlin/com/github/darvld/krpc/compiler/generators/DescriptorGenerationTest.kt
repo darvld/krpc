@@ -17,13 +17,9 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.compiler.UnitClassName
-import com.github.darvld.krpc.compiler.testing.ClassNames.Int
-import com.github.darvld.krpc.compiler.testing.ClassNames.List
-import com.github.darvld.krpc.compiler.testing.ClassNames.String
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.asTypeName
 import org.junit.Test
 import kotlin.test.assertEquals
 
@@ -71,7 +67,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates marshaller for simple type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(Int)
+            addMarshaller(INT)
         }
 
         generated.assertContentEquals(
@@ -96,7 +92,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates marshaller for generic type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(List.parameterizedBy(Int))
+            addMarshaller(LIST.parameterizedBy(INT))
         }
 
         generated.assertContentEquals(
@@ -122,7 +118,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates marshaller for complex generic type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(Map::class.asTypeName().parameterizedBy(Long::class.asTypeName(), List.parameterizedBy(Int)))
+            addMarshaller(Map::class.asTypeName().parameterizedBy(Long::class.asTypeName(), LIST.parameterizedBy(INT)))
         }
 
         generated.assertContentEquals(
@@ -167,10 +163,8 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `re-uses existing marshaller for same type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            Int.let {
-                addMarshaller(it)
-                addMarshaller(it)
-            }
+            addMarshaller(INT)
+            addMarshaller(INT)
         }
 
         generated.assertContentEquals(
@@ -245,8 +239,8 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates unary method descriptor with generic request and response`() {
         val method = unaryMethod(
-            requestType = List.parameterizedBy(Int),
-            returnType = List.parameterizedBy(String)
+            request = simpleRequest(type = LIST.parameterizedBy(INT)),
+            returnType = LIST.parameterizedBy(STRING)
         )
 
         val service = serviceDefinition(methods = listOf(method))

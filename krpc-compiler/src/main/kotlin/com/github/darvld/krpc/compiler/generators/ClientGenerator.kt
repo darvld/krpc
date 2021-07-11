@@ -19,10 +19,8 @@ package com.github.darvld.krpc.compiler.generators
 import com.github.darvld.krpc.SerializationProvider
 import com.github.darvld.krpc.compiler.*
 import com.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
-import com.github.darvld.krpc.compiler.generators.ServiceComponentGenerator.Companion.parameterType
 import com.github.darvld.krpc.compiler.generators.ServiceComponentGenerator.Companion.returnType
-import com.github.darvld.krpc.compiler.model.ServiceDefinition
-import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
+import com.github.darvld.krpc.compiler.model.*
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.squareup.kotlinpoet.*
@@ -129,20 +127,40 @@ internal class ClientGenerator : ServiceComponentGenerator {
 
                 // Implement surrogate service methods
                 for (method in service.methods) {
-                    addFunction(buildServiceMethodOverride(method))
+                    addFunction(buildServiceMethodOverride(method, service.descriptorName))
                 }
             }
         }
     }
 
-    internal fun buildServiceMethodOverride(method: ServiceMethodDefinition): FunSpec {
+    internal fun buildServiceMethodOverride(method: ServiceMethodDefinition, serviceDescriptorName: String): FunSpec {
         return FunSpec.builder(method.declaredName).apply {
             addModifiers(KModifier.OVERRIDE)
             markAsGenerated()
 
             if (method.isSuspending) addModifiers(KModifier.SUSPEND)
 
-            if (method.requestType != UnitClassName) addParameter(method.requestName, method.parameterType)
+            val callArgument = when (method.request) {
+                is SimpleRequest -> {
+                    val requestType = if (method.methodType == CLIENT_STREAMING || method.methodType == BIDI_STREAMING)
+                        FlowClassName.parameterizedBy(method.request.type)
+                    else
+                        method.request.type
+
+                    addParameter(method.request.parameterName, requestType)
+                    method.request.parameterName
+                }
+                is CompositeRequest -> {
+                    for ((name, type) in method.request.parameters) {
+                        addParameter(name, type)
+                    }
+                    val wrapperReference = "$serviceDescriptorName.${method.request.wrapperName}"
+                    "$wrapperReference(${method.request.parameters.keys.joinToString()})"
+                }
+                NoRequest -> {
+                    "Unit"
+                }
+            }
 
             returns(method.returnType)
 
@@ -162,8 +180,8 @@ internal class ClientGenerator : ServiceComponentGenerator {
                 builderName,
                 // The descriptor `val` for this method
                 method.declaredName,
-                // Pass in the method's argument (request) or Unit
-                if (method.requestType == UnitClassName) "Unit" else method.requestName
+                // Pass in the method's argument (request)
+                callArgument
             ).build()
 
             if (method.responseType != UnitClassName) addCode("return %L", body) else addCode(body)

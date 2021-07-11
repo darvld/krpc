@@ -17,13 +17,11 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.SerializationProvider
-import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.addClass
 import com.github.darvld.krpc.compiler.buildFile
 import com.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
 import com.github.darvld.krpc.compiler.markAsGenerated
-import com.github.darvld.krpc.compiler.model.ServiceDefinition
-import com.github.darvld.krpc.compiler.model.ServiceMethodDefinition
+import com.github.darvld.krpc.compiler.model.*
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.squareup.kotlinpoet.*
@@ -126,10 +124,17 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator {
                 UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
             }
 
-            val implementation = if (method.requestType == UnitClassName) {
-                "implementation = { ${method.declaredName}() }"
-            } else {
-                "::${method.declaredName}"
+            val implementation = when (method.request) {
+                is CompositeRequest -> {
+                    val arguments = method.request.parameters.keys.joinToString { arg -> "it.$arg" }
+                    "implementation = { ${method.declaredName}($arguments) }"
+                }
+                is SimpleRequest -> {
+                    "::${method.declaredName}"
+                }
+                NoRequest -> {
+                    "implementation = { ${method.declaredName}() }"
+                }
             }
 
             /*

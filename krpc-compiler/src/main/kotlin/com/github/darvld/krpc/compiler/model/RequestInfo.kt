@@ -16,10 +16,12 @@
 
 package com.github.darvld.krpc.compiler.model
 
+import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.reportError
 import com.github.darvld.krpc.compiler.resolveAsParameterizedName
 import com.github.darvld.krpc.compiler.resolveAsTypeName
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeName
 
 /**An abstraction used to handle different types of rpc method requests:
@@ -45,9 +47,12 @@ sealed interface RequestInfo {
                 }
 
                 // Create a composite request by matching every argument's name with its resolved type
-                CompositeRequest(declaration.parameters.associate {
-                    it.name!!.asString() to it.type.resolveAsTypeName()
-                })
+                val params = declaration.parameters.associate { param ->
+                    param.name!!.asString() to param.type.resolveAsTypeName()
+                }
+
+                val wrapperName = declaration.simpleName.asString().replaceFirstChar { it.uppercase() } + "Request"
+                CompositeRequest(params, wrapperName)
             } else declaration.parameters.singleOrNull()?.let {
                 // If the single parameter should be a Flow, extract the argument from the Flow<T> declaration
                 val resolvedType = if (flowExpected) {
@@ -63,6 +68,16 @@ sealed interface RequestInfo {
                 "No arguments provided (expected a single Flow<T>)."
             )
         }
+
+        fun ServiceDefinition.requestTypeFor(method: ServiceMethodDefinition): TypeName {
+            return when (method.request) {
+                is CompositeRequest -> {
+                    ClassName(packageName, descriptorName, method.request.wrapperName)
+                }
+                is SimpleRequest -> method.request.type
+                NoRequest -> UnitClassName
+            }
+        }
     }
 }
 
@@ -70,7 +85,7 @@ sealed interface RequestInfo {
 data class SimpleRequest(val parameterName: String, val type: TypeName) : RequestInfo
 
 /**Represents a request with multiple parameters. Only available for unary and server-stream methods.*/
-data class CompositeRequest(val parameters: Map<String, TypeName>) : RequestInfo
+data class CompositeRequest(val parameters: Map<String, TypeName>, val wrapperName: String) : RequestInfo
 
 /**Represents a request without parameters. Only available for unary and server-stream methods.*/
 object NoRequest : RequestInfo

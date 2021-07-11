@@ -18,6 +18,7 @@ package com.github.darvld.krpc.compiler
 
 import com.github.darvld.krpc.Service
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
+import com.github.darvld.krpc.compiler.model.SimpleRequest
 import com.github.darvld.krpc.compiler.testing.shouldBe
 import com.github.darvld.krpc.compiler.testing.shouldContain
 import com.github.darvld.krpc.compiler.testing.whenCompiling
@@ -25,7 +26,8 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
-import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.STRING
 import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.COMPILATION_ERROR
 import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
 import com.tschuchort.compiletesting.SourceFile
@@ -126,9 +128,8 @@ class ServiceVisitorTest {
         methods.single().run {
             declaredName shouldBe "unary"
             methodName shouldBe "unary"
-            requestName shouldBe "request"
-            requestType shouldBe Int::class.asClassName()
-            responseType shouldBe String::class.asClassName()
+            request shouldBe SimpleRequest("request", INT)
+            responseType shouldBe STRING
         }
     }
 
@@ -152,9 +153,8 @@ class ServiceVisitorTest {
         methods.single().run {
             declaredName shouldBe "unary"
             methodName shouldBe "unaryCall"
-            requestName shouldBe "request"
-            requestType shouldBe Int::class.asClassName()
-            responseType shouldBe String::class.asClassName()
+            request shouldBe SimpleRequest("request", INT)
+            responseType shouldBe STRING
         }
     }
 }
