@@ -26,7 +26,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CoroutineExtensionsTest {
-    
+
     private inline fun withServer(crossinline block: suspend (Server) -> Unit): Unit = runBlocking {
         ServerBuilder.forPort(SERVER_PORT)
             .build()
