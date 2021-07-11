@@ -7,6 +7,9 @@ dependencies {
 
     api "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
     api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "io.grpc:grpc-netty:$grpcVersion"
 }
 
 sourceSets {
