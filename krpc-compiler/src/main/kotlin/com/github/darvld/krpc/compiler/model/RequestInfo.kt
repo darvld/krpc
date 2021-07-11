@@ -42,7 +42,7 @@ sealed interface RequestInfo {
                 if (flowExpected) {
                     reportError(
                         declaration,
-                        "Multiple arguments are not supported on stream-like requests."
+                        "Multiple arguments are not supported for methods using client-side streaming."
                     )
                 }
 

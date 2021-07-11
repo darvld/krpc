@@ -159,6 +159,16 @@ class ServiceMethodVisitorTest {
     )
 
     @Test
+    fun `fails to extract client stream call with multiple arguments`() = assertExtractionFailsWith(
+        errorMessage = "Multiple arguments are not supported for methods using client-side streaming.",
+        imports = "import kotlinx.coroutines.flow.Flow",
+        definitionBlock = """
+        @ClientStream
+        suspend fun invalid(request: Int, data: String, messages: Flow<Int>): String
+        """.trimIndent()
+    )
+
+    @Test
     fun `fails to extract server stream call with non-flow return type`() = assertExtractionFailsWith(
         errorMessage = "ServerStream rpc methods must return a Flow of a serializable type.",
         definitionBlock = """
@@ -184,6 +194,16 @@ class ServiceMethodVisitorTest {
         definitionBlock = """
         @BidiStream
         fun invalid(request: Int): Flow<String>
+        """.trimIndent()
+    )
+
+    @Test
+    fun `fails to extract bidi stream call with multiple arguments`() = assertExtractionFailsWith(
+        errorMessage = "Multiple arguments are not supported for methods using client-side streaming.",
+        imports = "import kotlinx.coroutines.flow.Flow",
+        definitionBlock = """
+        @BidiStream
+        fun invalid(request: Int, data: String, messages: Flow<Int>): Flow<String>
         """.trimIndent()
     )
 
@@ -216,6 +236,20 @@ class ServiceMethodVisitorTest {
         definitionBlock = """
         @UnaryCall("unaryCall")
         suspend fun unary(request: Int): String
+        """.trimIndent()
+    )
+
+    @Test
+    fun `extracts valid unary call definition with multiple arguments`() = validateMethodExtraction<UnaryMethod>(
+        declaredName = "unary",
+        methodName = "unaryCall",
+        type = UNARY,
+        suspending = true,
+        request = CompositeRequest(mapOf("id" to LONG, "name" to STRING, "age" to INT), "UnaryRequest"),
+        imports = "import kotlin.Long",
+        definitionBlock = """
+        @UnaryCall("unaryCall")
+        suspend fun unary(id: Long, name: String, age: Int): String
         """.trimIndent()
     )
 
