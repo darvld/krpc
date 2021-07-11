@@ -32,7 +32,6 @@ import com.squareup.kotlinpoet.TypeName
  *  Use [RequestInfo.extractFrom] to automatically extract the correct information from a method declaration.*/
 sealed interface RequestInfo {
     companion object {
-
         /**Extract the request information from a method declaration.
          *
          * When [flowExpected] is true, this method will look for a single parameter with type Flow<T>, and extract
@@ -69,6 +68,7 @@ sealed interface RequestInfo {
             )
         }
 
+        /**Returns a [TypeName] used by the component generators to specify the rpc method response type.*/
         fun ServiceDefinition.requestTypeFor(method: ServiceMethodDefinition): TypeName {
             return when (method.request) {
                 is CompositeRequest -> {

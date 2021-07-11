@@ -17,10 +17,12 @@
 package com.github.darvld.krpc.compiler.generators
 
 import com.github.darvld.krpc.compiler.UnitClassName
+import com.github.darvld.krpc.compiler.model.CompositeRequest
 import com.github.darvld.krpc.compiler.model.NoRequest
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.LIST
+import com.squareup.kotlinpoet.LONG
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import org.junit.Test
@@ -133,6 +135,42 @@ class ClientGenerationTest : CodeGenerationTest() {
               @Generated("com.github.darvld.krpc")
               public override suspend fun unary(request: List<Int>): List<String> =
                   ClientCalls.unaryRpc(channel, descriptor.unary, request, callOptions)
+            }
+
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `overrides unary method with multiple arguments`() {
+        val args = mapOf("id" to LONG, "name" to STRING, "age" to INT)
+        val method = unaryMethod(request = CompositeRequest(args, "UnaryRequest"))
+
+        val definition = serviceDefinition(methods = listOf(method))
+        val generated = temporaryFolder.newObject("Client") {
+            addSuperinterface(definition.className)
+
+            addFunction(clientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
+        }
+
+        generated.assertContentEquals(
+            """
+            package com.test.generated
+
+            import io.grpc.kotlin.ClientCalls
+            import javax.`annotation`.processing.Generated
+            import kotlin.Int
+            import kotlin.Long
+            import kotlin.String
+            
+            public object Client : TestService {
+              @Generated("com.github.darvld.krpc")
+              public override suspend fun unary(
+                id: Long,
+                name: String,
+                age: Int
+              ): String = ClientCalls.unaryRpc(channel, descriptor.unary, TestServiceDescriptor.UnaryRequest(id,
+                  name, age), callOptions)
             }
 
             """.trimIndent()
