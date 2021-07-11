@@ -22,13 +22,13 @@ import com.example.Simulation.randomLocation
 import com.example.backend.GpsServer
 import com.example.backend.ProtoBufSerializationProvider
 import com.example.model.Location
+import com.github.darvld.krpc.shutdownAndJoin
 import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.yield
 
 private const val SERVER_ADDRESS = "localhost"
 private const val SERVER_PORT = 8980
@@ -55,8 +55,7 @@ fun main(vararg args: String) = runBlocking {
 
     // Shutdown the server and wait for it to terminate
     println("[Server] Shutting down")
-    server.shutdown()
-    server.awaitTermination()
+    server.shutdownAndJoin()
     println("[Server] Shutdown complete")
 }
 
@@ -118,7 +117,6 @@ suspend fun showcaseClient() {
     }
 
     println("Closing client channel")
-    channel.shutdown()
-    while (!channel.isTerminated) yield()
+    channel.shutdownAndJoin()
     println("Client terminated")
 }

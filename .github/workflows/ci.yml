@@ -29,7 +29,9 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-      - name: Run compiler tests
+      - name: Runtime tests
+        run: ./gradlew krpc-runtime:check --info --stacktrace
+      - name: Compiler tests
         # Internal compiler tests, should reveal most bugs
         run: ./gradlew krpc-compiler:check --info --stacktrace
       - name: Publish Test Report
