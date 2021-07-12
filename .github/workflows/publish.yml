@@ -13,20 +13,26 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
         with:
-          java-version: 1.8
-
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Validate Gradle wrapper
+          uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
         # Builds the release artifacts of the library
       - name: Release build
-        run: ./gradlew :stream-chat-android-client:assembleRelease
-
-        # Generates other artifacts (javadocJar is optional)
-      - name: Source jar and dokka
-        run: ./gradlew androidSourcesJar javadocJar
-
-        # Runs upload, and then closes & releases the repository
+        run: ./gradlew assemble
+        # Runs upload
       - name: Publish to MavenCentral
         run: ./gradlew publishToSonatype --max-workers 1
         env:
@@ -35,3 +41,9 @@ jobs:
           SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+      - name: Cleanup Gradle Cache
+          # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
+          # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+          run: |
+            rm -f ~/.gradle/caches/modules-2/modules-2.lock
+            rm -f ~/.gradle/caches/modules-2/gc.properties
