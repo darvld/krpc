@@ -17,11 +17,11 @@
 package com.github.darvld.krpc.compiler.model
 
 import com.github.darvld.krpc.UnaryCall
-import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.resolveAsTypeName
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.UNIT
 import io.grpc.MethodDescriptor.MethodType.UNARY
 
 /**Contains information about a service method annotated with [UnaryCall].*/
@@ -50,7 +50,7 @@ class UnaryMethod(
                 declaredName = declaration.simpleName.asString(),
                 methodName = declaration.extractMethodName(annotation),
                 request = RequestInfo.extractFrom(declaration),
-                responseType = declaration.returnType?.resolveAsTypeName() ?: UnitClassName
+                responseType = declaration.returnType?.resolveAsTypeName() ?: UNIT
             )
         }
     }

@@ -21,8 +21,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import kotlinx.coroutines.flow.Flow
 
-internal val UnitClassName by lazy { Unit::class.asClassName() }
-internal val FlowClassName by lazy { Flow::class.asClassName() }
+internal val FLOW by lazy { Flow::class.asClassName() }
 
 /**Resolves this type reference and attempts construct a [ParameterizedTypeName].*/
 internal fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName? {

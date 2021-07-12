@@ -143,7 +143,7 @@ internal class ClientGenerator : ServiceComponentGenerator {
             val callArgument = when (method.request) {
                 is SimpleRequest -> {
                     val requestType = if (method.methodType == CLIENT_STREAMING || method.methodType == BIDI_STREAMING)
-                        FlowClassName.parameterizedBy(method.request.type)
+                        FLOW.parameterizedBy(method.request.type)
                     else
                         method.request.type
 
@@ -184,7 +184,7 @@ internal class ClientGenerator : ServiceComponentGenerator {
                 callArgument
             ).build()
 
-            if (method.responseType != UnitClassName) addCode("return %L", body) else addCode(body)
+            if (method.responseType != UNIT) addCode("return %L", body) else addCode(body)
         }.build()
     }
 

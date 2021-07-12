@@ -16,7 +16,7 @@
 
 package com.github.darvld.krpc.compiler.generators
 
-import com.github.darvld.krpc.compiler.FlowClassName
+import com.github.darvld.krpc.compiler.FLOW
 import com.github.darvld.krpc.compiler.model.BidiStreamMethod
 import com.github.darvld.krpc.compiler.model.ServerStreamMethod
 import com.github.darvld.krpc.compiler.model.ServiceDefinition
@@ -31,7 +31,7 @@ internal fun interface ServiceComponentGenerator {
     companion object {
         val ServiceMethodDefinition.returnType: TypeName
             get() = if (this is ServerStreamMethod || this is BidiStreamMethod) {
-                FlowClassName.parameterizedBy(responseType)
+                FLOW.parameterizedBy(responseType)
             } else {
                 responseType
             }
