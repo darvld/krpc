@@ -1,9 +1,11 @@
-# Getting started with KRPC
+# Getting started with kRPC
+
+This document covers the basics of kRPC: setting up a project, applying the compiler and creating a simple
+service definition. You can check out all the library features in the [Sample project](https://github.com/darvld/krpc/tree/main/sample). More details on service definitions can be found [here](Advanced.md).
 
 In order to define and then generate a gRPC service, you would normally need to define a ProtoBuf (.proto)
-definition, including the requests, responses and all necessary data structures. Then you would use the Protoc compiler
-with the gRPC plugin (Java or Kotlin variant) to generate some code you can consume. However, this process generates a
-lot of exposed boilerplate, namely builders, DSLs for those builders and other utilities.
+definition, including the requests, responses and all necessary data structures. Then you would use the Protoc compiler with a gRPC plugin to generate some code you can consume. However, this process generates a
+lot of exposed boilerplate, namely builders, DSLs for those builders and other utilities, which are a bit unnecessary in Kotlin.
 
 With kRPC the approach is simpler: you define your service *in Kotlin* as an interface, and then use the kRPC processor
 to generate the server and client implementations.
@@ -14,23 +16,24 @@ Simply apply Google's KSP gradle plugin and add kRPC as a dependency:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.10'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.20'
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.20'
 
-    id "com.google.devtools.ksp" version "1.5.10-1.0.0-beta02"
+    id "com.google.devtools.ksp" version '1.5.20-1.0.0-beta04'
 }
 
 dependencies {
     // Runtime, containing the annotations and other utils
     implementation "com.github.darvld.krpc:krpc-runtime:$krpcVersion"
 
-    // A serialization format is needed to instantiate the client and the server
+    // A serial format is needed to provide runtime serialization
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serializationVersion"
-    // A transport for the GRPC-Kotlin runtime
+  
+    // A transport for the grpc-kotlin runtime
     implementation "io.grpc:grpc-netty:$grpcVersion"
 
-    // Workaround for a gradle-related KSP bug
-    configurations.ksp.dependencies.add(project.dependencies.create("com.github.darvld.krpc:krpc-compiler:$krpcVersion"))
+    // Apply the kRPC compiler using the ksp plugin
+    ksp "io.github.darvld.krpc:krpc-compiler:$krpcVersion"
 }
 ```
 
@@ -44,7 +47,7 @@ First, we define our serializable model:
 data class Vehicle(val id: Long, val model: String)
 
 @Serializable
-data class Location(val latitude: Double, val longitude: Doubles)
+data class Location(val latitude: Double, val longitude: Double)
 ```
 
 Then we could define our service like this:
@@ -62,9 +65,11 @@ interface GpsService {
 
 ## Generating the code
 
-Now compile your project. The compiler will generate a service provider and a client implementation. However, due to
-limitations in KSP, the generated sources will not be automatically detected by the IDE. In order to use them properly,
-add the following to your `build.gradle`:
+You can use the `kspKotlin` gradle task to run the processor and trigger code generation. The compiler will generate a
+service provider and a client implementation.
+
+Currently, due to limitations in KSP, the generated sources will not be automatically detected by the IDE.
+In order to use them properly, add the following to your `build.gradle`:
 
 ```groovy
 sourceSets {
@@ -94,24 +99,27 @@ class GpsServer(
 }
 ```
 
-You must be wondering by now what the `SerializationProvider` does and why it is required to construct the provider. In
-fact, the `SerializationProvider` is an abstraction used to plug in to the kotlinx.serialization API. To use it, create
-a custom provider:
+You must be wondering by now what the `SerializationProvider` does and why it is required to construct the provider.
+The `SerializationProvider` API is an abstraction used to plug in to the kotlinx-serialization API, in JVM specifically,
+it produces gRPC `Marshaller<T>` instances to marshall the requests and responses of rpc methods. It's easy
+to create a provider using any serial format from kotlinx-serialization:
 
 ```kotlin
 @OptIn(ExperimentalSerializationApi::class)
 object ProtoBufSerializationProvider : SerializationProvider {
-    override fun <T> marshallerFor(serializer: KSerializer<T>): MethodDescriptor.Marshaller<T> {
-        return object : MethodDescriptor.Marshaller<T> {
-            override fun parse(stream: InputStream): T {
-                return ProtoBuf.decodeFromByteArray(serializer, stream.readAllBytes())
-            }
-
-            override fun stream(value: T): InputStream {
-                return ByteArrayInputStream(ProtoBuf.encodeToByteArray(serializer, value))
-            }
-        }
+  override fun <T> marshallerFor(serializer: KSerializer<T>): MethodDescriptor.Marshaller<T> {
+    return object : MethodDescriptor.Marshaller<T> {
+      // Decode a serializable value from an InputStream
+      override fun parse(stream: InputStream): T {
+        return ProtoBuf.decodeFromByteArray(serializer, stream.readAllBytes())
+      }
+			
+      // Encode a serializable value and provide an InputStream to read it
+      override fun stream(value: T): InputStream {
+        return ByteArrayInputStream(ProtoBuf.encodeToByteArray(serializer, value))
+      }
     }
+  }
 }
 ```
 
@@ -119,21 +127,31 @@ Now we can instantiate a server and a client:
 
 ```kotlin
 fun main() = runBlocking {
-    val server = ServerBuilder.forPort(8980)
+    val server = ServerBuilder.forPort(8080)
         .addService(GpsServer(ProtoBufSerializationProvider))
         .build()
 
     server.start()
 
-    val channel = ManagedChannelBuilder.forAddress("localhost", 8980).build()
+  	// A ManagedChannel provides lifecycle control methods (like shutdown)
+    val channel = ManagedChannelBuilder
+        .forAddress("localhost", 8080)
+        .usePlainText()
+        .build()
+    
     val client = GpsClient(channel, ProtoBufSerializationProvider)
     
     val vehicle = Vehicle(id=1438, model="Foo")
     val location = client.locationForVehicle(vehicle)
     
     println("According to the server, $vehicle is currently at $location")
-
-    server.shutdown()
-    server.awaitTermination()
+    
+    client.shutdownAndJoin()
+    server.shutdownAndJoin()
 }
 ```
+
+## Next steps
+
+Now we have a working implementation of a gRPC service, ready to add more methods and functionalities. For more details on how to declare services and methods, see [this guide](Advanced.md).
+
