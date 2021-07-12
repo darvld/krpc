@@ -16,7 +16,6 @@
 
 package com.github.darvld.krpc.compiler.generators
 
-import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
 import com.github.darvld.krpc.compiler.markAsGenerated
 import com.squareup.kotlinpoet.*
@@ -35,7 +34,7 @@ internal val TypeName.uniqueSimpleName: String
     }
 
 internal val TypeName.marshallerPropName: String
-    get() = if (this == UnitClassName) {
+    get() = if (this == UNIT) {
         "SerializationProvider.UnitMarshaller"
     } else {
         "${uniqueSimpleName.replaceFirstChar { it.lowercaseChar() }}Marshaller"
@@ -43,7 +42,7 @@ internal val TypeName.marshallerPropName: String
 
 internal fun TypeSpec.Builder.addMarshaller(typeName: TypeName) {
     // Don't generate a marshaller for Unit
-    if (typeName == UnitClassName) return
+    if (typeName == UNIT) return
 
     val propName = typeName.marshallerPropName
 

@@ -16,13 +16,13 @@
 
 package com.github.darvld.krpc.compiler.model
 
-import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.reportError
 import com.github.darvld.krpc.compiler.resolveAsParameterizedName
 import com.github.darvld.krpc.compiler.resolveAsTypeName
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.UNIT
 
 /**An abstraction used to handle different types of rpc method requests:
  *  - [SimpleRequest] handles methods with a single argument (the default in gRPC).
@@ -75,7 +75,7 @@ sealed interface RequestInfo {
                     ClassName(packageName, descriptorName, method.request.wrapperName)
                 }
                 is SimpleRequest -> method.request.type
-                NoRequest -> UnitClassName
+                NoRequest -> UNIT
             }
         }
     }

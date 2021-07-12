@@ -61,7 +61,7 @@ fun main(vararg args: String) = runBlocking {
 
 suspend fun showcaseClient() {
     val channel = ManagedChannelBuilder.forAddress(SERVER_ADDRESS, SERVER_PORT)
-        .usePlaintext()
+        .usePlaintext() // Disable TLS for this example
         .build()
 
     val client = GpsClient(channel, ProtoBufSerializationProvider)
@@ -106,7 +106,7 @@ suspend fun showcaseClient() {
     })
 
     // Continuous tracking mode
-    val tracked = flow { // Track 3 different vehicles in total, for 5 seconds each
+    val tracked = flow { // Track 3 different vehicles in total, for ~5 seconds each
         repeat(3) {
             emit(vehicles.random())
             longDelay()

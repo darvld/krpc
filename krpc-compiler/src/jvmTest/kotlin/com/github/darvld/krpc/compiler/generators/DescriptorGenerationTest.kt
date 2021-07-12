@@ -16,7 +16,6 @@
 
 package com.github.darvld.krpc.compiler.generators
 
-import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.model.CompositeRequest
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import com.squareup.kotlinpoet.*
@@ -183,7 +182,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `uses built-in marshaller for Unit`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(UnitClassName)
+            addMarshaller(UNIT)
         }
 
         // Should not generate any marshallers

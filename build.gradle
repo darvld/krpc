@@ -3,9 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.5.20' apply false
 }
 
-group = "${artifactGroup}"
-version = "${libraryVersion}"
-
 allprojects {
     repositories {
         mavenCentral()
@@ -15,6 +12,41 @@ allprojects {
 }
 
 subprojects {
-    if (name != 'samples')
-        apply plugin: 'maven-publish'
+    if (name == 'samples') return
+
+    // Publishing configuration
+    apply plugin: 'maven-publish'
+
+    group = publishGroupId
+    version = publishVersion
+
+    publishing {
+        publications.withType(MavenPublication) {
+            pom {
+                description = "Idiomatic gRPC for Kotlin Mutliplatform"
+                url = "https://github.com/darvld/krpc"
+
+                licenses {
+                    license {
+                        name = "Apache License 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0"
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'darvld'
+                        name = 'Dario Valdespino'
+                        email = 'dvaldespino00@gmail.com'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:github.com/darvld/krpc.git'
+                    developerConnection = 'scm:git:ssh://github.com/darvld/krpc.git'
+                    url = 'https://github.com/darvld/krpc/tree/main'
+                }
+            }
+        }
+    }
 }

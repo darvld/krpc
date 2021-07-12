@@ -273,7 +273,7 @@ class ServiceMethodVisitorTest {
             declaredName = "unary",
             methodName = "unaryCall",
             type = UNARY,
-            responseType = UnitClassName,
+            responseType = UNIT,
             suspending = true,
             definitionBlock = """
             @UnaryCall("unaryCall")

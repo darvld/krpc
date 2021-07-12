@@ -16,15 +16,11 @@
 
 package com.github.darvld.krpc.compiler.generators
 
-import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.model.CompositeRequest
 import com.github.darvld.krpc.compiler.model.NoRequest
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
-import com.squareup.kotlinpoet.INT
-import com.squareup.kotlinpoet.LIST
-import com.squareup.kotlinpoet.LONG
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.STRING
 import org.junit.Test
 
 class ClientGenerationTest : CodeGenerationTest() {
@@ -184,7 +180,7 @@ class ClientGenerationTest : CodeGenerationTest() {
             addSuperinterface(definition.className)
 
             clientGenerator.buildServiceMethodOverride(
-                unaryMethod(request = NoRequest, returnType = UnitClassName), definition.descriptorName
+                unaryMethod(request = NoRequest, returnType = UNIT), definition.descriptorName
             ).let(::addFunction)
         }
 

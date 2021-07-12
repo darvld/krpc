@@ -16,13 +16,13 @@
 
 package com.github.darvld.krpc.compiler.generators
 
-import com.github.darvld.krpc.compiler.UnitClassName
 import com.github.darvld.krpc.compiler.model.CompositeRequest
 import com.github.darvld.krpc.compiler.model.NoRequest
 import com.github.darvld.krpc.compiler.testing.assertContentEquals
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.LONG
 import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.UNIT
 import org.junit.Test
 
 class ProviderGenerationTest : CodeGenerationTest() {
@@ -76,7 +76,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
 
     @Test
     fun `unary method no request nor response`() {
-        val method = unaryMethod(request = NoRequest, returnType = UnitClassName)
+        val method = unaryMethod(request = NoRequest, returnType = UNIT)
         val definition = serviceDefinition(methods = listOf(method))
 
         val generated = temporaryFolder.newFile()
