@@ -10,12 +10,16 @@ kotlin {
             languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
         }
 
-        jvmMain {
+        commonMain {
             dependencies {
                 api "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
-
-                api "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
                 api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+            }
+        }
+
+        jvmMain {
+            dependencies {
+                api "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
             }
         }
         jvmTest {

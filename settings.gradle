@@ -7,16 +7,18 @@ pluginManagement {
     }
 
     plugins {
-        // Disabled since applying both plugins adds the Kotlin plugin twice (?)
-        // id 'org.jetbrains.kotlin.jvm' version "${kotlinVersion}" apply false
-        // id 'org.jetbrains.kotlin.plugin.serialization' version "${kotlinVersion}" apply false
-        id 'maven-publish'
+        id 'org.jetbrains.kotlin.multiplatform' version kotlinVersion
+
+        // Used to publish to MavenCentral through Sonatype OSSRH
+        id 'io.github.gradle-nexus.publish-plugin' version nexusPublishVersion
+
+        // Plugins used in the sample project
+        id "com.google.devtools.ksp" version kspVersion
+        id 'org.jetbrains.kotlin.plugin.serialization' version kotlinVersion
     }
 }
 
 rootProject.name = 'krpc'
 
-include 'krpc-runtime'
-include 'krpc-compiler'
-include 'sample'
+include 'krpc-runtime', 'krpc-compiler', 'sample'
 
