@@ -38,9 +38,9 @@ jobs:
         uses: mikepenz/action-junit-report@v2
         with:
           report_paths: '**/TEST-*.xml'
-      - name: Run sample
-        # In case the compiler tests miss something, building and running the sample should reveal it.
-        run: ./gradlew sample:run --args="-ci" --info --stacktrace
+      - name: (JVM) Sample test run
+        # In case the compiler tests miss something, building and running the samples should reveal it.
+        run: ./gradlew sample:jvmTest --info --stacktrace
       - name: Cleanup Gradle Cache
         # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
         # Restoring these files from a GitHub Actions cache might cause problems for future builds.

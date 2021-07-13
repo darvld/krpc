@@ -51,7 +51,7 @@ fun main(vararg args: String) = runBlocking {
     server.start()
 
     // Client demo
-    showcaseClient()
+    runClient()
 
     // Shutdown the server and wait for it to terminate
     println("[Server] Shutting down")
@@ -59,7 +59,7 @@ fun main(vararg args: String) = runBlocking {
     println("[Server] Shutdown complete")
 }
 
-suspend fun showcaseClient() {
+suspend fun runClient() {
     val channel = ManagedChannelBuilder.forAddress(SERVER_ADDRESS, SERVER_PORT)
         .usePlaintext() // Disable TLS for this example
         .build()

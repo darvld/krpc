@@ -29,10 +29,10 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-        # Builds the release artifacts of the library
+      # Builds the release artifacts of the library
       - name: Release build
         run: ./gradlew assemble
-        # Runs upload
+      # Runs upload
       - name: Publish to MavenCentral
         run: ./gradlew publishToSonatype --max-workers 1
         env:
