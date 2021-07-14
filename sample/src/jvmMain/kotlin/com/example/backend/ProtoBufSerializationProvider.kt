@@ -17,23 +17,30 @@
 package com.example.backend
 
 import io.github.darvld.krpc.SerializationProvider
-import io.grpc.MethodDescriptor
+import io.github.darvld.krpc.Transcoder
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.protobuf.ProtoBuf
+import kotlinx.serialization.serializer
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 
 /**A simple implementation of a [SerializationProvider] using [ProtoBuf] to create gRPC marshallers.*/
 @OptIn(ExperimentalSerializationApi::class)
-object ProtoBufSerializationProvider : SerializationProvider {
-    override fun <T> marshallerFor(serializer: KSerializer<T>) = object : MethodDescriptor.Marshaller<T> {
-        override fun parse(stream: InputStream): T {
-            return ProtoBuf.decodeFromByteArray(serializer, stream.readAllBytes())
-        }
+actual object ProtoBufSerializationProvider : SerializationProvider {
+    override fun <T> transcoderFor(serializer: KSerializer<T>): Transcoder<T> {
+        return object : Transcoder<T> {
+            override fun decode(from: InputStream): T {
+                return ProtoBuf.decodeFromByteArray(serializer, from.readAllBytes())
+            }
 
-        override fun stream(value: T): InputStream {
-            return ByteArrayInputStream(ProtoBuf.encodeToByteArray(serializer, value))
+            override fun encode(value: T): InputStream {
+                return ByteArrayInputStream(ProtoBuf.encodeToByteArray(serializer, value))
+            }
         }
+    }
+
+    actual inline fun <reified T> transcoder(): Transcoder<T> {
+        return transcoderFor(serializer())
     }
 }

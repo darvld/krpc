@@ -14,16 +14,13 @@
  *    limitations under the License.
  */
 
-@file:Suppress("nothing_to_inline")
-
 package io.github.darvld.krpc.metadata
 
-import io.grpc.*
+expect class CallContext
 
-inline fun <T, R> Context.interceptCall(
-    call: ServerCall<T, R>,
-    headers: Metadata,
-    handler: ServerCallHandler<T, R>
-): ServerCall.Listener<T> {
-    return Contexts.interceptCall(this, call, headers, handler)
+expect class CallContextKey<T> {
+    fun get(): T
+    fun get(context: CallContext): T
 }
+
+expect fun <T> contextKey(name: String): CallContextKey<T>

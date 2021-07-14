@@ -6,15 +6,27 @@ kotlin {
    jvm()
 
     sourceSets {
+        all {
+            languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
+        }
+
         commonMain {
             dependencies {
+                implementation project(':krpc-runtime')
+
                 implementation kotlin('stdlib-common')
+                implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
             }
         }
         commonTest {
             dependencies {
                 implementation kotlin('test-common')
                 implementation kotlin('test-annotations-common')
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation "io.grpc:grpc-kotlin-stub:$grpcKotlinVersion"
             }
         }
     }

@@ -14,14 +14,8 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc
+package io.github.darvld.krpc.metadata
 
-import kotlinx.serialization.KSerializer
-
-/**Serialization providers are responsible for creating format-specific [Transcoder] instances for any type
- * given the type's [KSerializer].
- *
- * This interface is used by the service components to generically plug into the `kotlinx.serialization` API.*/
-interface SerializationProvider {
-    fun <T> transcoderFor(serializer: KSerializer<T>): Transcoder<T>
+expect abstract class ClientMetadataInterceptor() {
+    abstract fun intercept(metadata: CallMetadata): CallMetadata
 }

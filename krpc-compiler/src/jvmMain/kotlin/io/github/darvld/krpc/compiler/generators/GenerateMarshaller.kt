@@ -35,7 +35,7 @@ internal val TypeName.uniqueSimpleName: String
 
 internal val TypeName.marshallerPropName: String
     get() = if (this == UNIT) {
-        "SerializationProvider.UnitMarshaller"
+        "UnitMarshaller"
     } else {
         "${uniqueSimpleName.replaceFirstChar { it.lowercaseChar() }}Marshaller"
     }

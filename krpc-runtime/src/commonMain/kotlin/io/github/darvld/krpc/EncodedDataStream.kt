@@ -16,12 +16,7 @@
 
 package io.github.darvld.krpc
 
-import kotlinx.serialization.KSerializer
-
-/**Serialization providers are responsible for creating format-specific [Transcoder] instances for any type
- * given the type's [KSerializer].
+/**An abstract representation of encoded data, handled by a [Transcoder].
  *
- * This interface is used by the service components to generically plug into the `kotlinx.serialization` API.*/
-interface SerializationProvider {
-    fun <T> transcoderFor(serializer: KSerializer<T>): Transcoder<T>
-}
+ * The exact implementation of this class varies for each platform. On JVM, it delegates to `java.io.InputStream`.*/
+expect abstract class EncodedDataStream

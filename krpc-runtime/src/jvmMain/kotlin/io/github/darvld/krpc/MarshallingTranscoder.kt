@@ -14,11 +14,17 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc.metadata
+package io.github.darvld.krpc
 
-import io.grpc.Context
-import kotlin.reflect.KProperty
+import io.grpc.MethodDescriptor
+import java.io.InputStream
 
-operator fun <T> Context.Key<T>.getValue(thisRef: Any?, property: KProperty<*>): T {
-    return get()
+/**A [Transcoder] wrapper used to provide a [MethodDescriptor.Marshaller] for service components.
+ *
+ * There is usually no reason to use this class manually, unless you are implementing your own
+ * transcoding API.*/
+@JvmInline
+value class MarshallingTranscoder<T>(val transcoder: Transcoder<T>) : MethodDescriptor.Marshaller<T> {
+    override fun parse(stream: InputStream): T = transcoder.decode(stream)
+    override fun stream(value: T): InputStream = transcoder.encode(value)
 }

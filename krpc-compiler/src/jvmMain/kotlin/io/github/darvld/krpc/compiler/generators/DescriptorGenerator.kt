@@ -23,6 +23,7 @@ import com.squareup.kotlinpoet.KModifier.DATA
 import com.squareup.kotlinpoet.KModifier.INTERNAL
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.darvld.krpc.SerializationProvider
+import io.github.darvld.krpc.AbstractServiceDescriptor
 import io.github.darvld.krpc.compiler.addClass
 import io.github.darvld.krpc.compiler.buildFile
 import io.github.darvld.krpc.compiler.markAsGenerated
@@ -50,6 +51,8 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
             addClass {
                 addModifiers(INTERNAL)
                 markAsGenerated()
+
+                superclass(AbstractServiceDescriptor::class)
 
                 addKdoc(
                     """

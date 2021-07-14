@@ -14,16 +14,14 @@
  *    limitations under the License.
  */
 
-package com.example
+package io.github.darvld.krpc
 
-import com.example.backend.ServerAuthInterceptor
-import io.github.darvld.krpc.metadata.ClientMetadataInterceptor
-import io.grpc.Metadata
+/**Interface providing a basic contract to convert between values of a certain type [T]
+ *  and their serialized representation using a platform-specific [EncodedDataStream].*/
+interface Transcoder<T> {
+    /**Decodes a value of type [T] given its serialized form as [EncodedDataStream].*/
+    fun decode(from: EncodedDataStream): T
 
-class ClientAuthInterceptor(val username: String) : ClientMetadataInterceptor() {
-    override fun intercept(headers: Metadata): Metadata {
-        headers.put(ServerAuthInterceptor.AuthTokenMetadata, username)
-
-        return headers
-    }
+    /**Encodes the [value] and returns a serialized form as [EncodedDataStream].*/
+    fun encode(value: T): EncodedDataStream
 }

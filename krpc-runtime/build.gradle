@@ -12,7 +12,7 @@ kotlin {
 
         commonMain {
             dependencies {
-                api "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
+                implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
                 api "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
             }
         }

@@ -16,30 +16,19 @@
 
 package com.example.backend
 
+import com.example.backend.ProtoBufSerializationProvider.transcoder
 import io.github.darvld.krpc.metadata.ServerMetadataInterceptor
-import io.grpc.*
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.encodeToByteArray
-import kotlinx.serialization.protobuf.ProtoBuf
-
-@OptIn(ExperimentalSerializationApi::class)
-inline fun <reified T> metadataKey(name: String): Metadata.Key<T> {
-    val marshaller = object : Metadata.BinaryMarshaller<T> {
-        override fun parseBytes(serialized: ByteArray): T {
-            return ProtoBuf.decodeFromByteArray(serialized)
-        }
-
-        override fun toBytes(value: T): ByteArray {
-            return ProtoBuf.encodeToByteArray(value)
-        }
-    }
-    return Metadata.Key.of("$name-bin", marshaller)
-}
+import io.github.darvld.krpc.metadata.contextKey
+import io.github.darvld.krpc.metadata.metadataKey
+import io.grpc.Context
+import io.grpc.Metadata
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
 
 object ServerAuthInterceptor : ServerMetadataInterceptor() {
-    val AuthTokenMetadata = metadataKey<String>("auth_token")
-    val SessionToken: Context.Key<String> = Context.key("Identity")
+    val AuthTokenMetadata = metadataKey<String>("auth_token", transcoder())
+
+    val SessionToken = contextKey<String>("session_token")
 
     override fun intercept(context: Context, metadata: Metadata): Context {
         val token = metadata.get(AuthTokenMetadata)

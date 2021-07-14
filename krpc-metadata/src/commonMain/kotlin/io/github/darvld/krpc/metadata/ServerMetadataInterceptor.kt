@@ -16,16 +16,6 @@
 
 package io.github.darvld.krpc.metadata
 
-import io.grpc.*
-
-abstract class ServerMetadataInterceptor : ServerInterceptor {
-    final override fun <ReqT : Any?, RespT : Any?> interceptCall(
-        call: ServerCall<ReqT, RespT>,
-        headers: Metadata,
-        next: ServerCallHandler<ReqT, RespT>
-    ): ServerCall.Listener<ReqT> {
-        return intercept(Context.current(), headers).interceptCall(call, headers, next)
-    }
-
-    abstract fun intercept(context: Context, metadata: Metadata): Context
+expect abstract class ServerMetadataInterceptor {
+    abstract fun intercept(context: CallContext, metadata: CallMetadata): CallContext
 }

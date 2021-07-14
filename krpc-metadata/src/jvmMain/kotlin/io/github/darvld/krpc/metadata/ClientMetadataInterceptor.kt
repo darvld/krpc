@@ -18,18 +18,21 @@ package io.github.darvld.krpc.metadata
 
 import io.grpc.*
 
-abstract class ClientMetadataInterceptor : ClientInterceptor {
-    override fun <ReqT : Any?, RespT : Any?> interceptCall(
+actual abstract class ClientMetadataInterceptor : ClientInterceptor {
+    final override fun <ReqT : Any?, RespT : Any?> interceptCall(
         method: MethodDescriptor<ReqT, RespT>,
         callOptions: CallOptions,
         next: Channel
-    ): ClientCall<ReqT, RespT> = object : ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
-        next.newCall(method, callOptions)
-    ) {
-        override fun start(responseListener: Listener<RespT>?, headers: Metadata) {
-            super.start(responseListener, intercept(headers))
+    ): ClientCall<ReqT, RespT> {
+        return object : ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
+            next.newCall(method, callOptions)
+        ) {
+            override fun start(responseListener: Listener<RespT>?, headers: Metadata) {
+                intercept(headers)
+                super.start(responseListener, headers)
+            }
         }
     }
 
-    abstract fun intercept(headers: Metadata): Metadata
+    actual abstract fun intercept(metadata: CallMetadata): CallMetadata
 }

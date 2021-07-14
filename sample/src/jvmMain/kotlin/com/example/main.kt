@@ -19,6 +19,7 @@ package com.example
 import com.example.Simulation.longDelay
 import com.example.Simulation.moderateDelay
 import com.example.Simulation.randomLocation
+import com.example.backend.ClientAuthInterceptor
 import com.example.backend.GpsServer
 import com.example.backend.ProtoBufSerializationProvider
 import com.example.backend.ServerAuthInterceptor
@@ -67,14 +68,11 @@ suspend fun runClient() {
         .build()
 
     val client = GpsClient(channel, ProtoBufSerializationProvider)
-    // .withInterceptors(ClientAuthInterceptor("Bob"))
+        .withInterceptors(ClientAuthInterceptor("Bob"))
 
     // Handshake
-    val handshakeResult = runCatching {
-        client.handshake()
-    }
-    handshakeResult.onFailure {
-        println("Handshake failed")
+    runCatching { client.handshake() }.onFailure {
+        println("Handshake failed: ${it.message}")
         channel.shutdownAndJoin()
         return
     }
