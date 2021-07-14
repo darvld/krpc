@@ -18,12 +18,16 @@ package com.example
 
 import com.example.model.Location
 import com.example.model.Vehicle
-import com.github.darvld.krpc.*
+import io.github.darvld.krpc.*
 import kotlinx.coroutines.flow.Flow
 
 /**A GPS tracking service used to manage the [Location] of different [Vehicle] instances.*/
 @Service
 interface GpsService {
+
+    /**Authentication handshake using the gRPC Metadata API.*/
+    @UnaryCall
+    suspend fun handshake()
 
     /**Returns a list of all the vehicles currently tracked by this service.*/
     @UnaryCall

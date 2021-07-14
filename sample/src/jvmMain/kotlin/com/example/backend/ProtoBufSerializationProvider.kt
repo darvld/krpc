@@ -16,7 +16,7 @@
 
 package com.example.backend
 
-import com.github.darvld.krpc.SerializationProvider
+import io.github.darvld.krpc.SerializationProvider
 import io.grpc.MethodDescriptor
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer

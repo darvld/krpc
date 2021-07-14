@@ -21,8 +21,9 @@ import com.example.Simulation.moderateDelay
 import com.example.Simulation.randomLocation
 import com.example.backend.GpsServer
 import com.example.backend.ProtoBufSerializationProvider
+import com.example.backend.ServerAuthInterceptor
 import com.example.model.Location
-import com.github.darvld.krpc.shutdownAndJoin
+import io.github.darvld.krpc.shutdownAndJoin
 import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
 import kotlinx.coroutines.flow.collect
@@ -45,6 +46,7 @@ fun main(vararg args: String) = runBlocking {
 
     // Setup the server and bind it
     val server = ServerBuilder.forPort(SERVER_PORT)
+        .intercept(ServerAuthInterceptor)
         .addService(gpsServer)
         .build()
 
@@ -65,6 +67,17 @@ suspend fun runClient() {
         .build()
 
     val client = GpsClient(channel, ProtoBufSerializationProvider)
+    // .withInterceptors(ClientAuthInterceptor("Bob"))
+
+    // Handshake
+    val handshakeResult = runCatching {
+        client.handshake()
+    }
+    handshakeResult.onFailure {
+        println("Handshake failed")
+        channel.shutdownAndJoin()
+        return
+    }
 
     // Register a vehicle with the server (multiple arguments use case)
     client.addVehicle(4, "ManuallyAdded-MA1", randomLocation())
