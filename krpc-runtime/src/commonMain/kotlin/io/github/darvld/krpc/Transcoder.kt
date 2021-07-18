@@ -16,12 +16,6 @@
 
 package io.github.darvld.krpc
 
-/**Interface providing a basic contract to convert between values of a certain type [T]
- *  and their serialized representation using a platform-specific [EncodedDataStream].*/
-interface Transcoder<T> {
-    /**Decodes a value of type [T] given its serialized form as [EncodedDataStream].*/
-    fun decode(from: EncodedDataStream): T
-
-    /**Encodes the [value] and returns a serialized form as [EncodedDataStream].*/
-    fun encode(value: T): EncodedDataStream
-}
+/**Interface providing a basic contract to convert between values of a certain type
+ *  and their serialized representation using a platform-specific encoded form.*/
+expect interface Transcoder<T>

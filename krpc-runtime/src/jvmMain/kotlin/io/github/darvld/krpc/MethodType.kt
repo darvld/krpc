@@ -14,18 +14,8 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc.metadata
+package io.github.darvld.krpc
 
-import io.github.darvld.krpc.Transcoder
-import io.grpc.Metadata
+import io.grpc.MethodDescriptor
 
-actual typealias CallMetadata = Metadata
-
-actual typealias CallMetadataKey<T> = Metadata.Key<T>
-
-actual inline fun <reified T> metadataKey(
-    name: String,
-    transcoder: Transcoder<T>
-): CallMetadataKey<T> {
-    return Metadata.Key.of("$name-bin", MetadataTranscoder(transcoder))
-}
+actual typealias MethodType = MethodDescriptor.MethodType

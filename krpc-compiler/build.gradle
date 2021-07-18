@@ -10,11 +10,16 @@ kotlin {
             languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
         }
 
+        commonMain {
+            dependencies {
+                implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
+            }
+        }
+
         jvmMain {
             dependencies {
                 implementation project(":krpc-runtime")
                 implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
-                implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
                 implementation "com.squareup:kotlinpoet:$kotlinPoetVersion"
             }
         }

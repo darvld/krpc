@@ -16,6 +16,15 @@
 
 package io.github.darvld.krpc.metadata
 
+/**A simple server interceptor used to modify the current call context.
+ *
+ * Common uses include verifying the [CallMetadata] for authentication/authorization purposes, or
+ * providing contextual information about the caller to the service implementation.*/
 expect abstract class ServerMetadataInterceptor {
+    /**Intercepts a call's [context], allowing the implementation to provide new values using the information
+     * extracted from the call's [metadata].
+     *
+     * The returned context should be either the one provided in the arguments, or one derived from it using
+     * [CallContext.withValue].*/
     abstract fun intercept(context: CallContext, metadata: CallMetadata): CallContext
 }

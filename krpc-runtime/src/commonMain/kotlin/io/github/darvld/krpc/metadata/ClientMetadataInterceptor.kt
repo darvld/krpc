@@ -14,19 +14,16 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc
+package io.github.darvld.krpc.metadata
 
-import io.grpc.MethodDescriptor
-import kotlinx.serialization.*
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-
-/**A [Transcoder] wrapper used to provide a [MethodDescriptor.Marshaller] for service components.
+/**A simple client interceptor used to provide metadata headers for a call.
  *
- * There is usually no reason to use this class manually, unless you are implementing your own
- * transcoding API.*/
-@JvmInline
-value class MarshallingTranscoder<T>(val transcoder: Transcoder<T>) : MethodDescriptor.Marshaller<T> {
-    override fun parse(stream: InputStream): T = transcoder.decode(stream)
-    override fun stream(value: T): InputStream = transcoder.encode(value)
+ * The most common use case for this class is to provide authentication/authorization tokens for service calls.*/
+expect abstract class ClientMetadataInterceptor() {
+    /**Intercepts a call's [metadata].
+     *
+     * The returned value can be a new instance, however in most cases
+     * an interceptor will simple use [CallMetadata.put] to provide new headers and return the same [metadata]
+     * instance being intercepted.*/
+    abstract fun intercept(metadata: CallMetadata): CallMetadata
 }

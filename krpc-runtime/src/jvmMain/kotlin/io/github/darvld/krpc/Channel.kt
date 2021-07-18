@@ -14,8 +14,8 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc.metadata
+package io.github.darvld.krpc
 
-operator fun CallMetadata.contains(key: CallMetadataKey<*>): Boolean {
-    return containsKey(key)
-}
+import io.grpc.Channel as GrpcChannel
+
+actual typealias Channel = GrpcChannel

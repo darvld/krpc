@@ -28,10 +28,10 @@ kotlin {
             dependencies {
                 // Include the kRPC runtime (annotations + coroutines support) for the common module
                 implementation project(":krpc-runtime")
-                implementation project(":krpc-metadata")
 
                 // Serial format shared by all platforms (could be Json, or any other)
                 implementation "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serializationVersion"
+
             }
         }
 

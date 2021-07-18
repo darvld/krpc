@@ -16,12 +16,13 @@
 
 package com.example
 
-import com.example.backend.ProtoBufSerializationProvider.transcoder
 import com.example.model.Location
 import com.example.model.Vehicle
 import io.github.darvld.krpc.*
 import io.github.darvld.krpc.metadata.metadataKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.protobuf.ProtoBuf
 
 /**A GPS tracking service used to manage the [Location] of different [Vehicle] instances.*/
 @Service
@@ -65,6 +66,7 @@ interface GpsService {
 
     companion object {
         /**Metadata used to validate client calls. Tokens are obtained from a separate Authorization service.*/
-        val AUTH_TOKEN = metadataKey<String>("auth_token", transcoder())
+        @OptIn(ExperimentalSerializationApi::class)
+        val AUTH_TOKEN = metadataKey<String>("auth_token", ProtoBuf.transcoder())
     }
 }

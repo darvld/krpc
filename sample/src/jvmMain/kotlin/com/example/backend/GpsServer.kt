@@ -15,7 +15,7 @@
  */
 
 package com.example.backend
-
+/*
 import com.example.GpsServiceProvider
 import com.example.Simulation.moderateDelay
 import com.example.Simulation.randomLocation
@@ -102,3 +102,5 @@ class GpsServer(
         println("[Server] Now exiting continuous tracking mode")
     }
 }
+
+ */

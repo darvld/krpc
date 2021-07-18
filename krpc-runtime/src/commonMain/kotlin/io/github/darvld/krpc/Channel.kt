@@ -16,17 +16,5 @@
 
 package io.github.darvld.krpc
 
-import io.grpc.MethodDescriptor
-import kotlinx.serialization.*
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-
-/**A [Transcoder] wrapper used to provide a [MethodDescriptor.Marshaller] for service components.
- *
- * There is usually no reason to use this class manually, unless you are implementing your own
- * transcoding API.*/
-@JvmInline
-value class MarshallingTranscoder<T>(val transcoder: Transcoder<T>) : MethodDescriptor.Marshaller<T> {
-    override fun parse(stream: InputStream): T = transcoder.decode(stream)
-    override fun stream(value: T): InputStream = transcoder.encode(value)
-}
+/**A platform-specific component used at the transport layer to perform client rpc calls.*/
+expect abstract class Channel

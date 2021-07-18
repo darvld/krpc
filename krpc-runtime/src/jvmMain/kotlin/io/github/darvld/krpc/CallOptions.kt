@@ -14,13 +14,10 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc.metadata
+package io.github.darvld.krpc
 
-expect class CallContext
+import io.grpc.CallOptions as GrpcCallOptions
 
-expect class CallContextKey<T> {
-    fun get(): T
-    fun get(context: CallContext): T
-}
+actual typealias CallOptions = GrpcCallOptions
 
-expect fun <T> contextKey(name: String): CallContextKey<T>
+actual fun defaultCallOptions(): CallOptions = GrpcCallOptions.DEFAULT

@@ -14,20 +14,13 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc.metadata
+package io.github.darvld.krpc
 
-import io.github.darvld.krpc.Transcoder
+import java.io.InputStream
 
-expect class CallMetadata {
-    fun containsKey(key: CallMetadataKey<*>): Boolean
-
-    fun <T> get(key: CallMetadataKey<T>): T?
-    fun <T> put(key: CallMetadataKey<T>, value: T)
-
-    fun <T> remove(key: CallMetadataKey<T>, value: T): Boolean
-    fun <T> discardAll(key: CallMetadataKey<T>)
+/**Interface providing a basic contract to convert between values of a certain [Decoded][D] type
+ *  and their serialized representation using a platform-specific [Encoded][E] form.*/
+actual interface Transcoder<T> {
+    fun encode(value: T): InputStream
+    fun decode(stream: InputStream): T
 }
-
-expect abstract class CallMetadataKey<T>
-
-expect inline fun <reified T> metadataKey(name: String, transcoder: Transcoder<T>): CallMetadataKey<T>

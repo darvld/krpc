@@ -17,11 +17,17 @@
 package io.github.darvld.krpc
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.serializer
 
 /**Serialization providers are responsible for creating format-specific [Transcoder] instances for any type
  * given the type's [KSerializer].
  *
  * This interface is used by the service components to generically plug into the `kotlinx.serialization` API.*/
 interface SerializationProvider {
+    /**Returns a [Transcoder] that uses [serializer] to encode/decode between [T] and a platform-specific encoded format.*/
     fun <T> transcoderFor(serializer: KSerializer<T>): Transcoder<T>
+}
+
+inline fun <reified T> SerializationProvider.transcoder(): Transcoder<T> {
+    return transcoderFor(serializer())
 }

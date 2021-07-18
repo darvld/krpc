@@ -16,23 +16,32 @@
 
 package io.github.darvld.krpc
 
-import io.grpc.MethodDescriptor
-import kotlinx.serialization.KSerializer
 import java.io.InputStream
 
 /**Base class for generated components holding a service's method descriptors and marshallers.
  *
  * This class should not be implemented manually, use the generated descriptor for your service instead.*/
-abstract class AbstractServiceDescriptor {
-    /**A no-op [MethodDescriptor.Marshaller] to avoid runtime serialization of the [Unit] type.*/
-    object UnitMarshaller : MethodDescriptor.Marshaller<Unit> {
-        override fun parse(stream: InputStream) = Unit
-        override fun stream(value: Unit?): InputStream = InputStream.nullInputStream()
+actual abstract class AbstractServiceDescriptor {
+
+    actual abstract val serviceName: String
+
+    /**A no-op [Transcoder] to avoid runtime serialization of the [Unit] type.*/
+    actual object UnitTranscoder : Transcoder<Unit> {
+        override fun encode(value: Unit): InputStream = InputStream.nullInputStream()
+        override fun decode(stream: InputStream) = Unit
     }
 
-    /**Shorthand extension to obtain a [MarshallingTranscoder] for a type given its serializer.*/
-    @Suppress("nothing_to_inline")
-    protected inline fun <T> SerializationProvider.marshallerFor(serializer: KSerializer<T>): MethodDescriptor.Marshaller<T> {
-        return MarshallingTranscoder(transcoderFor(serializer))
+    protected actual fun <T, R> methodDescriptor(
+        name: String,
+        type: MethodType,
+        requestTranscoder: Transcoder<T>,
+        responseTranscoder: Transcoder<R>
+    ): MethodDescriptor<T, R> {
+        return MethodDescriptor.newBuilder<T, R>()
+            .setFullMethodName("$serviceName/$name")
+            .setType(type)
+            .setRequestMarshaller(MarshallingTranscoder(requestTranscoder))
+            .setResponseMarshaller(MarshallingTranscoder(responseTranscoder))
+            .build()
     }
 }

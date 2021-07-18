@@ -14,11 +14,8 @@
  *    limitations under the License.
  */
 
-package com.example.backend
+package io.github.darvld.krpc
 
-import io.github.darvld.krpc.SerializationProvider
-import io.github.darvld.krpc.Transcoder
+import io.grpc.MethodDescriptor
 
-expect object ProtoBufSerializationProvider : SerializationProvider {
-    inline fun <reified T> transcoder(): Transcoder<T>
-}
+actual typealias MethodDescriptor<T, R> = MethodDescriptor<T, R>

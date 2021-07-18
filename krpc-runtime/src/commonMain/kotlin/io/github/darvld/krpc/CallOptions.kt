@@ -16,7 +16,10 @@
 
 package io.github.darvld.krpc
 
-/**An abstract representation of encoded data, handled by a [Transcoder].
+/**Custom options for rpc calls.
  *
- * The exact implementation of this class varies for each platform. On JVM, it delegates to `java.io.InputStream`.*/
-expect abstract class EncodedDataStream
+ * This class is platform-specific, see the actual declarations for details.*/
+expect class CallOptions
+
+/**A platform-agnostic method used to obtain the default [CallOptions].*/
+expect fun defaultCallOptions(): CallOptions

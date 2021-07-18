@@ -16,10 +16,18 @@
 
 package io.github.darvld.krpc.metadata
 
-import io.grpc.Context
-import kotlin.reflect.KProperty
+import io.github.darvld.krpc.Transcoder
+import io.grpc.Metadata
 
-@Suppress("nothing_to_Inline")
-inline operator fun <T> Context.Key<T>.getValue(thisRef: Any?, property: KProperty<*>): T {
-    return get()
+actual typealias CallMetadata = Metadata
+
+actual typealias CallMetadataKey<T> = Metadata.Key<T>
+
+actual inline fun <reified T> metadataKey(
+    name: String,
+    transcoder: Transcoder<T>
+): CallMetadataKey<T> {
+    return Metadata.Key.of("$name-bin", MetadataTranscoder(transcoder))
 }
+
+actual fun callMetadata(): CallMetadata = Metadata()

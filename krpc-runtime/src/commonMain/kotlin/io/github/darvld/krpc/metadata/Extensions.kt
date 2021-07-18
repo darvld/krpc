@@ -14,7 +14,17 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc
+package io.github.darvld.krpc.metadata
 
-import java.io.InputStream
+import kotlin.reflect.KProperty
 
+/**Extension operator used to check whether a given [key] is present in a call's metadata headers.*/
+operator fun CallMetadata.contains(key: CallMetadataKey<*>): Boolean {
+    return containsKey(key)
+}
+
+/**Extension delegate used to retrieve a context key's value in the current [CallContext].*/
+@Suppress("nothing_to_Inline")
+inline operator fun <T> CallContextKey<T>.getValue(thisRef: Any?, property: KProperty<*>): T {
+    return get()
+}

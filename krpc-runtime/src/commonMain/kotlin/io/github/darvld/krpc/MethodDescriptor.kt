@@ -14,8 +14,14 @@
  *    limitations under the License.
  */
 
-package io.github.darvld.krpc.metadata
+package io.github.darvld.krpc
 
-expect abstract class ClientMetadataInterceptor() {
-    abstract fun intercept(metadata: CallMetadata): CallMetadata
-}
+/**A descriptor for rpc methods.
+ *
+ * This class is platform-specific, since it needs to plug into specific
+ * runtime APIs that differ greatly between platforms.
+ *
+ * For example, while on JVM the grpc-java runtime requires
+ * descriptors with marshallers to be provided, on JS the serialization is provided through callbacks
+ * whenever a new call is created.*/
+expect class MethodDescriptor<T, R>

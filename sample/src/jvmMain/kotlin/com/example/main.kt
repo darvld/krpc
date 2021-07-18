@@ -14,8 +14,9 @@
  *    limitations under the License.
  */
 
-package com.example
 
+package com.example
+/*
 import com.example.Simulation.longDelay
 import com.example.Simulation.moderateDelay
 import com.example.Simulation.randomLocation
@@ -134,3 +135,5 @@ suspend fun runClient() {
     channel.shutdownAndJoin()
     println("Client terminated")
 }
+
+ */

@@ -16,6 +16,7 @@
 
 package com.example.backend
 
+/*
 import com.example.backend.ProtoBufSerializationProvider.transcoder
 import io.github.darvld.krpc.metadata.ServerMetadataInterceptor
 import io.github.darvld.krpc.metadata.contextKey
@@ -37,3 +38,4 @@ object ServerAuthInterceptor : ServerMetadataInterceptor() {
         return context.withValue(SessionToken, token)
     }
 }
+ */
