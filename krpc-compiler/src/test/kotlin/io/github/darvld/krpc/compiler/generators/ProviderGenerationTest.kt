@@ -38,15 +38,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         }
 
         generated.assertContentEquals(
-            providerWithMethods(
-                """.addMethod(
-                  ServerCalls.unaryServerMethodDefinition(
-                    context,
-                    definitions.unary,
-                    ::unary
-                  )
-                )"""
-            )
+            singleMethodProvider("registerUnaryMethod(definition.unary, ::unary)")
         )
     }
 
@@ -62,15 +54,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         }
 
         generated.assertContentEquals(
-            providerWithMethods(
-                """.addMethod(
-                  ServerCalls.unaryServerMethodDefinition(
-                    context,
-                    definitions.unary,
-                    implementation = { unary(it.id, it.name, it.age) }
-                  )
-                )"""
-            )
+            singleMethodProvider("registerUnaryMethod(definition.unary) { unary(it.id, it.name, it.age) }")
         )
     }
 
@@ -85,15 +69,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         }
 
         generated.assertContentEquals(
-            providerWithMethods(
-                """.addMethod(
-                  ServerCalls.unaryServerMethodDefinition(
-                    context,
-                    definitions.unary,
-                    implementation = { unary() }
-                  )
-                )"""
-            )
+            singleMethodProvider("registerUnaryMethod(definition.unary) { unary() }")
         )
     }
 
@@ -108,27 +84,19 @@ class ProviderGenerationTest : CodeGenerationTest() {
         }
 
         generated.assertContentEquals(
-            providerWithMethods(
-                """.addMethod(
-                  ServerCalls.bidiStreamingServerMethodDefinition(
-                    context,
-                    definitions.bidiStream,
-                    ::bidiStream
-                  )
-                )"""
-            )
+            singleMethodProvider("registerBidiStreamMethod(definition.bidiStream, ::bidiStream)")
         )
     }
 
-    private fun providerWithMethods(block: String): String {
+    private fun singleMethodProvider(block: String): String {
         return """
         package com.test.generated
     
+        import io.github.darvld.krpc.AbstractServiceProvider
+        import io.github.darvld.krpc.Generated
         import io.github.darvld.krpc.SerializationProvider
-        import io.grpc.ServerServiceDefinition
-        import io.grpc.kotlin.AbstractCoroutineServerImpl
-        import io.grpc.kotlin.ServerCalls
-        import javax.`annotation`.processing.Generated
+        import io.github.darvld.krpc.ServiceRegistrar
+        import kotlin.Unit
         import kotlin.coroutines.CoroutineContext
         import kotlin.coroutines.EmptyCoroutineContext
         
@@ -136,18 +104,17 @@ class ProviderGenerationTest : CodeGenerationTest() {
          * Generated [TestService] provider. Subclass this stub and override the service methods to provide
          * your implementation of the service.
          */
-        @Generated("com.github.darvld.krpc")
+        @Generated("io.github.darvld.krpc")
         public abstract class TestServiceProvider(
           serializationProvider: SerializationProvider,
           context: CoroutineContext = EmptyCoroutineContext
-        ) : AbstractCoroutineServerImpl(context), TestService {
-          private val definitions: TestServiceDescriptor = TestServiceDescriptor(serializationProvider)
+        ) : AbstractServiceProvider(context), TestService {
+          protected final override val definition: TestServiceDescriptor =
+              TestServiceDescriptor(serializationProvider)
         
-          @Generated("com.github.darvld.krpc")
-          public final override fun bindService(): ServerServiceDefinition = run {
-            ServerServiceDefinition.builder("TestService")
-                $block
-                .build()
+          @Generated("io.github.darvld.krpc")
+          public final override fun ServiceRegistrar.bindMethods(): Unit {
+            $block
           }
         }
     

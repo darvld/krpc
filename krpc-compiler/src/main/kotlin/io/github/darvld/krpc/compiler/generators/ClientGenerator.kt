@@ -51,10 +51,10 @@ internal class ClientGenerator : ServiceComponentGenerator() {
                 // Primary constructor (private)
                 FunSpec.constructorBuilder()
                     .addModifiers(KModifier.PRIVATE)
-                    .addParameter(ParameterSpec(CHANNEL_PARAM, Channel::class.asTypeName()))
+                    .addParameter(ParameterSpec(CHANNEL_PARAM, CHANNEL))
                     .addParameter(
-                        ParameterSpec.builder(CALL_OPTIONS_PARAM, CallOptions::class.asTypeName())
-                            .defaultValue("CallOptions.DEFAULT")
+                        ParameterSpec.builder(CALL_OPTIONS_PARAM, CALL_OPTIONS)
+                            .defaultValue("%M()", DEFAULT_CALL_OPTIONS)
                             .build()
                     )
                     .addParameter(ParameterSpec(DESCRIPTOR_PARAM, service.descriptorClassName))
@@ -72,11 +72,11 @@ internal class ClientGenerator : ServiceComponentGenerator() {
                 // Secondary constructor (public)
                 FunSpec.constructorBuilder()
                     .markAsGenerated()
-                    .addParameter(CHANNEL_PARAM, Channel::class)
+                    .addParameter(CHANNEL_PARAM, CHANNEL)
                     .addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
                     .addParameter(
-                        ParameterSpec.builder(CALL_OPTIONS_PARAM, CallOptions::class)
-                            .defaultValue("CallOptions.DEFAULT")
+                        ParameterSpec.builder(CALL_OPTIONS_PARAM, CALL_OPTIONS)
+                            .defaultValue("%M()", DEFAULT_CALL_OPTIONS)
                             .build()
                     )
                     .callThisConstructor(
@@ -92,8 +92,8 @@ internal class ClientGenerator : ServiceComponentGenerator() {
                     markAsGenerated()
                     addModifiers(KModifier.OVERRIDE)
 
-                    addParameter(CHANNEL_PARAM, Channel::class)
-                    addParameter(CALL_OPTIONS_PARAM, CallOptions::class)
+                    addParameter(CHANNEL_PARAM, CHANNEL)
+                    addParameter(CALL_OPTIONS_PARAM, CALL_OPTIONS)
 
                     returns(service.clientClassName)
 
@@ -179,5 +179,9 @@ internal class ClientGenerator : ServiceComponentGenerator() {
         private const val CHANNEL_PARAM = "channel"
         private const val CALL_OPTIONS_PARAM = "callOptions"
         private const val DESCRIPTOR_PARAM = "descriptor"
+
+        private val CHANNEL = ClassName("io.github.darvld.krpc", "Channel")
+        private val CALL_OPTIONS = ClassName("io.github.darvld.krpc", "CallOptions")
+        private val DEFAULT_CALL_OPTIONS = MemberName("io.github.darvld.krpc", "defaultCallOptions")
     }
 }

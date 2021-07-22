@@ -38,7 +38,7 @@ class ServiceProcessorTest {
             name = "TestService.kt",
             contents = """
             package com.test.generated
-            import com.github.darvld.krpc.*
+            import io.github.darvld.krpc.*
 
             @Service
             interface TestService

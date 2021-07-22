@@ -19,9 +19,7 @@ package io.github.darvld.krpc.compiler.generators
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.KModifier.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import io.github.darvld.krpc.AbstractServiceDescriptor
-import io.github.darvld.krpc.SerializationProvider
-import io.github.darvld.krpc.Transcoder
+import io.github.darvld.krpc.*
 import io.github.darvld.krpc.compiler.addClass
 import io.github.darvld.krpc.compiler.buildFile
 import io.github.darvld.krpc.compiler.markAsGenerated
@@ -29,7 +27,6 @@ import io.github.darvld.krpc.compiler.model.CompositeRequest
 import io.github.darvld.krpc.compiler.model.RequestInfo.Companion.requestTypeFor
 import io.github.darvld.krpc.compiler.model.ServiceDefinition
 import io.github.darvld.krpc.compiler.model.ServiceMethodDefinition
-import io.grpc.MethodDescriptor
 import kotlinx.serialization.Serializable
 import java.io.OutputStream
 
@@ -56,7 +53,7 @@ internal class DescriptorGenerator : ServiceComponentGenerator() {
                     @constructor Constructs a new [${service.descriptorName}] using a [SerializationProvider]
                     to create the marshallers for method requests/responses.
                     @param $SERIALIZATION_PROVIDER_PARAM A provider implementing a serialization format.
-                    Used to generate marshallers for rpc methods.
+                    Used to generate transcoders for rpc methods.
                     """.trimIndent(),
                     service.className
                 )
@@ -128,7 +125,7 @@ internal class DescriptorGenerator : ServiceComponentGenerator() {
 
         return PropertySpec.builder(
             method.declaredName,
-            MethodDescriptor::class.asTypeName().parameterizedBy(requestType, responseType)
+            METHOD_DESCRIPTOR.parameterizedBy(requestType, responseType)
         ).run {
             markAsGenerated()
             addModifiers(INTERNAL)
@@ -167,11 +164,12 @@ internal class DescriptorGenerator : ServiceComponentGenerator() {
         """
 
         val TRANSCODER = Transcoder::class.asTypeName()
+        val METHOD_DESCRIPTOR = ClassName("io.github.darvld.krpc", "MethodDescriptor")
 
         val TRANSCODER_EXTENSION_MEMBER = MemberName("io.github.darvld.krpc", "transcoder", isExtension = true)
 
-        private fun MethodDescriptor.MethodType.asMember(): MemberName {
-            return MemberName(ClassName("io.grpc", "MethodDescriptor", "MethodType"), name)
+        private fun MethodType.asMember(): MemberName {
+            return MemberName(ClassName("io.github.darvld.krpc", "MethodType"), name)
         }
     }
 }

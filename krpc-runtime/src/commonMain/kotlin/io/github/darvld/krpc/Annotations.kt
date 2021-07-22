@@ -123,3 +123,10 @@ annotation class UnaryCall(
     /**Sets the rpc method's name within gRPC. This argument takes precedence over the declared method name.*/
     val methodName: String = ""
 )
+
+annotation class Generated(
+    /**The qualified name of the processor responsible for generating this declaration.*/
+    val by: String,
+    /**Additional information about this declaration.*/
+    val comment: String = ""
+)

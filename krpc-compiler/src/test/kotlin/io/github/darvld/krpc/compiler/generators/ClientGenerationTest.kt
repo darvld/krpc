@@ -36,37 +36,38 @@ class ClientGenerationTest : CodeGenerationTest() {
             """
             package com.test.generated
 
+            import io.github.darvld.krpc.AbstractServiceClient
+            import io.github.darvld.krpc.CallOptions
+            import io.github.darvld.krpc.Channel
+            import io.github.darvld.krpc.Generated
             import io.github.darvld.krpc.SerializationProvider
-            import io.grpc.CallOptions
-            import io.grpc.Channel
-            import io.grpc.kotlin.AbstractCoroutineStub
-            import javax.`annotation`.processing.Generated
+            import io.github.darvld.krpc.defaultCallOptions
 
             /**
              * Generated [TestService] client implementation using a specific [SerializationProvider]
              * to marshall requests and responses.
              */
-            @Generated("com.github.darvld.krpc")
+            @Generated("io.github.darvld.krpc")
             public class TestClient private constructor(
               channel: Channel,
-              callOptions: CallOptions = CallOptions.DEFAULT,
+              callOptions: CallOptions = defaultCallOptions(),
               private val descriptor: TestServiceDescriptor
-            ) : AbstractCoroutineStub<TestClient>(channel, callOptions), TestService {
-              @Generated("com.github.darvld.krpc")
+            ) : AbstractServiceClient<TestClient>(channel, callOptions), TestService {
+              @Generated("io.github.darvld.krpc")
               public constructor(
                 channel: Channel,
                 serializationProvider: SerializationProvider,
-                callOptions: CallOptions = CallOptions.DEFAULT
+                callOptions: CallOptions = defaultCallOptions()
               ) : this(channel, callOptions, TestServiceDescriptor(serializationProvider))
 
-              @Generated("com.github.darvld.krpc")
+              @Generated("io.github.darvld.krpc")
               public override fun build(channel: Channel, callOptions: CallOptions): TestClient =
                   TestClient(channel, callOptions, descriptor)
 
               /**
                * Returns a new client using [serializationProvider] to marshall requests and responses.
                */
-              @Generated("com.github.darvld.krpc")
+              @Generated("io.github.darvld.krpc")
               public fun withSerializationProvider(serializationProvider: SerializationProvider): TestClient =
                   TestClient(channel, callOptions, TestServiceDescriptor(serializationProvider))
             }
@@ -88,15 +89,14 @@ class ClientGenerationTest : CodeGenerationTest() {
             """
             package com.test.generated
 
-            import io.grpc.kotlin.ClientCalls
-            import javax.`annotation`.processing.Generated
+            import io.github.darvld.krpc.Generated
             import kotlin.Int
             import kotlin.String
             
             public object Client : TestService {
-              @Generated("com.github.darvld.krpc")
-              public override suspend fun unary(request: Int): String = ClientCalls.unaryRpc(channel,
-                  descriptor.unary, request, callOptions)
+              @Generated("io.github.darvld.krpc")
+              public override suspend fun unary(request: Int): String = unaryCall(descriptor.unary, request,
+                  callOptions)
             }
 
             """.trimIndent()
@@ -121,16 +121,15 @@ class ClientGenerationTest : CodeGenerationTest() {
             """
             package com.test.generated
 
-            import io.grpc.kotlin.ClientCalls
-            import javax.`annotation`.processing.Generated
+            import io.github.darvld.krpc.Generated
             import kotlin.Int
             import kotlin.String
             import kotlin.collections.List
             
             public object Client : TestService {
-              @Generated("com.github.darvld.krpc")
-              public override suspend fun unary(request: List<Int>): List<String> =
-                  ClientCalls.unaryRpc(channel, descriptor.unary, request, callOptions)
+              @Generated("io.github.darvld.krpc")
+              public override suspend fun unary(request: List<Int>): List<String> = unaryCall(descriptor.unary,
+                  request, callOptions)
             }
 
             """.trimIndent()
@@ -153,20 +152,19 @@ class ClientGenerationTest : CodeGenerationTest() {
             """
             package com.test.generated
 
-            import io.grpc.kotlin.ClientCalls
-            import javax.`annotation`.processing.Generated
+            import io.github.darvld.krpc.Generated
             import kotlin.Int
             import kotlin.Long
             import kotlin.String
             
             public object Client : TestService {
-              @Generated("com.github.darvld.krpc")
+              @Generated("io.github.darvld.krpc")
               public override suspend fun unary(
                 id: Long,
                 name: String,
                 age: Int
-              ): String = ClientCalls.unaryRpc(channel, descriptor.unary, TestServiceDescriptor.UnaryRequest(id,
-                  name, age), callOptions)
+              ): String = unaryCall(descriptor.unary, TestServiceDescriptor.UnaryRequest(id, name, age),
+                  callOptions)
             }
 
             """.trimIndent()
@@ -188,14 +186,13 @@ class ClientGenerationTest : CodeGenerationTest() {
             """
             package com.test.generated
 
-            import io.grpc.kotlin.ClientCalls
-            import javax.`annotation`.processing.Generated
+            import io.github.darvld.krpc.Generated
             import kotlin.Unit
             
             public object Client : TestService {
-              @Generated("com.github.darvld.krpc")
+              @Generated("io.github.darvld.krpc")
               public override suspend fun unary(): Unit {
-                ClientCalls.unaryRpc(channel, descriptor.unary, Unit, callOptions)
+                unaryCall(descriptor.unary, Unit, callOptions)
               }
             }
 
@@ -216,16 +213,15 @@ class ClientGenerationTest : CodeGenerationTest() {
             """
             package com.test.generated
 
-            import io.grpc.kotlin.ClientCalls
-            import javax.`annotation`.processing.Generated
+            import io.github.darvld.krpc.Generated
             import kotlin.Int
             import kotlin.String
             import kotlinx.coroutines.flow.Flow
             
             public object Client : TestService {
-              @Generated("com.github.darvld.krpc")
+              @Generated("io.github.darvld.krpc")
               public override fun bidiStream(request: Flow<Int>): Flow<String> =
-                  ClientCalls.bidiStreamingRpc(channel, descriptor.bidiStream, request, callOptions)
+                  bidiStreamCall(descriptor.bidiStream, request, callOptions)
             }
 
             """.trimIndent()
@@ -250,17 +246,16 @@ class ClientGenerationTest : CodeGenerationTest() {
             """
             package com.test.generated
 
-            import io.grpc.kotlin.ClientCalls
-            import javax.`annotation`.processing.Generated
+            import io.github.darvld.krpc.Generated
             import kotlin.Int
             import kotlin.String
             import kotlin.collections.List
             import kotlinx.coroutines.flow.Flow
             
             public object Client : TestService {
-              @Generated("com.github.darvld.krpc")
+              @Generated("io.github.darvld.krpc")
               public override fun bidiStream(request: Flow<List<Int>>): Flow<List<String>> =
-                  ClientCalls.bidiStreamingRpc(channel, descriptor.bidiStream, request, callOptions)
+                  bidiStreamCall(descriptor.bidiStream, request, callOptions)
             }
 
             """.trimIndent()
