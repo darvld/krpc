@@ -24,7 +24,6 @@ package io.github.darvld.krpc
  * @[ClientStream] or @[BidiStream], and complying with the corresponding signatures. Any other method will cause
  * a processing error.*/
 @Target(AnnotationTarget.CLASS)
-@Retention(AnnotationRetention.SOURCE)
 annotation class Service(
     /**Sets the name of this service within gRPC, if none is specified, the name of the interface is used.*/
     val overrideName: String = "",
@@ -51,7 +50,6 @@ annotation class Service(
  * @see ServerStream
  * */
 @Target(AnnotationTarget.FUNCTION)
-@Retention(AnnotationRetention.SOURCE)
 annotation class BidiStream(
     /**Sets the rpc method's name within gRPC. This argument takes precedence over the declared method name.*/
     val methodName: String = ""
@@ -74,7 +72,6 @@ annotation class BidiStream(
  * @see ServerStream
  * */
 @Target(AnnotationTarget.FUNCTION)
-@Retention(AnnotationRetention.SOURCE)
 annotation class ClientStream(
     /**Sets the rpc method's name within gRPC. This argument takes precedence over the declared method name.*/
     val methodName: String = ""
@@ -97,7 +94,6 @@ annotation class ClientStream(
  * @see ClientStream
  * */
 @Target(AnnotationTarget.FUNCTION)
-@Retention(AnnotationRetention.SOURCE)
 annotation class ServerStream(
     /**Sets the rpc method's name within gRPC. This argument takes precedence over the declared method name.*/
     val methodName: String = ""
@@ -123,7 +119,6 @@ annotation class ServerStream(
  * @see ServerStream
  * */
 @Target(AnnotationTarget.FUNCTION)
-@Retention(AnnotationRetention.SOURCE)
 annotation class UnaryCall(
     /**Sets the rpc method's name within gRPC. This argument takes precedence over the declared method name.*/
     val methodName: String = ""

@@ -31,6 +31,7 @@ class ServiceProcessorProvider : SymbolProcessorProvider {
             ClientGenerator(),
             ServiceProviderGenerator()
         )
+        environment.logger.logging("Instantiating processor")
         return ServiceProcessor(environment, generators = generators)
     }
 }

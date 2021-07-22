@@ -20,10 +20,10 @@ import com.example.GpsService
 import io.github.darvld.krpc.metadata.CallMetadata
 import io.github.darvld.krpc.metadata.ClientMetadataInterceptor
 
-/**A metadata interceptor used to provide the client's [authorization token][GpsService.AUTH_TOKEN].*/
+/**A metadata interceptor used to provide the client's [authorization token][GpsService.SESSION_TOKEN].*/
 class ClientAuthInterceptor(val authToken: String) : ClientMetadataInterceptor() {
     override fun intercept(metadata: CallMetadata): CallMetadata {
-        metadata.put(GpsService.AUTH_TOKEN, authToken)
+        metadata.put(GpsService.SESSION_TOKEN, authToken)
 
         return metadata
     }

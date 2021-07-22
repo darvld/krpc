@@ -19,10 +19,11 @@ package io.github.darvld.krpc.compiler.generators
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
+import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.TRANSCODER
+import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.TRANSCODER_EXTENSION_MEMBER
 import io.github.darvld.krpc.compiler.markAsGenerated
-import io.grpc.MethodDescriptor
 
-internal val TypeName.uniqueSimpleName: String
+private val TypeName.uniqueSimpleName: String
     get() {
         return when (this) {
             is ClassName -> simpleName
@@ -33,35 +34,28 @@ internal val TypeName.uniqueSimpleName: String
         }
     }
 
-internal val TypeName.marshallerPropName: String
+internal val TypeName.transcoderName: String
     get() = if (this == UNIT) {
-        "UnitMarshaller"
+        "UnitTranscoder"
     } else {
-        "${uniqueSimpleName.replaceFirstChar { it.lowercaseChar() }}Marshaller"
+        "${uniqueSimpleName.replaceFirstChar { it.lowercaseChar() }}Transcoder"
     }
 
-internal fun TypeSpec.Builder.addMarshaller(typeName: TypeName) {
+internal fun TypeSpec.Builder.addTranscoder(typeName: TypeName) {
     // Don't generate a marshaller for Unit
     if (typeName == UNIT) return
 
-    val propName = typeName.marshallerPropName
+    val propName = typeName.transcoderName
 
     // Avoid re-generating the same marshaller
     propertySpecs.find { it.name == propName }?.let { return }
 
-    addProperty(buildMarshaller(typeName, propName))
-}
-
-internal fun buildMarshaller(type: TypeName, name: String = type.marshallerPropName): PropertySpec {
-    val marshallerType = MethodDescriptor.Marshaller::class.asTypeName()
-        .parameterizedBy(type)
-
-    return PropertySpec.builder(name, marshallerType, KModifier.PRIVATE)
-        .markAsGenerated()
-        .mutable(false)
-        .initializer(
-            "$SERIALIZATION_PROVIDER_PARAM.marshallerFor(%M())",
-            MemberName("kotlinx.serialization", "serializer")
-        )
-        .build()
+    addProperty(
+        PropertySpec.builder(propName, TRANSCODER.parameterizedBy(typeName))
+            .addModifiers(KModifier.PRIVATE)
+            .markAsGenerated()
+            .mutable(false)
+            .initializer("$SERIALIZATION_PROVIDER_PARAM.%M()", TRANSCODER_EXTENSION_MEMBER)
+            .build()
+    )
 }

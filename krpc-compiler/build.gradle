@@ -1,34 +1,18 @@
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
-kotlin {
-    jvm()
+dependencies {
+    implementation project(":krpc-runtime")
+    implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
+    implementation "com.squareup:kotlinpoet:$kotlinPoetVersion"
 
-    sourceSets {
-        all {
-            languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
-        }
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "com.github.tschuchortdev:kotlin-compile-testing-ksp:$compileTestingVersion"
+}
 
-        commonMain {
-            dependencies {
-                implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
-            }
-        }
-
-        jvmMain {
-            dependencies {
-                implementation project(":krpc-runtime")
-                implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion"
-                implementation "com.squareup:kotlinpoet:$kotlinPoetVersion"
-            }
-        }
-        jvmTest {
-            dependencies {
-                implementation "org.jetbrains.kotlin:kotlin-test"
-                implementation "com.github.tschuchortdev:kotlin-compile-testing-ksp:$compileTestingVersion"
-            }
-        }
-    }
+sourceSets.all {
+    languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
 }
 

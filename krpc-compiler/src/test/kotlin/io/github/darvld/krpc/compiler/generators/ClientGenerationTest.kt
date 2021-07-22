@@ -30,7 +30,7 @@ class ClientGenerationTest : CodeGenerationTest() {
     fun `generates client skeleton`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newFile()
-        generated.outputStream().use { stream -> clientGenerator.generateClientImplementation(stream, definition) }
+        generated.outputStream().use { stream -> clientGenerator.generateComponent(stream, definition) }
 
         generated.assertContentEquals(
             """

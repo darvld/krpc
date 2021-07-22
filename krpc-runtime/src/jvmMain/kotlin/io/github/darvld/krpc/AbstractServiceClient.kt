@@ -22,9 +22,10 @@ import io.grpc.kotlin.AbstractCoroutineStub
 import io.grpc.kotlin.ClientCalls
 import kotlinx.coroutines.flow.Flow
 
-actual abstract class AbstractServiceClient actual constructor(
-    channel: Channel
-) : AbstractCoroutineStub<AbstractServiceClient>(channel) {
+actual abstract class AbstractServiceClient<T : AbstractServiceClient<T>> actual constructor(
+    channel: Channel,
+    options: CallOptions
+) : AbstractCoroutineStub<T>(channel, options) {
 
     actual suspend fun <T, R> unaryCall(
         method: MethodDescriptor<T, R>,
@@ -61,5 +62,4 @@ actual abstract class AbstractServiceClient actual constructor(
     ): Flow<R> {
         return ClientCalls.bidiStreamingRpc(channel, method, requests, options, metadata)
     }
-
 }

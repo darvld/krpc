@@ -35,7 +35,12 @@ expect abstract class AbstractServiceDescriptor() {
     /**Creates a new [MethodDescriptor] with the given [name] and [type], using the provided
      * transcoders to serialize/deserialize requests and responses.
      *
-     * The implementation of this method is platform-specific, see [MethodDescriptor] for details.*/
+     * The implementation of this method is platform-specific, see [MethodDescriptor] for details.
+     *
+     * @param name The simple (unqualified) name of the grpc method.
+     * @param type The method's call type.
+     * @param requestTranscoder [Transcoder] used to serialize the method's requests.
+     * @param responseTranscoder [Transcoder] used to deserialize responses.*/
     protected fun <T, R> methodDescriptor(
         name: String,
         type: MethodType,

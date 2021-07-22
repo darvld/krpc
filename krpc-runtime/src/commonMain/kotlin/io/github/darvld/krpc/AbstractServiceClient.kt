@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.Flow
  *
  * @see AbstractServiceProvider
  * @see AbstractServiceDescriptor*/
-expect abstract class AbstractServiceClient(channel: Channel) {
+expect abstract class AbstractServiceClient <T : AbstractServiceClient<T>> (channel: Channel, options: CallOptions) {
     /**Performs a unary rpc, suspending until the response is received.
      *
      * @param method The descriptor for the unary method to be performed.

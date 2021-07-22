@@ -21,8 +21,10 @@ import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
 import com.tschuchort.compiletesting.SourceFile
 import io.github.darvld.krpc.compiler.generators.CodeGenerationTest.Companion.serviceDefinition
 import io.github.darvld.krpc.compiler.generators.ServiceComponentGenerator
+import io.github.darvld.krpc.compiler.model.ServiceDefinition
 import io.github.darvld.krpc.compiler.testing.whenCompiling
 import org.junit.Test
+import java.io.OutputStream
 import kotlin.test.assertEquals
 import kotlin.test.fail
 
@@ -43,8 +45,13 @@ class ServiceProcessorTest {
             """
         )
 
-        val mockGenerator = ServiceComponentGenerator { _, definition ->
-            assertEquals(expected, definition)
+        val mockGenerator = object : ServiceComponentGenerator() {
+            override fun getFilename(service: ServiceDefinition): String {
+                return "TestServiceDescriptor"
+            }
+            override fun generateComponent(output: OutputStream, service: ServiceDefinition) {
+                assertEquals(expected, service)
+            }
         }
 
         val provider = SymbolProcessorProvider {

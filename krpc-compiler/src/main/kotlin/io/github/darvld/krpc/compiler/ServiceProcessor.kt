@@ -16,6 +16,7 @@
 
 package io.github.darvld.krpc.compiler
 
+import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -36,17 +37,20 @@ internal class ServiceProcessor(
     private val generators: List<ServiceComponentGenerator>,
 ) : SymbolProcessor {
 
+    @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotated = resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
         val unprocessed = annotated.filterNot { it.validate() }
 
+        environment.logger.logging("Processing ${annotated.toList().size} declarations")
+
         annotated.forEach { declaration ->
+            environment.logger.logging("Processing declaration $declaration")
+
             // Extract the service definition using the visitor
             val service = declaration.accept(serviceVisitor, Unit)
 
-            for (generator in generators) {
-                generator.generate(environment.codeGenerator, service)
-            }
+            generators.forEach { it.generate(environment.codeGenerator, service) }
         }
 
         return unprocessed.toList()

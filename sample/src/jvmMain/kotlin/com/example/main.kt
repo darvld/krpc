@@ -16,15 +16,15 @@
 
 
 package com.example
-/*
+
 import com.example.Simulation.longDelay
 import com.example.Simulation.moderateDelay
 import com.example.Simulation.randomLocation
 import com.example.backend.ClientAuthInterceptor
 import com.example.backend.GpsServer
-import com.example.backend.ProtoBufSerializationProvider
 import com.example.backend.ServerAuthInterceptor
 import com.example.model.Location
+import io.github.darvld.krpc.BinarySerializationProvider
 import io.github.darvld.krpc.shutdownAndJoin
 import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
@@ -32,10 +32,13 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.protobuf.ProtoBuf
 
 private const val SERVER_ADDRESS = "localhost"
 private const val SERVER_PORT = 8980
 
+@OptIn(ExperimentalSerializationApi::class)
 fun main(vararg args: String) = runBlocking {
     if ("-ci" in args) {
         println("---[Running sample in CI mode]---")
@@ -44,7 +47,7 @@ fun main(vararg args: String) = runBlocking {
     }
 
     // Create a GpsServer using ProtoBuf to encode/decode requests and responses
-    val gpsServer = GpsServer(ProtoBufSerializationProvider)
+    val gpsServer = GpsServer(BinarySerializationProvider(ProtoBuf))
 
     // Setup the server and bind it
     val server = ServerBuilder.forPort(SERVER_PORT)
@@ -63,12 +66,13 @@ fun main(vararg args: String) = runBlocking {
     println("[Server] Shutdown complete")
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 suspend fun runClient() {
     val channel = ManagedChannelBuilder.forAddress(SERVER_ADDRESS, SERVER_PORT)
         .usePlaintext() // Disable TLS for this example
         .build()
 
-    val client = GpsClient(channel, ProtoBufSerializationProvider)
+    val client = GpsClient(channel, BinarySerializationProvider(ProtoBuf))
         .withInterceptors(ClientAuthInterceptor("Bob"))
 
     // Handshake
@@ -136,4 +140,3 @@ suspend fun runClient() {
     println("Client terminated")
 }
 
- */

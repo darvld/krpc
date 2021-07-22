@@ -16,34 +16,22 @@
 
 package io.github.darvld.krpc.compiler.generators
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.Dependencies
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import io.github.darvld.krpc.SerializationProvider
+import io.github.darvld.krpc.*
 import io.github.darvld.krpc.compiler.*
 import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
-import io.github.darvld.krpc.compiler.generators.ServiceComponentGenerator.Companion.returnType
 import io.github.darvld.krpc.compiler.model.*
-import io.grpc.CallOptions
-import io.grpc.Channel
-import io.grpc.MethodDescriptor.MethodType.*
-import io.grpc.kotlin.AbstractCoroutineStub
-import io.grpc.kotlin.ClientCalls
+import io.github.darvld.krpc.compiler.model.ServiceMethodDefinition.Companion.returnType
 import java.io.OutputStream
 
-internal class ClientGenerator : ServiceComponentGenerator {
-    override fun generate(codeGenerator: CodeGenerator, definition: ServiceDefinition) {
-        codeGenerator.createNewFile(
-            Dependencies(true),
-            definition.packageName,
-            definition.clientName
-        ).use { stream ->
-            generateClientImplementation(stream, definition)
-        }
+internal class ClientGenerator : ServiceComponentGenerator() {
+
+    override fun getFilename(service: ServiceDefinition): String {
+        return service.clientName
     }
 
-    internal fun generateClientImplementation(output: OutputStream, service: ServiceDefinition) {
+    override fun generateComponent(output: OutputStream, service: ServiceDefinition) {
         buildFile(withPackage = service.packageName, fileName = service.clientName, output) {
             addClass {
                 markAsGenerated()
@@ -57,7 +45,7 @@ internal class ClientGenerator : ServiceComponentGenerator {
                 )
 
                 addSuperinterface(service.className)
-                superclass(AbstractCoroutineStub::class.asTypeName().parameterizedBy(ClassName(packageName, name)))
+                superclass(AbstractServiceClient::class.asTypeName().parameterizedBy(service.clientClassName))
                     .addSuperclassConstructorParameter("$CHANNEL_PARAM, $CALL_OPTIONS_PARAM")
 
                 // Primary constructor (private)
@@ -142,10 +130,11 @@ internal class ClientGenerator : ServiceComponentGenerator {
 
             val callArgument = when (method.request) {
                 is SimpleRequest -> {
-                    val requestType = if (method.methodType == CLIENT_STREAMING || method.methodType == BIDI_STREAMING)
-                        FLOW.parameterizedBy(method.request.type)
-                    else
-                        method.request.type
+                    val requestType =
+                        if (method.methodType == MethodType.CLIENT_STREAMING || method.methodType == MethodType.BIDI_STREAMING)
+                            FLOW.parameterizedBy(method.request.type)
+                        else
+                            method.request.type
 
                     addParameter(method.request.parameterName, requestType)
                     method.request.parameterName
@@ -165,17 +154,15 @@ internal class ClientGenerator : ServiceComponentGenerator {
             returns(method.returnType)
 
             val builderName: String = when (method.methodType) {
-                UNARY -> "unaryRpc"
-                CLIENT_STREAMING -> "clientStreamingRpc"
-                SERVER_STREAMING -> "serverStreamingRpc"
-                BIDI_STREAMING -> "bidiStreamingRpc"
-                UNKNOWN -> reportError(method, "Unknown method type")
+                MethodType.UNARY -> "unaryCall"
+                MethodType.CLIENT_STREAMING -> "clientStreamCall"
+                MethodType.SERVER_STREAMING -> "serverStreamCall"
+                MethodType.BIDI_STREAMING -> "bidiStreamCall"
+                else -> reportError(method, "Unknown method type")
             }
 
             val body = CodeBlock.builder().add(
-                "%T.%L($CHANNEL_PARAM, $DESCRIPTOR_PARAM.%L, %L, $CALL_OPTIONS_PARAM)",
-                // Contains helper builders
-                ClientCalls::class,
+                "%L($DESCRIPTOR_PARAM.%L, %L, $CALL_OPTIONS_PARAM)",
                 // The appropriate method to call from ClientCalls
                 builderName,
                 // The descriptor `val` for this method

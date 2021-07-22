@@ -16,26 +16,23 @@
 
 package com.example.backend
 
-/*
-import com.example.backend.ProtoBufSerializationProvider.transcoder
+
+import com.example.GpsService
 import io.github.darvld.krpc.metadata.ServerMetadataInterceptor
 import io.github.darvld.krpc.metadata.contextKey
-import io.github.darvld.krpc.metadata.metadataKey
 import io.grpc.Context
 import io.grpc.Metadata
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 
 object ServerAuthInterceptor : ServerMetadataInterceptor() {
-    val AuthTokenMetadata = metadataKey<String>("auth_token", transcoder())
-
     val SessionToken = contextKey<String>("session_token")
 
     override fun intercept(context: Context, metadata: Metadata): Context {
-        val token = metadata.get(AuthTokenMetadata)
+        val token = metadata.get(GpsService.SESSION_TOKEN)
             ?: throw StatusRuntimeException(Status.UNAUTHENTICATED)
 
         return context.withValue(SessionToken, token)
     }
 }
- */
+

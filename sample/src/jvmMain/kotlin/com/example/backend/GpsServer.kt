@@ -15,11 +15,12 @@
  */
 
 package com.example.backend
-/*
+
 import com.example.GpsServiceProvider
 import com.example.Simulation.moderateDelay
 import com.example.Simulation.randomLocation
 import com.example.Simulation.shortDelay
+import com.example.backend.ServerAuthInterceptor.SessionToken
 import com.example.model.Location
 import com.example.model.Vehicle
 import io.github.darvld.krpc.SerializationProvider
@@ -38,7 +39,7 @@ class GpsServer(
     }
 
     override suspend fun handshake() {
-        val username by ServerAuthInterceptor.SessionToken
+        val username by SessionToken
         println("[Server] User $username has connected to the service.")
     }
 
@@ -102,5 +103,3 @@ class GpsServer(
         println("[Server] Now exiting continuous tracking mode")
     }
 }
-
- */

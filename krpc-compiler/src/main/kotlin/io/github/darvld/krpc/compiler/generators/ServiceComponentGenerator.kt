@@ -17,23 +17,23 @@
 package io.github.darvld.krpc.compiler.generators
 
 import com.google.devtools.ksp.processing.CodeGenerator
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.TypeName
-import io.github.darvld.krpc.compiler.FLOW
-import io.github.darvld.krpc.compiler.model.BidiStreamMethod
-import io.github.darvld.krpc.compiler.model.ServerStreamMethod
+import com.google.devtools.ksp.processing.Dependencies
 import io.github.darvld.krpc.compiler.model.ServiceDefinition
-import io.github.darvld.krpc.compiler.model.ServiceMethodDefinition
+import java.io.OutputStream
 
-internal fun interface ServiceComponentGenerator {
-    fun generate(codeGenerator: CodeGenerator, definition: ServiceDefinition)
+internal abstract class ServiceComponentGenerator {
 
-    companion object {
-        val ServiceMethodDefinition.returnType: TypeName
-            get() = if (this is ServerStreamMethod || this is BidiStreamMethod) {
-                FLOW.parameterizedBy(responseType)
-            } else {
-                responseType
-            }
+    abstract fun getFilename(service: ServiceDefinition): String
+
+    abstract fun generateComponent(output: OutputStream, service: ServiceDefinition)
+
+    fun generate(codeGenerator: CodeGenerator, definition: ServiceDefinition) {
+        codeGenerator.createNewFile(
+            Dependencies(true),
+            definition.packageName,
+            getFilename(definition)
+        ).use { stream ->
+            generateComponent(stream, definition)
+        }
     }
 }

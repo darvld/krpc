@@ -34,7 +34,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         val definition = serviceDefinition(methods = listOf(unaryMethod()))
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream ->
-            providerGenerator.generateServiceProviderBase(stream, definition)
+            providerGenerator.generateComponent(stream, definition)
         }
 
         generated.assertContentEquals(
@@ -58,7 +58,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         val definition = serviceDefinition(methods = listOf(method))
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream ->
-            providerGenerator.generateServiceProviderBase(stream, definition)
+            providerGenerator.generateComponent(stream, definition)
         }
 
         generated.assertContentEquals(
@@ -81,7 +81,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
 
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream ->
-            providerGenerator.generateServiceProviderBase(stream, definition)
+            providerGenerator.generateComponent(stream, definition)
         }
 
         generated.assertContentEquals(
@@ -104,7 +104,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
 
         val generated = temporaryFolder.newFile()
         generated.outputStream().use { stream ->
-            providerGenerator.generateServiceProviderBase(stream, definition)
+            providerGenerator.generateComponent(stream, definition)
         }
 
         generated.assertContentEquals(

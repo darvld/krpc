@@ -16,14 +16,12 @@
 
 package io.github.darvld.krpc.compiler.generators
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.Dependencies
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.KModifier.DATA
-import com.squareup.kotlinpoet.KModifier.INTERNAL
+import com.squareup.kotlinpoet.KModifier.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import io.github.darvld.krpc.SerializationProvider
 import io.github.darvld.krpc.AbstractServiceDescriptor
+import io.github.darvld.krpc.SerializationProvider
+import io.github.darvld.krpc.Transcoder
 import io.github.darvld.krpc.compiler.addClass
 import io.github.darvld.krpc.compiler.buildFile
 import io.github.darvld.krpc.compiler.markAsGenerated
@@ -35,21 +33,15 @@ import io.grpc.MethodDescriptor
 import kotlinx.serialization.Serializable
 import java.io.OutputStream
 
-internal class DescriptorGenerator : ServiceComponentGenerator {
-    override fun generate(codeGenerator: CodeGenerator, definition: ServiceDefinition) {
-        codeGenerator.createNewFile(
-            Dependencies(true),
-            definition.packageName,
-            definition.descriptorName
-        ).use { stream ->
-            generateServiceDescriptor(stream, definition)
-        }
+internal class DescriptorGenerator : ServiceComponentGenerator() {
+
+    override fun getFilename(service: ServiceDefinition): String {
+        return service.descriptorName
     }
 
-    fun generateServiceDescriptor(output: OutputStream, service: ServiceDefinition) {
+    override fun generateComponent(output: OutputStream, service: ServiceDefinition) {
         buildFile(service.packageName, service.descriptorName, output) {
             addClass {
-                addModifiers(INTERNAL)
                 markAsGenerated()
 
                 superclass(AbstractServiceDescriptor::class)
@@ -69,24 +61,30 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
                     service.className
                 )
 
-                // Constructor with serialization provider as parameter (used to initialized method descriptors)
+                // Constructor with serialization provider as parameter (used to initialize method descriptors)
                 primaryConstructor(
                     FunSpec.constructorBuilder()
                         .addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
                         .build()
                 )
 
-                // Necessary for the `serializer` calls
-                addImport("kotlinx.serialization", "serializer")
+                // Override serviceName abstract property
+                addProperty(
+                    PropertySpec.builder(SERVICE_NAME_PROPERTY, STRING)
+                        .addModifiers(OVERRIDE)
+                        .initializer("%S", service.serviceName)
+                        .build()
+                )
 
-                // Generate helper method definitions
+                // Generate method descriptors
                 for (method in service.methods) {
-                    val descriptor = buildMethodDescriptor(method, service)
+                    val requestType = service.requestTypeFor(method)
+                    val descriptor = buildMethodDescriptor(method, service, requestType)
 
                     if (method.request is CompositeRequest) addType(buildRequestWrapper(method))
 
-                    addMarshaller(service.requestTypeFor(method))
-                    addMarshaller(method.responseType)
+                    addTranscoder(requestType)
+                    addTranscoder(method.responseType)
 
                     addProperty(descriptor)
                 }
@@ -125,14 +123,15 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
     fun buildMethodDescriptor(
         method: ServiceMethodDefinition,
         service: ServiceDefinition,
+        requestType: TypeName,
     ): PropertySpec = with(method) {
-        val requestType = service.requestTypeFor(method)
 
         return PropertySpec.builder(
             method.declaredName,
             MethodDescriptor::class.asTypeName().parameterizedBy(requestType, responseType)
         ).run {
             markAsGenerated()
+            addModifiers(INTERNAL)
             mutable(false)
             addKdoc(
                 DESCRIPTOR_KDOC.trimIndent(),
@@ -140,21 +139,25 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
                 "${service.packageName}.${service.declaredName}.${method.declaredName}"
             )
             initializer(
-                CodeBlock.builder()
-                    .addStatement("MethodDescriptor")
-                    .addStatement("  .newBuilder<%T, %T>()", requestType, responseType)
-                    .addStatement("  .setFullMethodName(%S)", qualifiedName(service.serviceName))
-                    .addStatement("  .setType(%M)", methodType.asMember())
-                    .addStatement("  .setRequestMarshaller(%L)", requestType.marshallerPropName)
-                    .addStatement("  .setResponseMarshaller(%L)", responseType.marshallerPropName)
-                    .addStatement("  .build()")
-                    .build()
+                """
+                methodDescriptor(
+                  name=%S,
+                  type=%M,
+                  requestTranscoder=%L,
+                  responseTranscoder=%L
+                )
+                """.trimIndent(),
+                methodName,
+                methodType.asMember(),
+                requestType.transcoderName,
+                responseType.transcoderName
             )
             build()
         }
     }
 
     companion object {
+        const val SERVICE_NAME_PROPERTY = "serviceName"
         const val SERIALIZATION_PROVIDER_PARAM = "serializationProvider"
 
         const val DESCRIPTOR_KDOC = """
@@ -162,6 +165,10 @@ internal class DescriptorGenerator : ServiceComponentGenerator {
         
         This descriptor is used by generated service components and should not be used in general code.
         """
+
+        val TRANSCODER = Transcoder::class.asTypeName()
+
+        val TRANSCODER_EXTENSION_MEMBER = MemberName("io.github.darvld.krpc", "transcoder", isExtension = true)
 
         private fun MethodDescriptor.MethodType.asMember(): MemberName {
             return MemberName(ClassName("io.grpc", "MethodDescriptor", "MethodType"), name)

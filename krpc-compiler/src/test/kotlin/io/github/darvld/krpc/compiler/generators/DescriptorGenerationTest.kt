@@ -19,6 +19,7 @@ package io.github.darvld.krpc.compiler.generators
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.darvld.krpc.compiler.model.CompositeRequest
+import io.github.darvld.krpc.compiler.model.RequestInfo.Companion.requestTypeFor
 import io.github.darvld.krpc.compiler.testing.assertContentEquals
 import org.junit.Test
 
@@ -31,7 +32,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val file = temporaryFolder.newFile()
 
         file.outputStream().use { stream ->
-            descriptorGenerator.generateServiceDescriptor(stream, definition)
+            descriptorGenerator.generateComponent(stream, definition)
         }
 
         file.assertContentEquals(
@@ -103,7 +104,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates marshaller for simple type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(INT)
+            addTranscoder(INT)
         }
 
         generated.assertContentEquals(
@@ -128,7 +129,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates marshaller for generic type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(LIST.parameterizedBy(INT))
+            addTranscoder(LIST.parameterizedBy(INT))
         }
 
         generated.assertContentEquals(
@@ -154,7 +155,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `generates marshaller for complex generic type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(Map::class.asTypeName().parameterizedBy(Long::class.asTypeName(), LIST.parameterizedBy(INT)))
+            addTranscoder(Map::class.asTypeName().parameterizedBy(Long::class.asTypeName(), LIST.parameterizedBy(INT)))
         }
 
         generated.assertContentEquals(
@@ -182,7 +183,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `uses built-in marshaller for Unit`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(UNIT)
+            addTranscoder(UNIT)
         }
 
         // Should not generate any marshallers
@@ -199,8 +200,8 @@ class DescriptorGenerationTest : CodeGenerationTest() {
     @Test
     fun `re-uses existing marshaller for same type`() {
         val generated = temporaryFolder.newObject("Marshallers") {
-            addMarshaller(INT)
-            addMarshaller(INT)
+            addTranscoder(INT)
+            addTranscoder(INT)
         }
 
         generated.assertContentEquals(
@@ -232,7 +233,8 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             addProperty(PropertySpec.builder("intMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringMarshaller", Nothing::class).initializer("TODO()").build())
 
-            descriptorGenerator.buildMethodDescriptor(method, service).let(::addProperty)
+            descriptorGenerator.buildMethodDescriptor(method, service, service.requestTypeFor(method))
+                .let(::addProperty)
         }
 
         generated.assertContentEquals(
@@ -286,7 +288,8 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             addProperty(PropertySpec.builder("intListMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringListMarshaller", Nothing::class).initializer("TODO()").build())
 
-            descriptorGenerator.buildMethodDescriptor(method, service).let(::addProperty)
+            descriptorGenerator.buildMethodDescriptor(method, service, service.requestTypeFor(method))
+                .let(::addProperty)
         }
 
         generated.assertContentEquals(
@@ -340,7 +343,8 @@ class DescriptorGenerationTest : CodeGenerationTest() {
             addProperty(PropertySpec.builder("intMarshaller", Nothing::class).initializer("TODO()").build())
             addProperty(PropertySpec.builder("stringMarshaller", Nothing::class).initializer("TODO()").build())
 
-            descriptorGenerator.buildMethodDescriptor(method, service).let(::addProperty)
+            descriptorGenerator.buildMethodDescriptor(method, service, service.requestTypeFor(method))
+                .let(::addProperty)
         }
 
         generated.assertContentEquals(

@@ -67,6 +67,6 @@ interface GpsService {
     companion object {
         /**Metadata used to validate client calls. Tokens are obtained from a separate Authorization service.*/
         @OptIn(ExperimentalSerializationApi::class)
-        val AUTH_TOKEN = metadataKey<String>("auth_token", ProtoBuf.transcoder())
+        val SESSION_TOKEN = metadataKey<String>("session_token", ProtoBuf.transcoder())
     }
 }

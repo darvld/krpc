@@ -19,9 +19,11 @@ package io.github.darvld.krpc.compiler.model
 import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.Modifier
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
+import io.github.darvld.krpc.MethodType
+import io.github.darvld.krpc.compiler.FLOW
 import io.github.darvld.krpc.compiler.reportError
-import io.grpc.MethodDescriptor
 
 /**Model class used by [ServiceProcessor][io.github.darvld.krpc.compiler.ServiceProcessor] to store information
  * about individual service methods.
@@ -30,12 +32,12 @@ import io.grpc.MethodDescriptor
 sealed class ServiceMethodDefinition(
     /**The name of the method as declared in the service interface.*/
     val declaredName: String,
-    /**The "official" GRPC name of this method.*/
+    /**The simple (unqualified) gRPC name of this method. For a qualified name with the format Service/Method see [qualifiedName]*/
     val methodName: String,
     /**Whether the method needs to be marked with the 'suspend' modifier.*/
     val isSuspending: Boolean,
     /**The rpc type of this method.*/
-    val methodType: MethodDescriptor.MethodType,
+    val methodType: MethodType,
     /**The definition of this method's request. Could be a [SimpleRequest] (single argument)
      *  or a [CompositeRequest] (multiple arguments).*/
     val request: RequestInfo,
@@ -65,5 +67,12 @@ sealed class ServiceMethodDefinition(
             return annotation.arguments.first().value?.toString()?.takeUnless { it.isBlank() }
                 ?: simpleName.asString()
         }
+
+        val ServiceMethodDefinition.returnType: TypeName
+            get() = if (this is ServerStreamMethod || this is BidiStreamMethod) {
+                FLOW.parameterizedBy(responseType)
+            } else {
+                responseType
+            }
     }
 }
