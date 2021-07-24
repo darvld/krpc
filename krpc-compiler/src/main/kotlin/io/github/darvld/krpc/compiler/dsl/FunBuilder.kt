@@ -25,14 +25,14 @@ inline fun buildFunction(name: String, block: FunSpec.Builder.() -> Unit): FunSp
     return FunSpec.builder(name).apply(block).build()
 }
 
-inline fun FunSpec.Builder.parameter(
+inline fun FunSpec.Builder.addParameter(
     name: String,
     returns: TypeName,
-    default: CodeBlock? = null,
+    default: CodeBlock,
     block: ParameterSpec.Builder .() -> Unit = {}
 ): ParameterSpec {
     val param = ParameterSpec.builder(name, returns).apply {
-        default?.let { defaultValue(it) }
+        defaultValue(default)
         block()
     }.build()
 
@@ -40,7 +40,7 @@ inline fun FunSpec.Builder.parameter(
     return param
 }
 
-inline fun FunSpec.Builder.code(block: CodeBlock.Builder.() -> Unit): CodeBlock {
+inline fun FunSpec.Builder.addCode(block: CodeBlock.Builder.() -> Unit): CodeBlock {
     return CodeBlock.builder().apply(block).build().also {
         addCode(it)
     }

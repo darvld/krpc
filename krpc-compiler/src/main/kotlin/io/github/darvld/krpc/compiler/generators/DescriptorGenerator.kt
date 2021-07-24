@@ -60,12 +60,12 @@ object DescriptorGenerator : ServiceComponentGenerator {
                 )
 
                 // Constructor with serialization provider as parameter (used to initialize method descriptors)
-                constructor(primary = true) {
-                    parameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
+                addConstructor(primary = true) {
+                    addParameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
                 }
 
                 // Override serviceName abstract property
-                property(SERVICE_NAME_PROPERTY, STRING, OVERRIDE) {
+                addProperty(SERVICE_NAME_PROPERTY, STRING, OVERRIDE) {
                     initializer("%S", service.serviceName)
                 }
 
@@ -110,7 +110,7 @@ object DescriptorGenerator : ServiceComponentGenerator {
                 """.trimIndent()
             )
 
-            constructor(primary = true) {
+            addConstructor(primary = true) {
                 for ((name, type) in method.request.parameters) {
                     addParameter(name, type)
                     addProperty(PropertySpec.builder(name, type).initializer(name).build())

@@ -22,7 +22,7 @@ inline fun buildClass(name: String, block: TypeSpec.Builder.() -> Unit): TypeSpe
     return TypeSpec.classBuilder(name).apply(block).build()
 }
 
-inline fun TypeSpec.Builder.constructor(
+inline fun TypeSpec.Builder.addConstructor(
     primary: Boolean = false,
     block: FunSpec.Builder.() -> Unit = {}
 ): FunSpec {
@@ -33,7 +33,7 @@ inline fun TypeSpec.Builder.constructor(
     return impl
 }
 
-inline fun TypeSpec.Builder.function(
+inline fun TypeSpec.Builder.addFunction(
     name: String,
     vararg modifiers: KModifier,
     block: FunSpec.Builder.() -> Unit = {}
@@ -47,7 +47,7 @@ inline fun TypeSpec.Builder.function(
     return impl
 }
 
-inline fun TypeSpec.Builder.property(
+inline fun TypeSpec.Builder.addProperty(
     name: String,
     type: TypeName,
     vararg modifiers: KModifier,

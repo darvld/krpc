@@ -81,26 +81,26 @@ object ClientGenerator : ServiceComponentGenerator {
                 addSuperclassConstructorParameter("$CHANNEL_PARAM, $CALL_OPTIONS_PARAM")
 
                 // Primary constructor (private)
-                constructor(primary = true) {
+                addConstructor(primary = true) {
                     addModifiers(PRIVATE)
 
-                    parameter(CHANNEL_PARAM, CHANNEL)
-                    parameter(DESCRIPTOR_PROPERTY, service.descriptorClassName)
-                    parameter(CALL_OPTIONS_PARAM, CALL_OPTIONS, DEFAULT_CALL_OPTIONS)
+                    addParameter(CHANNEL_PARAM, CHANNEL)
+                    addParameter(DESCRIPTOR_PROPERTY, service.descriptorClassName)
+                    addParameter(CALL_OPTIONS_PARAM, CALL_OPTIONS, DEFAULT_CALL_OPTIONS)
                 }
 
                 // Service descriptor val (to be merged into constructor)
-                property(DESCRIPTOR_PROPERTY, service.descriptorClassName, PRIVATE) {
+                addProperty(DESCRIPTOR_PROPERTY, service.descriptorClassName, PRIVATE) {
                     initializer(DESCRIPTOR_PROPERTY)
                 }
 
                 // Secondary constructor (public)
-                constructor {
+                addConstructor {
                     markAsGenerated()
 
-                    parameter(CHANNEL_PARAM, CHANNEL)
-                    parameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
-                    parameter(CALL_OPTIONS_PARAM, CALL_OPTIONS, DEFAULT_CALL_OPTIONS)
+                    addParameter(CHANNEL_PARAM, CHANNEL)
+                    addParameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
+                    addParameter(CALL_OPTIONS_PARAM, CALL_OPTIONS, DEFAULT_CALL_OPTIONS)
 
                     callThisConstructor(
                         CHANNEL_PARAM,
@@ -110,7 +110,7 @@ object ClientGenerator : ServiceComponentGenerator {
                 }
 
                 // Builder method override
-                function("buildWith", OVERRIDE) {
+                addFunction("buildWith", OVERRIDE) {
                     markAsGenerated()
 
                     addParameter(CHANNEL_PARAM, CHANNEL)

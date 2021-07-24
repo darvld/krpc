@@ -51,7 +51,7 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
                 )
 
                 // Primary constructor
-                constructor(primary = true) {
+                addConstructor(primary = true) {
                     addParameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
                     addParameter(COROUTINE_CONTEXT_PARAM, COROUTINE_CONTEXT)
                 }
@@ -60,7 +60,7 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
                 addSuperclassConstructorParameter(COROUTINE_CONTEXT_PARAM)
 
                 // The method definitions are pulled from here
-                property(DESCRIPTOR_PROPERTY, service.descriptorClassName, PROTECTED, FINAL, OVERRIDE) {
+                addProperty(DESCRIPTOR_PROPERTY, service.descriptorClassName, PROTECTED, FINAL, OVERRIDE) {
                     initializer("%T($SERIALIZATION_PROVIDER_PARAM)", service.descriptorClassName)
                 }
 
@@ -77,7 +77,7 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
             addModifiers(FINAL, OVERRIDE)
             receiver(ServiceRegistrar::class)
 
-            code {
+            addCode {
                 for (method in service.methods) {
                     val builder = when (method.methodType) {
                         UNARY -> "Unary"
