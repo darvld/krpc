@@ -27,3 +27,12 @@ expect abstract class ClientMetadataInterceptor() {
      * instance being intercepted.*/
     abstract fun intercept(metadata: CallMetadata): CallMetadata
 }
+
+/**Creates a new [ClientMetadataInterceptor] applying the given [modifier] to the intercepted headers.*/
+inline fun ClientMetadataInterceptor(crossinline modifier: CallMetadata.() -> Unit): ClientMetadataInterceptor {
+    return object : ClientMetadataInterceptor() {
+        override fun intercept(metadata: CallMetadata): CallMetadata {
+            return metadata.apply(modifier)
+        }
+    }
+}
