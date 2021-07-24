@@ -18,9 +18,12 @@ package io.github.darvld.krpc.compiler.generators
 
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier.*
+import com.squareup.kotlinpoet.asClassName
 import io.github.darvld.krpc.AbstractServiceProvider
 import io.github.darvld.krpc.ServiceRegistrar
-import io.github.darvld.krpc.compiler.*
+import io.github.darvld.krpc.compiler.DESCRIPTOR_PROPERTY
+import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER
+import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
 import io.github.darvld.krpc.compiler.dsl.*
 import io.github.darvld.krpc.compiler.model.CompositeRequest
 import io.github.darvld.krpc.compiler.model.NoRequest
@@ -28,10 +31,13 @@ import io.github.darvld.krpc.compiler.model.ServiceDefinition
 import io.github.darvld.krpc.compiler.model.SimpleRequest
 import io.grpc.MethodDescriptor.MethodType.*
 import java.io.OutputStream
+import kotlin.coroutines.CoroutineContext
 
 /**Generates an abstract service provider, allowing users to provide the final implementation of the service
  * by overriding this component.*/
 object ServiceProviderGenerator : ServiceComponentGenerator {
+    private const val COROUTINE_CONTEXT_PARAM = "context"
+    private val COROUTINE_CONTEXT = CoroutineContext::class.asClassName()
 
     override fun getFilename(service: ServiceDefinition): String = service.providerName
 

@@ -19,11 +19,13 @@ package io.github.darvld.krpc.compiler.generators
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.KModifier.PRIVATE
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import io.github.darvld.krpc.Transcoder
 import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
-import io.github.darvld.krpc.compiler.TRANSCODER
-import io.github.darvld.krpc.compiler.TRANSCODER_EXTENSION_MEMBER
 import io.github.darvld.krpc.compiler.dsl.addProperty
 import io.github.darvld.krpc.compiler.dsl.markAsGenerated
+
+private val TRANSCODER = Transcoder::class.asClassName()
+private val TRANSCODER_EXTENSION_MEMBER = MemberName("io.github.darvld.krpc", "transcoder", isExtension = true)
 
 private val TypeName.uniqueSimpleName: String
     get() {

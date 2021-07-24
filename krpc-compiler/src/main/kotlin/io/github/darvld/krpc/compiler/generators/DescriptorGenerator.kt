@@ -21,10 +21,8 @@ import com.squareup.kotlinpoet.KModifier.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.darvld.krpc.AbstractServiceDescriptor
 import io.github.darvld.krpc.MethodType
-import io.github.darvld.krpc.compiler.METHOD_DESCRIPTOR
 import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER
 import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
-import io.github.darvld.krpc.compiler.SERVICE_NAME_PROPERTY
 import io.github.darvld.krpc.compiler.dsl.*
 import io.github.darvld.krpc.compiler.model.CompositeRequest
 import io.github.darvld.krpc.compiler.model.RequestInfo.Companion.requestTypeFor
@@ -36,6 +34,8 @@ import java.io.OutputStream
 /**Generates a class containing transcoders and method descriptors used for runtime configuration
  * of gRPC services.*/
 object DescriptorGenerator : ServiceComponentGenerator {
+    private const val SERVICE_NAME_PROPERTY = "serviceName"
+    private val METHOD_DESCRIPTOR = ClassName("io.github.darvld.krpc", "MethodDescriptor")
 
     private fun MethodType.asMember(): MemberName {
         return MemberName(ClassName("io.github.darvld.krpc", "MethodType"), name)
