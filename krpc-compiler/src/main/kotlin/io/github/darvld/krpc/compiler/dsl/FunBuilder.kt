@@ -28,7 +28,7 @@ inline fun buildFunction(name: String, block: FunSpec.Builder.() -> Unit): FunSp
 inline fun FunSpec.Builder.addParameter(
     name: String,
     returns: TypeName,
-    default: CodeBlock,
+    default: CodeBlock? = null,
     block: ParameterSpec.Builder .() -> Unit = {}
 ): ParameterSpec {
     val param = ParameterSpec.builder(name, returns).apply {

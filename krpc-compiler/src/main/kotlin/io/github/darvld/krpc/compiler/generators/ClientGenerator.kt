@@ -44,9 +44,11 @@ object ClientGenerator : ServiceComponentGenerator {
     private val CHANNEL = ClassName("io.github.darvld.krpc", "Channel")
     private val CALL_OPTIONS = ClassName("io.github.darvld.krpc", "CallOptions")
 
-    private val DEFAULT_CALL_OPTIONS = buildCode(
+    private val DEFAULT_CALL_OPTIONS = CodeBlock.of(
         "%M()",
-        MemberName("io.github.darvld.krpc", "defaultCallOptions")
+        arrayOf<Any>(
+            MemberName("io.github.darvld.krpc", "defaultCallOptions")
+        )
     )
 
     private fun methodBuilderForType(methodType: MethodType): String = when (methodType) {
@@ -158,10 +160,12 @@ object ClientGenerator : ServiceComponentGenerator {
             NoRequest -> callArgument = "Unit"
         }
 
-        val body = buildCode(
+        val body = CodeBlock.of(
             "%L($DESCRIPTOR_PROPERTY.%L, %L, $CALL_OPTIONS_PARAM)",
             // Template arguments: unaryCall¹(descriptor.foo², request³, callOptions)
-            methodBuilderForType(method.methodType), method.declaredName, callArgument
+            arrayOf<Any>(
+                methodBuilderForType(method.methodType), method.declaredName, callArgument
+            )
         )
 
         if (method.responseType == UNIT) addCode(body) else addCode("return %L", body)
