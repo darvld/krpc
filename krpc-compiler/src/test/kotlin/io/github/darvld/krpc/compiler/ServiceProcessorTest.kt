@@ -45,7 +45,7 @@ class ServiceProcessorTest {
             """
         )
 
-        val mockGenerator = object : ServiceComponentGenerator() {
+        val mockGenerator = object : ServiceComponentGenerator {
             override fun getFilename(service: ServiceDefinition): String {
                 return "TestServiceDescriptor"
             }

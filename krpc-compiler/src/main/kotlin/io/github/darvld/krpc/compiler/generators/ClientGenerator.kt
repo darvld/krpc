@@ -24,9 +24,20 @@ import io.github.darvld.krpc.MethodType
 import io.github.darvld.krpc.compiler.*
 import io.github.darvld.krpc.compiler.dsl.*
 import io.github.darvld.krpc.compiler.model.*
+import io.grpc.MethodDescriptor.MethodType.*
 import java.io.OutputStream
 
-internal class ClientGenerator : ServiceComponentGenerator() {
+object ClientGenerator : ServiceComponentGenerator {
+    const val CHANNEL_PARAM = "channel"
+    const val CALL_OPTIONS_PARAM = "callOptions"
+
+    val CHANNEL = ClassName("io.github.darvld.krpc", "Channel")
+    val CALL_OPTIONS = ClassName("io.github.darvld.krpc", "CallOptions")
+
+    val DEFAULT_CALL_OPTIONS = buildCode(
+        "%M()",
+        MemberName("io.github.darvld.krpc", "defaultCallOptions")
+    )
 
     override fun getFilename(service: ServiceDefinition): String = service.clientName
 
@@ -98,7 +109,7 @@ internal class ClientGenerator : ServiceComponentGenerator() {
         }
     }
 
-    internal fun buildServiceMethodOverride(method: ServiceMethodDefinition, serviceDescriptorName: String): FunSpec {
+    fun buildServiceMethodOverride(method: ServiceMethodDefinition, serviceDescriptorName: String): FunSpec {
         return FunSpec.builder(method.declaredName).apply {
             addModifiers(OVERRIDE)
             markAsGenerated()
@@ -133,10 +144,10 @@ internal class ClientGenerator : ServiceComponentGenerator() {
             returns(method.returnType)
 
             val builderName: String = when (method.methodType) {
-                MethodType.UNARY -> "unaryCall"
-                MethodType.CLIENT_STREAMING -> "clientStreamCall"
-                MethodType.SERVER_STREAMING -> "serverStreamCall"
-                MethodType.BIDI_STREAMING -> "bidiStreamCall"
+                UNARY -> "unaryCall"
+                CLIENT_STREAMING -> "clientStreamCall"
+                SERVER_STREAMING -> "serverStreamCall"
+                BIDI_STREAMING -> "bidiStreamCall"
                 else -> reportError(null, "Unknown method type (in method ${method.declaredName})")
             }
 
@@ -152,18 +163,5 @@ internal class ClientGenerator : ServiceComponentGenerator() {
 
             if (method.responseType != UNIT) addCode("return %L", body) else addCode(body)
         }.build()
-    }
-
-    companion object {
-        private const val CHANNEL_PARAM = "channel"
-        private const val CALL_OPTIONS_PARAM = "callOptions"
-
-        private val CHANNEL = ClassName("io.github.darvld.krpc", "Channel")
-        private val CALL_OPTIONS = ClassName("io.github.darvld.krpc", "CallOptions")
-
-        private val DEFAULT_CALL_OPTIONS = buildCode(
-            "%M()",
-            MemberName("io.github.darvld.krpc", "defaultCallOptions")
-        )
     }
 }

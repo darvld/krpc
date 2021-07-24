@@ -34,14 +34,14 @@ private val TypeName.uniqueSimpleName: String
         }
     }
 
-internal val TypeName.transcoderName: String
+val TypeName.transcoderName: String
     get() = if (this == UNIT) {
         "UnitTranscoder"
     } else {
         "${uniqueSimpleName.replaceFirstChar { it.lowercaseChar() }}Transcoder"
     }
 
-internal fun TypeSpec.Builder.addTranscoder(typeName: TypeName) {
+fun TypeSpec.Builder.addTranscoder(typeName: TypeName) {
     // Don't generate a marshaller for Unit
     if (typeName == UNIT) return
 

@@ -24,7 +24,6 @@ import io.github.darvld.krpc.compiler.testing.assertContentEquals
 import org.junit.Test
 
 class DescriptorGenerationTest : CodeGenerationTest() {
-    private val descriptorGenerator = DescriptorGenerator()
 
     @Test
     fun `generates descriptor skeleton`() {
@@ -32,7 +31,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val file = temporaryFolder.newFile()
 
         file.outputStream().use { stream ->
-            descriptorGenerator.generateComponent(stream, definition)
+            DescriptorGenerator.generateComponent(stream, definition)
         }
 
         file.assertContentEquals(
@@ -72,7 +71,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val method = unaryMethod(request = CompositeRequest(args, "UnaryRequest"))
 
         val generated = temporaryFolder.newObject("WrapperTest") {
-            addType(descriptorGenerator.buildRequestWrapper(method))
+            addType(DescriptorGenerator.buildRequestWrapper(method))
         }
 
         generated.assertContentEquals(
@@ -229,7 +228,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val method = unaryMethod()
 
         val generated = temporaryFolder.newObject("Descriptor") {
-            descriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
+            DescriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
                 .let(::addProperty)
         }
 
@@ -273,7 +272,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val service = serviceDefinition(methods = listOf(method))
 
         val generated = temporaryFolder.newObject("Descriptor") {
-            descriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
+            DescriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
                 .let(::addProperty)
         }
 
@@ -317,7 +316,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val method = bidiStreamMethod()
 
         val generated = temporaryFolder.newObject("Descriptor") {
-            descriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
+            DescriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
                 .let(::addProperty)
         }
 

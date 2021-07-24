@@ -24,13 +24,11 @@ import io.github.darvld.krpc.compiler.testing.assertContentEquals
 import org.junit.Test
 
 class ClientGenerationTest : CodeGenerationTest() {
-    private val clientGenerator = ClientGenerator()
-
     @Test
     fun `generates client skeleton`() {
         val definition = serviceDefinition()
         val generated = temporaryFolder.newFile()
-        generated.outputStream().use { stream -> clientGenerator.generateComponent(stream, definition) }
+        generated.outputStream().use { stream -> ClientGenerator.generateComponent(stream, definition) }
 
         generated.assertContentEquals(
             """
@@ -82,7 +80,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(unaryMethod(), definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(unaryMethod(), definition.descriptorName))
         }
 
         generated.assertContentEquals(
@@ -114,7 +112,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
         }
 
         generated.assertContentEquals(
@@ -145,7 +143,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
         }
 
         generated.assertContentEquals(
@@ -177,7 +175,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            clientGenerator.buildServiceMethodOverride(
+            ClientGenerator.buildServiceMethodOverride(
                 unaryMethod(request = NoRequest, returnType = UNIT), definition.descriptorName
             ).let(::addFunction)
         }
@@ -206,7 +204,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(bidiStreamMethod(), definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(bidiStreamMethod(), definition.descriptorName))
         }
 
         generated.assertContentEquals(
@@ -239,7 +237,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(clientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
         }
 
         generated.assertContentEquals(

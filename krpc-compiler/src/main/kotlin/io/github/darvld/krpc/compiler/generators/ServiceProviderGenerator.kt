@@ -19,11 +19,7 @@ package io.github.darvld.krpc.compiler.generators
 import com.squareup.kotlinpoet.KModifier.*
 import io.github.darvld.krpc.AbstractServiceProvider
 import io.github.darvld.krpc.ServiceRegistrar
-import io.github.darvld.krpc.compiler.COROUTINE_CONTEXT
-import io.github.darvld.krpc.compiler.COROUTINE_CONTEXT_PARAM
-import io.github.darvld.krpc.compiler.DESCRIPTOR_PROPERTY
-import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER
-import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
+import io.github.darvld.krpc.compiler.*
 import io.github.darvld.krpc.compiler.dsl.*
 import io.github.darvld.krpc.compiler.model.CompositeRequest
 import io.github.darvld.krpc.compiler.model.NoRequest
@@ -32,11 +28,9 @@ import io.github.darvld.krpc.compiler.model.SimpleRequest
 import io.grpc.MethodDescriptor.MethodType.*
 import java.io.OutputStream
 
-internal class ServiceProviderGenerator : ServiceComponentGenerator() {
+object ServiceProviderGenerator : ServiceComponentGenerator {
 
-    override fun getFilename(service: ServiceDefinition): String {
-        return service.providerName
-    }
+    override fun getFilename(service: ServiceDefinition): String = service.providerName
 
     override fun generateComponent(output: OutputStream, service: ServiceDefinition) {
         buildFile(service.packageName, service.providerName, output) {

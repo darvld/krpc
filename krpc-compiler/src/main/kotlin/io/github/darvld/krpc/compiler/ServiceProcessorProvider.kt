@@ -27,9 +27,9 @@ import io.github.darvld.krpc.compiler.generators.ServiceProviderGenerator
 class ServiceProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         val generators = listOf(
-            DescriptorGenerator(),
-            ClientGenerator(),
-            ServiceProviderGenerator()
+            DescriptorGenerator,
+            ClientGenerator,
+            ServiceProviderGenerator
         )
 
         return ServiceProcessor(environment, generators = generators)

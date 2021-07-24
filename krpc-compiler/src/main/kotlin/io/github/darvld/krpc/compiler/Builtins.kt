@@ -24,18 +24,18 @@ import io.github.darvld.krpc.Transcoder
 import kotlinx.coroutines.flow.Flow
 import kotlin.coroutines.CoroutineContext
 
-internal const val SERIALIZATION_PROVIDER_PARAM = "serializationProvider"
-internal const val COROUTINE_CONTEXT_PARAM = "context"
+const val SERIALIZATION_PROVIDER_PARAM = "serializationProvider"
+const val COROUTINE_CONTEXT_PARAM = "context"
 
-internal const val DESCRIPTOR_PROPERTY = "descriptor"
-internal const val SERVICE_NAME_PROPERTY = "serviceName"
+const val DESCRIPTOR_PROPERTY = "descriptor"
+const val SERVICE_NAME_PROPERTY = "serviceName"
 
-internal val FLOW = Flow::class.asClassName()
-internal val COROUTINE_CONTEXT = CoroutineContext::class.asClassName()
+val FLOW = Flow::class.asClassName()
+val COROUTINE_CONTEXT = CoroutineContext::class.asClassName()
 
-internal val SERIALIZATION_PROVIDER = SerializationProvider::class.asClassName()
-internal val TRANSCODER = Transcoder::class.asClassName()
+val SERIALIZATION_PROVIDER = SerializationProvider::class.asClassName()
+val TRANSCODER = Transcoder::class.asClassName()
 
-internal val METHOD_DESCRIPTOR = ClassName("io.github.darvld.krpc", "MethodDescriptor")
+val METHOD_DESCRIPTOR = ClassName("io.github.darvld.krpc", "MethodDescriptor")
 
-internal val TRANSCODER_EXTENSION_MEMBER = MemberName("io.github.darvld.krpc", "transcoder", isExtension = true)
+val TRANSCODER_EXTENSION_MEMBER = MemberName("io.github.darvld.krpc", "transcoder", isExtension = true)

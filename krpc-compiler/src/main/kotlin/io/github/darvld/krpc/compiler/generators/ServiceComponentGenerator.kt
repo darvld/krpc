@@ -16,24 +16,17 @@
 
 package io.github.darvld.krpc.compiler.generators
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.Dependencies
 import io.github.darvld.krpc.compiler.model.ServiceDefinition
 import java.io.OutputStream
 
-internal abstract class ServiceComponentGenerator {
+/**Abstract base for service component generators.
+ *
+ * This abstraction allows for a modular compiler, where generators can be added/removed dynamically.*/
+interface ServiceComponentGenerator {
+    /**Returns the name (without extension) of the source file this component will be written to, based
+     * on a given [service] definition.*/
+    fun getFilename(service: ServiceDefinition): String
 
-    abstract fun getFilename(service: ServiceDefinition): String
-
-    abstract fun generateComponent(output: OutputStream, service: ServiceDefinition)
-
-    fun generate(codeGenerator: CodeGenerator, definition: ServiceDefinition) {
-        codeGenerator.createNewFile(
-            Dependencies(true),
-            definition.packageName,
-            getFilename(definition)
-        ).use { stream ->
-            generateComponent(stream, definition)
-        }
-    }
+    /**Generates a new service component.*/
+    fun generateComponent(output: OutputStream, service: ServiceDefinition)
 }

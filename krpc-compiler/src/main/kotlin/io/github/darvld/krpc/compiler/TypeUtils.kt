@@ -25,7 +25,7 @@ import com.squareup.kotlinpoet.TypeName
 
 
 /**Resolves this type reference and attempts construct a [ParameterizedTypeName].*/
-internal fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName? {
+fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName? {
     return resolveAsTypeName() as? ParameterizedTypeName
 }
 
@@ -33,7 +33,7 @@ internal fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName
  *
  * For non-generic types, this method returns a simple [ClassName]. For generics, it recursively resolves
  * type arguments.*/
-internal fun KSTypeReference.resolveAsTypeName(): TypeName {
+fun KSTypeReference.resolveAsTypeName(): TypeName {
     with(resolve()) {
         val baseName = ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
 

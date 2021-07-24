@@ -17,6 +17,7 @@
 package io.github.darvld.krpc.compiler
 
 import com.google.devtools.ksp.KspExperimental
+import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
@@ -31,7 +32,7 @@ import io.github.darvld.krpc.compiler.generators.ServiceComponentGenerator
  * corresponding descriptor, provider and client.
  *
  * @see ServiceVisitor*/
-internal class ServiceProcessor(
+class ServiceProcessor(
     private val environment: SymbolProcessorEnvironment,
     private val serviceVisitor: ServiceVisitor = ServiceVisitor(),
     private val generators: List<ServiceComponentGenerator>,
@@ -46,10 +47,16 @@ internal class ServiceProcessor(
             // Extract the service definition using the visitor
             val service = declaration.accept(serviceVisitor, Unit)
 
-            generators.forEach {
+            generators.forEach { component ->
                 // Report errors through the logger instead of unhandled exceptions
                 try {
-                    it.generate(environment.codeGenerator, service)
+                    environment.codeGenerator.createNewFile(
+                        dependencies = Dependencies(true),
+                        packageName = service.packageName,
+                        fileName = component.getFilename(service)
+                    ).use { stream ->
+                        component.generateComponent(stream, service)
+                    }
                 } catch (e: ProcessingError) {
                     environment.logger.error(e.message, e.symbol)
                 }
