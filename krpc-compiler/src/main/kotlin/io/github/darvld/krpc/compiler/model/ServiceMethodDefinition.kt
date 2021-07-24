@@ -16,63 +16,41 @@
 
 package io.github.darvld.krpc.compiler.model
 
-import com.google.devtools.ksp.symbol.KSAnnotation
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.Modifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import io.github.darvld.krpc.MethodType
 import io.github.darvld.krpc.compiler.FLOW
-import io.github.darvld.krpc.compiler.reportError
 
 /**Model class used by [ServiceProcessor][io.github.darvld.krpc.compiler.ServiceProcessor] to store information
  * about individual service methods.
  *
  * @see [ServiceDefinition]*/
-sealed class ServiceMethodDefinition(
+// TODO: Once the subclasses are removed, convert into a data class
+open class ServiceMethodDefinition(
     /**The name of the method as declared in the service interface.*/
     val declaredName: String,
-    /**The simple (unqualified) gRPC name of this method. For a qualified name with the format Service/Method see [qualifiedName]*/
+    /**The simple (unqualified) gRPC name of this method.*/
     val methodName: String,
-    /**Whether the method needs to be marked with the 'suspend' modifier.*/
+    /**Whether the method must be marked with the 'suspend' modifier.*/
     val isSuspending: Boolean,
     /**The rpc type of this method.*/
     val methodType: MethodType,
     /**The definition of this method's request. Could be a [SimpleRequest] (single argument)
-     *  or a [CompositeRequest] (multiple arguments).*/
+     *  or a [CompositeRequest] (multiple arguments).
+     *
+     *  For client-streaming and bidi-streaming methods, this will be the Flow's type argument.*/
     val request: RequestInfo,
-    /**Return type of the method.*/
+    /**The type of the method's *response*. For server-streaming and bidi-streaming methods, this will be
+     * the Flow's type argument.
+     *
+     * This is not the method's return type, see [returnType] instead for a [TypeName] with Flow wrappers.*/
     val responseType: TypeName
 ) {
-
-    /**Returns the full gRPC name for this method, consisting of the name of the service and the name of the method itself.*/
-    fun qualifiedName(serviceName: String): String {
-        return "$serviceName/$methodName"
-    }
-
-    companion object {
-        /**Checks that this declaration is marked with the 'suspend' modifier.*/
-        fun KSFunctionDeclaration.requireSuspending(required: Boolean, message: String) {
-            if (required && Modifier.SUSPEND !in modifiers)
-                reportError(this, message)
-            else if (!required && Modifier.SUSPEND in modifiers)
-                reportError(this, message)
+    /**The return type of this method (wrapped in Flow for server-stream and bidi-stream).*/
+    val returnType: TypeName
+        get() = if (this is ServerStreamMethod || this is BidiStreamMethod) {
+            FLOW.parameterizedBy(responseType)
+        } else {
+            responseType
         }
-
-        /**Extracts the name of a service method given its declaration and the corresponding [annotation].
-         *
-         * The method name defined through annotation parameters will be used if present, otherwise the declared
-         * name will be used.*/
-        fun KSFunctionDeclaration.extractMethodName(annotation: KSAnnotation): String {
-            return annotation.arguments.first().value?.toString()?.takeUnless { it.isBlank() }
-                ?: simpleName.asString()
-        }
-
-        val ServiceMethodDefinition.returnType: TypeName
-            get() = if (this is ServerStreamMethod || this is BidiStreamMethod) {
-                FLOW.parameterizedBy(responseType)
-            } else {
-                responseType
-            }
-    }
 }

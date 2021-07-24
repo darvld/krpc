@@ -25,6 +25,7 @@ import io.github.darvld.krpc.compiler.resolveAsParameterizedName
 import io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING
 
 /**Contains information about a service method annotated with [BidiStream].*/
+@Deprecated("Use ServiceMethodDefinition.extractFrom() instead.")
 class BidiStreamMethod(
     declaredName: String,
     methodName: String,

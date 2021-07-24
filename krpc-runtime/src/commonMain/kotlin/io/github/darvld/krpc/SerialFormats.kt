@@ -25,6 +25,7 @@ import kotlinx.serialization.serializer
 @OptIn(ExperimentalSerializationApi::class)
 expect value class BinarySerializationProvider(val format: BinaryFormat) : SerializationProvider
 
+/**Creates a new [Transcoder] using this serialization format.*/
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> BinaryFormat.transcoder(): Transcoder<T> {
     return BinarySerializationProvider(this).transcoderFor(serializer())
@@ -34,6 +35,7 @@ inline fun <reified T> BinaryFormat.transcoder(): Transcoder<T> {
 @OptIn(ExperimentalSerializationApi::class)
 expect value class StringSerializationProvider(val format: StringFormat) : SerializationProvider
 
+/**Creates a new [Transcoder] using this serialization format.*/
 @OptIn(ExperimentalSerializationApi::class)
 inline fun <reified T> StringFormat.transcoder(): Transcoder<T> {
     return StringSerializationProvider(this).transcoderFor(serializer())

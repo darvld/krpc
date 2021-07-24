@@ -17,11 +17,12 @@
 package io.github.darvld.krpc.compiler
 
 import com.google.devtools.ksp.symbol.KSTypeReference
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import kotlinx.coroutines.flow.Flow
+import com.squareup.kotlinpoet.STAR
+import com.squareup.kotlinpoet.TypeName
 
-internal val FLOW by lazy { Flow::class.asClassName() }
 
 /**Resolves this type reference and attempts construct a [ParameterizedTypeName].*/
 internal fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName? {
@@ -32,10 +33,12 @@ internal fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName
  *
  * For non-generic types, this method returns a simple [ClassName]. For generics, it recursively resolves
  * type arguments.*/
-internal fun KSTypeReference.resolveAsTypeName(): TypeName = with(resolve()) {
-    val baseName = ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
+internal fun KSTypeReference.resolveAsTypeName(): TypeName {
+    with(resolve()) {
+        val baseName = ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
 
-    if (arguments.isEmpty()) return baseName
+        if (arguments.isEmpty()) return baseName
 
-    return baseName.parameterizedBy(arguments.map { it.type?.resolveAsTypeName() ?: STAR })
+        return baseName.parameterizedBy(arguments.map { it.type?.resolveAsTypeName() ?: STAR })
+    }
 }

@@ -25,6 +25,7 @@ import io.github.darvld.krpc.compiler.resolveAsTypeName
 import io.grpc.MethodDescriptor.MethodType.CLIENT_STREAMING
 
 /**Contains information about a service method annotated with [ClientStream].*/
+@Deprecated("Use ServiceMethodDefinition.extractFrom() instead.")
 class ClientStreamMethod(
     declaredName: String,
     methodName: String,

@@ -18,10 +18,10 @@ package io.github.darvld.krpc.compiler.generators
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
-import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.TRANSCODER
-import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.TRANSCODER_EXTENSION_MEMBER
-import io.github.darvld.krpc.compiler.markAsGenerated
+import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
+import io.github.darvld.krpc.compiler.TRANSCODER
+import io.github.darvld.krpc.compiler.TRANSCODER_EXTENSION_MEMBER
+import io.github.darvld.krpc.compiler.dsl.markAsGenerated
 
 private val TypeName.uniqueSimpleName: String
     get() {

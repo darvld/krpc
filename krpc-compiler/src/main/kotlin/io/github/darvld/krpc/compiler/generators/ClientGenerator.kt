@@ -17,19 +17,23 @@
 package io.github.darvld.krpc.compiler.generators
 
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.KModifier.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import io.github.darvld.krpc.*
+import io.github.darvld.krpc.AbstractServiceClient
+import io.github.darvld.krpc.MethodType
 import io.github.darvld.krpc.compiler.*
-import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
+import io.github.darvld.krpc.compiler.DESCRIPTOR_PROPERTY
+import io.github.darvld.krpc.compiler.FLOW
+import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER
+import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
+import io.github.darvld.krpc.compiler.dsl.*
 import io.github.darvld.krpc.compiler.model.*
 import io.github.darvld.krpc.compiler.model.ServiceMethodDefinition.Companion.returnType
 import java.io.OutputStream
 
 internal class ClientGenerator : ServiceComponentGenerator() {
 
-    override fun getFilename(service: ServiceDefinition): String {
-        return service.clientName
-    }
+    override fun getFilename(service: ServiceDefinition): String = service.clientName
 
     override fun generateComponent(output: OutputStream, service: ServiceDefinition) {
         buildFile(withPackage = service.packageName, fileName = service.clientName, output) {
@@ -45,75 +49,53 @@ internal class ClientGenerator : ServiceComponentGenerator() {
                 )
 
                 addSuperinterface(service.className)
+
                 superclass(AbstractServiceClient::class.asTypeName().parameterizedBy(service.clientClassName))
-                    .addSuperclassConstructorParameter("$CHANNEL_PARAM, $CALL_OPTIONS_PARAM")
+                addSuperclassConstructorParameter("$CHANNEL_PARAM, $CALL_OPTIONS_PARAM")
 
                 // Primary constructor (private)
-                FunSpec.constructorBuilder()
-                    .addModifiers(KModifier.PRIVATE)
-                    .addParameter(ParameterSpec(CHANNEL_PARAM, CHANNEL))
-                    .addParameter(
-                        ParameterSpec.builder(CALL_OPTIONS_PARAM, CALL_OPTIONS)
-                            .defaultValue("%M()", DEFAULT_CALL_OPTIONS)
-                            .build()
-                    )
-                    .addParameter(ParameterSpec(DESCRIPTOR_PARAM, service.descriptorClassName))
-                    .build()
-                    .let(::primaryConstructor)
+                constructor(primary = true) {
+                    addModifiers(PRIVATE)
+
+                    parameter(CHANNEL_PARAM, CHANNEL)
+                    parameter(DESCRIPTOR_PROPERTY, service.descriptorClassName)
+                    parameter(CALL_OPTIONS_PARAM, CALL_OPTIONS, DEFAULT_CALL_OPTIONS)
+                }
 
                 // Service descriptor val (to be merged into constructor)
-                PropertySpec.builder(DESCRIPTOR_PARAM, service.descriptorClassName)
-                    .addModifiers(KModifier.PRIVATE)
-                    .mutable(false)
-                    .initializer(DESCRIPTOR_PARAM)
-                    .build()
-                    .let(::addProperty)
+                property(DESCRIPTOR_PROPERTY, service.descriptorClassName, PRIVATE) {
+                    initializer(DESCRIPTOR_PROPERTY)
+                }
 
                 // Secondary constructor (public)
-                FunSpec.constructorBuilder()
-                    .markAsGenerated()
-                    .addParameter(CHANNEL_PARAM, CHANNEL)
-                    .addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
-                    .addParameter(
-                        ParameterSpec.builder(CALL_OPTIONS_PARAM, CALL_OPTIONS)
-                            .defaultValue("%M()", DEFAULT_CALL_OPTIONS)
-                            .build()
-                    )
-                    .callThisConstructor(
+                constructor {
+                    markAsGenerated()
+
+                    parameter(CHANNEL_PARAM, CHANNEL)
+                    parameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
+                    parameter(CALL_OPTIONS_PARAM, CALL_OPTIONS, DEFAULT_CALL_OPTIONS)
+
+                    callThisConstructor(
                         CHANNEL_PARAM,
-                        CALL_OPTIONS_PARAM,
-                        "${service.descriptorName}($SERIALIZATION_PROVIDER_PARAM)"
+                        "${service.declaredName}($SERIALIZATION_PROVIDER_PARAM)",
+                        CALL_OPTIONS_PARAM
                     )
-                    .build()
-                    .let(::addFunction)
+                }
 
                 // Build method override
-                addFunction("build") {
+                // TODO: Abstract this into the Common module (currently this will work on JVM only)
+                function("build", OVERRIDE) {
                     markAsGenerated()
-                    addModifiers(KModifier.OVERRIDE)
 
                     addParameter(CHANNEL_PARAM, CHANNEL)
                     addParameter(CALL_OPTIONS_PARAM, CALL_OPTIONS)
 
                     returns(service.clientClassName)
 
-                    addCode("return ${service.clientName}($CHANNEL_PARAM, $CALL_OPTIONS_PARAM, $DESCRIPTOR_PARAM)")
+                    addCode("return ${service.clientName}($CHANNEL_PARAM, $CALL_OPTIONS_PARAM, $DESCRIPTOR_PROPERTY)")
                 }
 
-                // withSerializationProvider builder
-                addFunction("withSerializationProvider") {
-                    markAsGenerated()
-
-                    addKdoc("Returns a new client using [serializationProvider] to marshall requests and responses.")
-
-                    addParameter(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
-
-                    returns(service.clientClassName)
-
-                    addCode("return ${service.clientName}($CHANNEL_PARAM, $CALL_OPTIONS_PARAM, ${service.descriptorName}($SERIALIZATION_PROVIDER_PARAM))")
-                }
-
-                // Implement surrogate service methods
+                // Implement delegated service methods
                 for (method in service.methods) {
                     addFunction(buildServiceMethodOverride(method, service.descriptorName))
                 }
@@ -123,12 +105,14 @@ internal class ClientGenerator : ServiceComponentGenerator() {
 
     internal fun buildServiceMethodOverride(method: ServiceMethodDefinition, serviceDescriptorName: String): FunSpec {
         return FunSpec.builder(method.declaredName).apply {
-            addModifiers(KModifier.OVERRIDE)
+            addModifiers(OVERRIDE)
             markAsGenerated()
 
-            if (method.isSuspending) addModifiers(KModifier.SUSPEND)
+            if (method.isSuspending) addModifiers(SUSPEND)
 
-            val callArgument = when (method.request) {
+            val callArgument: String
+
+            when (method.request) {
                 is SimpleRequest -> {
                     val requestType =
                         if (method.methodType == MethodType.CLIENT_STREAMING || method.methodType == MethodType.BIDI_STREAMING)
@@ -137,17 +121,17 @@ internal class ClientGenerator : ServiceComponentGenerator() {
                             method.request.type
 
                     addParameter(method.request.parameterName, requestType)
-                    method.request.parameterName
+                    callArgument = method.request.parameterName
                 }
                 is CompositeRequest -> {
                     for ((name, type) in method.request.parameters) {
                         addParameter(name, type)
                     }
                     val wrapperReference = "$serviceDescriptorName.${method.request.wrapperName}"
-                    "$wrapperReference(${method.request.parameters.keys.joinToString()})"
+                    callArgument = "$wrapperReference(${method.request.parameters.keys.joinToString()})"
                 }
                 NoRequest -> {
-                    "Unit"
+                    callArgument = "Unit"
                 }
             }
 
@@ -158,11 +142,11 @@ internal class ClientGenerator : ServiceComponentGenerator() {
                 MethodType.CLIENT_STREAMING -> "clientStreamCall"
                 MethodType.SERVER_STREAMING -> "serverStreamCall"
                 MethodType.BIDI_STREAMING -> "bidiStreamCall"
-                else -> reportError(method, "Unknown method type")
+                else -> reportError(message = "Unknown method type (in method ${method.declaredName})")
             }
 
             val body = CodeBlock.builder().add(
-                "%L($DESCRIPTOR_PARAM.%L, %L, $CALL_OPTIONS_PARAM)",
+                "%L($DESCRIPTOR_PROPERTY.%L, %L, $CALL_OPTIONS_PARAM)",
                 // The appropriate method to call from ClientCalls
                 builderName,
                 // The descriptor `val` for this method
@@ -178,10 +162,13 @@ internal class ClientGenerator : ServiceComponentGenerator() {
     companion object {
         private const val CHANNEL_PARAM = "channel"
         private const val CALL_OPTIONS_PARAM = "callOptions"
-        private const val DESCRIPTOR_PARAM = "descriptor"
 
         private val CHANNEL = ClassName("io.github.darvld.krpc", "Channel")
         private val CALL_OPTIONS = ClassName("io.github.darvld.krpc", "CallOptions")
-        private val DEFAULT_CALL_OPTIONS = MemberName("io.github.darvld.krpc", "defaultCallOptions")
+
+        private val DEFAULT_CALL_OPTIONS = buildCode(
+            "%M()",
+            MemberName("io.github.darvld.krpc", "defaultCallOptions")
+        )
     }
 }

@@ -124,6 +124,7 @@ annotation class UnaryCall(
     val methodName: String = ""
 )
 
+/**A marker for generated components.*/
 annotation class Generated(
     /**The qualified name of the processor responsible for generating this declaration.*/
     val by: String,

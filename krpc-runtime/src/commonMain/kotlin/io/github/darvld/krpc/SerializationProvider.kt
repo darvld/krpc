@@ -28,6 +28,7 @@ interface SerializationProvider {
     fun <T> transcoderFor(serializer: KSerializer<T>): Transcoder<T>
 }
 
+/**Reified extension used to obtain a [Transcoder] from this provider without explicitly passing the KSerializer.*/
 inline fun <reified T> SerializationProvider.transcoder(): Transcoder<T> {
     return transcoderFor(serializer())
 }

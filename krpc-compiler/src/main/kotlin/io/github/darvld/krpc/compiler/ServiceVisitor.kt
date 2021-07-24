@@ -32,26 +32,25 @@ import io.github.darvld.krpc.compiler.model.ServiceDefinition
  *
  * @see ServiceMethodVisitor
  * @see [ServiceProcessor]*/
-class ServiceVisitor : KSDefaultVisitor<Unit, ServiceDefinition>() {
-    private val methodVisitor = ServiceMethodVisitor()
+class ServiceVisitor(
+    private val methodVisitor: ServiceMethodVisitor = ServiceMethodVisitor()
+) : KSDefaultVisitor<Unit, ServiceDefinition>() {
 
     override fun defaultHandler(node: KSNode, data: Unit): ServiceDefinition {
-        throw IllegalStateException("Service visitor can only visit service definition interfaces")
+        reportError(node, "Service visitor can only visit service definition interfaces")
     }
 
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): ServiceDefinition {
-        if (classDeclaration.classKind != INTERFACE) reportError(
-            classDeclaration,
-            "Service definitions must be interfaces."
-        )
+        if (classDeclaration.classKind != INTERFACE)
+            reportError(classDeclaration, "Service definitions must be interfaces.")
 
         // The annotation arguments contain the names for the service, the provider and the client (if specified)
         val annotationArgs = classDeclaration.annotations.find {
             it.shortName.getShortName() == Service::class.simpleName
         }?.arguments ?: reportError(classDeclaration, "Service definitions must be annotated with @Service.")
 
-        val (service, provider, client) = annotationArgs.map { name ->
-            name.value?.toString()?.takeUnless { it.isBlank() }
+        val (service, provider, client) = annotationArgs.map { argument ->
+            argument.value?.toString().takeUnless { it.isNullOrBlank() }
         }
 
         // Provide defaults for the names

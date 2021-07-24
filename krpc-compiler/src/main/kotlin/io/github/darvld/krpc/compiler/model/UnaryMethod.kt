@@ -25,6 +25,7 @@ import io.github.darvld.krpc.compiler.resolveAsTypeName
 import io.grpc.MethodDescriptor.MethodType.UNARY
 
 /**Contains information about a service method annotated with [UnaryCall].*/
+@Deprecated("Use ServiceMethodDefinition.extractFrom() instead.")
 class UnaryMethod(
     declaredName: String,
     methodName: String,

@@ -42,15 +42,18 @@ internal class ServiceProcessor(
         val annotated = resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
         val unprocessed = annotated.filterNot { it.validate() }
 
-        environment.logger.logging("Processing ${annotated.toList().size} declarations")
-
         annotated.forEach { declaration ->
-            environment.logger.logging("Processing declaration $declaration")
-
             // Extract the service definition using the visitor
             val service = declaration.accept(serviceVisitor, Unit)
 
-            generators.forEach { it.generate(environment.codeGenerator, service) }
+            generators.forEach {
+                // Report errors through the logger instead of unhandled exceptions
+                try {
+                    it.generate(environment.codeGenerator, service)
+                } catch (e: ProcessingError) {
+                    environment.logger.error(e.message, e.symbol)
+                }
+            }
         }
 
         return unprocessed.toList()

@@ -16,10 +16,16 @@
 
 package io.github.darvld.krpc.compiler
 
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSNode
+import com.google.devtools.ksp.symbol.Modifier
 import com.google.devtools.ksp.visitor.KSEmptyVisitor
-import io.github.darvld.krpc.compiler.model.*
+import com.squareup.kotlinpoet.UNIT
+import io.github.darvld.krpc.*
+import io.github.darvld.krpc.compiler.model.RequestInfo
+import io.github.darvld.krpc.compiler.model.ServiceMethodDefinition
+import io.grpc.MethodDescriptor.MethodType.*
 
 /**Function visitor used by [ServiceVisitor] to extract service method definitions from annotated members inside
  * a @Service interface. The data passed in when visiting a declaration is the name of the service.
@@ -32,20 +38,65 @@ import io.github.darvld.krpc.compiler.model.*
 class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
 
     override fun defaultHandler(node: KSNode, data: Unit): ServiceMethodDefinition {
-        throw IllegalStateException("MethodVisitor should only be used to visit function declarations")
+        reportError(node, "MethodVisitor should only be used to visit function declarations")
     }
 
     override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit): ServiceMethodDefinition {
         for (annotation in function.annotations) {
-            val definition = when (annotation.shortName.getShortName()) {
-                UnaryMethod.AnnotationName -> UnaryMethod.extractFrom(function, annotation)
-                ClientStreamMethod.AnnotationName -> ClientStreamMethod.extractFrom(function, annotation)
-                ServerStreamMethod.AnnotationName -> ServerStreamMethod.extractFrom(function, annotation)
-                BidiStreamMethod.AnnotationName -> BidiStreamMethod.extractFrom(function, annotation)
-                else -> null
-            }
-            if (definition != null) return definition
+            extractDefinition(function, annotation)?.let { return it }
         }
-        reportError(function, "Service methods must provide the corresponding type annotation")
+
+        reportError(function, "Service methods must provide a valid type annotation")
+    }
+
+    private fun KSFunctionDeclaration.requireSuspending(required: Boolean, message: String) {
+        if (required && Modifier.SUSPEND !in modifiers) {
+            reportError(this, message)
+        } else if (!required && Modifier.SUSPEND in modifiers) {
+            reportError(this, message)
+        }
+    }
+
+    private fun KSFunctionDeclaration.extractMethodName(annotation: KSAnnotation): String {
+        return annotation.arguments.first().value?.toString()?.takeUnless { it.isBlank() } ?: simpleName.asString()
+    }
+
+    private fun extractDefinition(
+        declaration: KSFunctionDeclaration,
+        annotation: KSAnnotation
+    ): ServiceMethodDefinition? {
+        val methodType: MethodType = when (annotation.shortName.asString()) {
+            UnaryCall::class.simpleName -> UNARY
+            ServerStream::class.simpleName -> SERVER_STREAMING
+            ClientStream::class.simpleName -> CLIENT_STREAMING
+            BidiStream::class.simpleName -> BIDI_STREAMING
+            else -> return null
+        }
+
+        val clientStreaming =
+            methodType == CLIENT_STREAMING || methodType == BIDI_STREAMING
+        val serverStreaming =
+            methodType == SERVER_STREAMING || methodType == BIDI_STREAMING
+
+        val requestType = RequestInfo.extractFrom(declaration, flowExpected = clientStreaming)
+
+        val responseType = if (serverStreaming) {
+            declaration.returnType?.resolveAsParameterizedName()?.typeArguments?.singleOrNull()
+                ?: reportError(
+                    declaration,
+                    message = "Server-streaming rpc methods must return a Flow of a serializable type."
+                )
+        } else {
+            declaration.returnType?.resolveAsTypeName() ?: UNIT
+        }
+
+        return ServiceMethodDefinition(
+            declaredName = declaration.simpleName.asString(),
+            methodName = declaration.extractMethodName(annotation),
+            isSuspending = !serverStreaming,
+            methodType = methodType,
+            request = requestType,
+            responseType = responseType
+        )
     }
 }

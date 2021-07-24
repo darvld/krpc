@@ -16,22 +16,21 @@
 
 package io.github.darvld.krpc.compiler.generators
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.KModifier.*
 import io.github.darvld.krpc.AbstractServiceProvider
-import io.github.darvld.krpc.SerializationProvider
 import io.github.darvld.krpc.ServiceRegistrar
-import io.github.darvld.krpc.compiler.addClass
-import io.github.darvld.krpc.compiler.buildFile
-import io.github.darvld.krpc.compiler.generators.DescriptorGenerator.Companion.SERIALIZATION_PROVIDER_PARAM
-import io.github.darvld.krpc.compiler.markAsGenerated
+import io.github.darvld.krpc.compiler.COROUTINE_CONTEXT
+import io.github.darvld.krpc.compiler.COROUTINE_CONTEXT_PARAM
+import io.github.darvld.krpc.compiler.DESCRIPTOR_PROPERTY
+import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER
+import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
+import io.github.darvld.krpc.compiler.dsl.*
 import io.github.darvld.krpc.compiler.model.CompositeRequest
 import io.github.darvld.krpc.compiler.model.NoRequest
 import io.github.darvld.krpc.compiler.model.ServiceDefinition
 import io.github.darvld.krpc.compiler.model.SimpleRequest
 import io.grpc.MethodDescriptor.MethodType.*
 import java.io.OutputStream
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 internal class ServiceProviderGenerator : ServiceComponentGenerator() {
 
@@ -43,8 +42,9 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator() {
         buildFile(service.packageName, service.providerName, output) {
             addClass {
                 markAsGenerated()
+                addModifiers(ABSTRACT)
 
-                addModifiers(KModifier.ABSTRACT)
+                addSuperinterface(service.className)
                 superclass(AbstractServiceProvider::class)
 
                 addKdoc(
@@ -54,76 +54,51 @@ internal class ServiceProviderGenerator : ServiceComponentGenerator() {
                 )
 
                 // Primary constructor
-                FunSpec.constructorBuilder().run {
-                    ParameterSpec.builder(SERIALIZATION_PROVIDER_PARAM, SerializationProvider::class)
-                        .build()
-                        .let(::addParameter)
-
-                    ParameterSpec.builder(COROUTINE_CONTEXT_PARAM, CoroutineContext::class)
-                        .defaultValue("%T", EmptyCoroutineContext::class)
-                        .build()
-                        .let(::addParameter)
-                    build()
-                }.let(::primaryConstructor)
-
+                constructor(primary = true) {
+                    parameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
+                    parameter(COROUTINE_CONTEXT_PARAM, COROUTINE_CONTEXT)
+                }
 
                 // Pass the coroutine context to the parent class
                 addSuperclassConstructorParameter(COROUTINE_CONTEXT_PARAM)
 
-                // Implement the service interface
-                addSuperinterface(service.className)
-
                 // The method definitions are pulled from here
-                PropertySpec.builder("definition", service.descriptorClassName)
-                    .addModifiers(KModifier.PROTECTED, KModifier.OVERRIDE, KModifier.FINAL)
-                    .mutable(false)
-                    .initializer("%T($SERIALIZATION_PROVIDER_PARAM)", service.descriptorClassName)
-                    .build()
-                    .let(::addProperty)
+                property(DESCRIPTOR_PROPERTY, service.descriptorClassName, PROTECTED, FINAL, OVERRIDE) {
+                    initializer("%T($SERIALIZATION_PROVIDER_PARAM)", service.descriptorClassName)
+                }
 
-                // The `bindService` implementation
-                overrideServiceBinder(service)
+                // Override bindService
+                function(AbstractServiceProvider::bindService.name, FINAL, OVERRIDE) {
+                    markAsGenerated()
+                    receiver(ServiceRegistrar::class)
+
+                    code {
+                        for (method in service.methods) {
+                            val builder = when (method.methodType) {
+                                UNARY -> "Unary"
+                                CLIENT_STREAMING -> "ClientStream"
+                                SERVER_STREAMING -> "ServerStream"
+                                BIDI_STREAMING -> "BidiStream"
+                                UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
+                            }
+
+                            val implementation = when (method.request) {
+                                is CompositeRequest -> {
+                                    val arguments = method.request.parameters.keys.joinToString { arg -> "it.$arg" }
+                                    ") { ${method.declaredName}($arguments) }"
+                                }
+                                is SimpleRequest -> {
+                                    ", ::${method.declaredName})"
+                                }
+                                NoRequest -> {
+                                    ") { ${method.declaredName}() }"
+                                }
+                            }
+                            addStatement("register${builder}Method(definition.${method.declaredName}$implementation")
+                        }
+                    }
+                }
             }
         }
-    }
-
-    private fun TypeSpec.Builder.overrideServiceBinder(service: ServiceDefinition) {
-        FunSpec.builder("bindMethods")
-            .markAsGenerated()
-            .addModifiers(KModifier.FINAL, KModifier.OVERRIDE)
-            .receiver(ServiceRegistrar::class)
-            .addCode(
-                CodeBlock.builder().add(service.methods.fold(CodeBlock.builder()) { block, method ->
-                    val builder = when (method.methodType) {
-                        UNARY -> "Unary"
-                        CLIENT_STREAMING -> "ClientStream"
-                        SERVER_STREAMING -> "ServerStream"
-                        BIDI_STREAMING -> "BidiStream"
-                        UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
-                    }
-
-                    val implementation = when (method.request) {
-                        is CompositeRequest -> {
-                            val arguments = method.request.parameters.keys.joinToString { arg -> "it.$arg" }
-                            ") { ${method.declaredName}($arguments) }"
-                        }
-                        is SimpleRequest -> {
-                            ", ::${method.declaredName})"
-                        }
-                        NoRequest -> {
-                            ") { ${method.declaredName}() }"
-                        }
-                    }
-
-                    block.addStatement("register${builder}Method(definition.${method.declaredName}$implementation")
-                }.build())
-                    .build()
-            )
-            .build()
-            .let(::addFunction)
-    }
-
-    private companion object {
-        const val COROUTINE_CONTEXT_PARAM = "context"
     }
 }
