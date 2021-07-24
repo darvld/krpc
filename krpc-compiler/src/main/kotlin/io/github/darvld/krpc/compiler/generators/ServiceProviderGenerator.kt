@@ -16,6 +16,7 @@
 
 package io.github.darvld.krpc.compiler.generators
 
+import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier.*
 import io.github.darvld.krpc.AbstractServiceProvider
 import io.github.darvld.krpc.ServiceRegistrar
@@ -28,6 +29,8 @@ import io.github.darvld.krpc.compiler.model.SimpleRequest
 import io.grpc.MethodDescriptor.MethodType.*
 import java.io.OutputStream
 
+/**Generates an abstract service provider, allowing users to provide the final implementation of the service
+ * by overriding this component.*/
 object ServiceProviderGenerator : ServiceComponentGenerator {
 
     override fun getFilename(service: ServiceDefinition): String = service.providerName
@@ -49,8 +52,8 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
 
                 // Primary constructor
                 constructor(primary = true) {
-                    parameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
-                    parameter(COROUTINE_CONTEXT_PARAM, COROUTINE_CONTEXT)
+                    addParameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
+                    addParameter(COROUTINE_CONTEXT_PARAM, COROUTINE_CONTEXT)
                 }
 
                 // Pass the coroutine context to the parent class
@@ -62,35 +65,42 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
                 }
 
                 // Override bindService
-                function(AbstractServiceProvider::bindService.name, FINAL, OVERRIDE) {
-                    markAsGenerated()
-                    receiver(ServiceRegistrar::class)
+                buildServiceBinder(service)
+            }
+        }
+    }
 
-                    code {
-                        for (method in service.methods) {
-                            val builder = when (method.methodType) {
-                                UNARY -> "Unary"
-                                CLIENT_STREAMING -> "ClientStream"
-                                SERVER_STREAMING -> "ServerStream"
-                                BIDI_STREAMING -> "BidiStream"
-                                UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
-                            }
+    private fun buildServiceBinder(service: ServiceDefinition): FunSpec {
+        return buildFunction(AbstractServiceProvider::bindService.name) {
+            markAsGenerated()
 
-                            val implementation = when (method.request) {
-                                is CompositeRequest -> {
-                                    val arguments = method.request.parameters.keys.joinToString { arg -> "it.$arg" }
-                                    ") { ${method.declaredName}($arguments) }"
-                                }
-                                is SimpleRequest -> {
-                                    ", ::${method.declaredName})"
-                                }
-                                NoRequest -> {
-                                    ") { ${method.declaredName}() }"
-                                }
-                            }
-                            addStatement("register${builder}Method(definition.${method.declaredName}$implementation")
+            addModifiers(FINAL, OVERRIDE)
+            receiver(ServiceRegistrar::class)
+
+            code {
+                for (method in service.methods) {
+                    val builder = when (method.methodType) {
+                        UNARY -> "Unary"
+                        CLIENT_STREAMING -> "ClientStream"
+                        SERVER_STREAMING -> "ServerStream"
+                        BIDI_STREAMING -> "BidiStream"
+                        UNKNOWN -> throw IllegalStateException("Method type cannot be UNKNOWN")
+                    }
+
+                    val implementation = when (method.request) {
+                        is CompositeRequest -> {
+                            val arguments = method.request.parameters.keys.joinToString { arg -> "it.$arg" }
+                            ") { ${method.declaredName}($arguments) }"
+                        }
+                        is SimpleRequest -> {
+                            ", ::${method.declaredName})"
+                        }
+                        NoRequest -> {
+                            ") { ${method.declaredName}() }"
                         }
                     }
+
+                    addStatement("register${builder}Method(definition.${method.declaredName}$implementation")
                 }
             }
         }
