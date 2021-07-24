@@ -22,13 +22,8 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.darvld.krpc.AbstractServiceClient
 import io.github.darvld.krpc.MethodType
 import io.github.darvld.krpc.compiler.*
-import io.github.darvld.krpc.compiler.DESCRIPTOR_PROPERTY
-import io.github.darvld.krpc.compiler.FLOW
-import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER
-import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
 import io.github.darvld.krpc.compiler.dsl.*
 import io.github.darvld.krpc.compiler.model.*
-import io.github.darvld.krpc.compiler.model.ServiceMethodDefinition.Companion.returnType
 import java.io.OutputStream
 
 internal class ClientGenerator : ServiceComponentGenerator() {
@@ -142,7 +137,7 @@ internal class ClientGenerator : ServiceComponentGenerator() {
                 MethodType.CLIENT_STREAMING -> "clientStreamCall"
                 MethodType.SERVER_STREAMING -> "serverStreamCall"
                 MethodType.BIDI_STREAMING -> "bidiStreamCall"
-                else -> reportError(message = "Unknown method type (in method ${method.declaredName})")
+                else -> reportError(null, "Unknown method type (in method ${method.declaredName})")
             }
 
             val body = CodeBlock.builder().add(

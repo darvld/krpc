@@ -27,8 +27,10 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.COMPILATION_ERROR
 import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
 import com.tschuchort.compiletesting.SourceFile
-import io.github.darvld.krpc.compiler.model.*
-import io.github.darvld.krpc.compiler.testing.assertIs
+import io.github.darvld.krpc.compiler.model.CompositeRequest
+import io.github.darvld.krpc.compiler.model.NoRequest
+import io.github.darvld.krpc.compiler.model.RequestInfo
+import io.github.darvld.krpc.compiler.model.SimpleRequest
 import io.github.darvld.krpc.compiler.testing.shouldBe
 import io.github.darvld.krpc.compiler.testing.shouldContain
 import io.github.darvld.krpc.compiler.testing.whenCompiling
@@ -59,7 +61,7 @@ class ServiceMethodVisitorTest {
         }
     }
 
-    private inline fun <reified T : ServiceMethodDefinition> validateMethodExtraction(
+    private fun validateMethodExtraction(
         declaredName: String,
         methodName: String,
         type: MethodDescriptor.MethodType,
@@ -81,7 +83,7 @@ class ServiceMethodVisitorTest {
         )
 
         val processorProvider = singleMethodProcessorProvider(declaredName) {
-            accept(methodVisitor, Unit).assertIs<T>().let {
+            accept(methodVisitor, Unit).let {
                 it.declaredName shouldBe declaredName
                 it.methodName shouldBe methodName
                 it.methodType shouldBe type
@@ -228,7 +230,7 @@ class ServiceMethodVisitorTest {
     )
 
     @Test
-    fun `extracts valid unary call definition`() = validateMethodExtraction<UnaryMethod>(
+    fun `extracts valid unary call definition`() = validateMethodExtraction(
         declaredName = "unary",
         methodName = "unaryCall",
         type = UNARY,
@@ -240,7 +242,7 @@ class ServiceMethodVisitorTest {
     )
 
     @Test
-    fun `extracts valid unary call definition with multiple arguments`() = validateMethodExtraction<UnaryMethod>(
+    fun `extracts valid unary call definition with multiple arguments`() = validateMethodExtraction(
         declaredName = "unary",
         methodName = "unaryCall",
         type = UNARY,
@@ -255,7 +257,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid unary call definition without arguments`() =
-        validateMethodExtraction<UnaryMethod>(
+        validateMethodExtraction(
             declaredName = "unary",
             methodName = "unaryCall",
             type = UNARY,
@@ -269,7 +271,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid unary call definition without return type`() =
-        validateMethodExtraction<UnaryMethod>(
+        validateMethodExtraction(
             declaredName = "unary",
             methodName = "unaryCall",
             type = UNARY,
@@ -283,7 +285,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid unary call definition with generic argument`() =
-        validateMethodExtraction<UnaryMethod>(
+        validateMethodExtraction(
             declaredName = "unary",
             methodName = "unaryCall",
             type = UNARY,
@@ -298,7 +300,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid unary call definition with generic return type`() =
-        validateMethodExtraction<UnaryMethod>(
+        validateMethodExtraction(
             declaredName = "unary",
             methodName = "unaryCall",
             type = UNARY,
@@ -313,7 +315,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid server stream call definition`() =
-        validateMethodExtraction<ServerStreamMethod>(
+        validateMethodExtraction(
             declaredName = "stream",
             methodName = "serverStream",
             type = SERVER_STREAMING,
@@ -328,7 +330,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid server stream call definition without arguments`() =
-        validateMethodExtraction<ServerStreamMethod>(
+        validateMethodExtraction(
             declaredName = "stream",
             methodName = "serverStream",
             type = SERVER_STREAMING,
@@ -344,7 +346,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid server stream call definition with generic return type`() =
-        validateMethodExtraction<ServerStreamMethod>(
+        validateMethodExtraction(
             declaredName = "stream",
             methodName = "serverStream",
             type = SERVER_STREAMING,
@@ -362,7 +364,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid client stream call definition`() =
-        validateMethodExtraction<ClientStreamMethod>(
+        validateMethodExtraction(
             declaredName = "stream",
             methodName = "clientStream",
             type = CLIENT_STREAMING,
@@ -376,7 +378,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid client stream call definition with generic request type`() =
-        validateMethodExtraction<ClientStreamMethod>(
+        validateMethodExtraction(
             declaredName = "stream",
             methodName = "clientStream",
             type = CLIENT_STREAMING,
@@ -394,7 +396,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `extracts valid client stream call definition without return type`() =
-        validateMethodExtraction<ClientStreamMethod>(
+        validateMethodExtraction(
             declaredName = "stream",
             methodName = "clientStream",
             type = CLIENT_STREAMING,
@@ -408,7 +410,7 @@ class ServiceMethodVisitorTest {
         )
 
     @Test
-    fun `extracts valid bidi stream call definition`() = validateMethodExtraction<BidiStreamMethod>(
+    fun `extracts valid bidi stream call definition`() = validateMethodExtraction(
         declaredName = "stream",
         methodName = "bidiStream",
         type = BIDI_STREAMING,
@@ -422,7 +424,7 @@ class ServiceMethodVisitorTest {
     )
 
     @Test
-    fun `extracts valid bidi stream call definition with generic types`() = validateMethodExtraction<BidiStreamMethod>(
+    fun `extracts valid bidi stream call definition with generic types`() = validateMethodExtraction(
         declaredName = "stream",
         methodName = "bidiStream",
         type = BIDI_STREAMING,

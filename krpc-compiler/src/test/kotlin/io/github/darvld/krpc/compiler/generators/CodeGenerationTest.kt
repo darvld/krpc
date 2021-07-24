@@ -20,8 +20,13 @@ import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import io.github.darvld.krpc.compiler.buildFile
-import io.github.darvld.krpc.compiler.model.*
+import io.github.darvld.krpc.compiler.dsl.buildFile
+import io.github.darvld.krpc.compiler.model.RequestInfo
+import io.github.darvld.krpc.compiler.model.ServiceDefinition
+import io.github.darvld.krpc.compiler.model.ServiceMethodDefinition
+import io.github.darvld.krpc.compiler.model.SimpleRequest
+import io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING
+import io.grpc.MethodDescriptor.MethodType.UNARY
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
@@ -72,11 +77,13 @@ abstract class CodeGenerationTest {
             methodName: String = "${declaredName}Test",
             request: RequestInfo = simpleRequest(),
             returnType: TypeName = STRING
-        ): UnaryMethod = UnaryMethod(
+        ): ServiceMethodDefinition = ServiceMethodDefinition(
             declaredName,
             methodName,
-            request,
-            returnType
+            isSuspending = true,
+            methodType = UNARY,
+            request = request,
+            responseType = returnType
         )
 
         fun bidiStreamMethod(
@@ -84,11 +91,13 @@ abstract class CodeGenerationTest {
             methodName: String = "${declaredName}Test",
             request: RequestInfo = simpleRequest(),
             returnType: TypeName = STRING
-        ) = BidiStreamMethod(
+        ): ServiceMethodDefinition = ServiceMethodDefinition(
             declaredName,
             methodName,
-            request,
-            returnType
+            isSuspending = false,
+            methodType = BIDI_STREAMING,
+            request = request,
+            responseType = returnType
         )
     }
 }

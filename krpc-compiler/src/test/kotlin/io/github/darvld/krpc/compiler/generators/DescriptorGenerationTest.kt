@@ -229,7 +229,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val method = unaryMethod()
 
         val generated = temporaryFolder.newObject("Descriptor") {
-            descriptorGenerator.buildMethodDescriptor(method, service, service.requestTypeFor(method))
+            descriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
                 .let(::addProperty)
         }
 
@@ -273,7 +273,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val service = serviceDefinition(methods = listOf(method))
 
         val generated = temporaryFolder.newObject("Descriptor") {
-            descriptorGenerator.buildMethodDescriptor(method, service, service.requestTypeFor(method))
+            descriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
                 .let(::addProperty)
         }
 
@@ -317,7 +317,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
         val method = bidiStreamMethod()
 
         val generated = temporaryFolder.newObject("Descriptor") {
-            descriptorGenerator.buildMethodDescriptor(method, service, service.requestTypeFor(method))
+            descriptorGenerator.buildMethodDescriptor(method, service.requestTypeFor(method))
                 .let(::addProperty)
         }
 
