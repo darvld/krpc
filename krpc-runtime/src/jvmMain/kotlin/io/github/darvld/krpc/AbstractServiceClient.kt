@@ -27,6 +27,10 @@ actual abstract class AbstractServiceClient<T : AbstractServiceClient<T>> actual
     options: CallOptions
 ) : AbstractCoroutineStub<T>(channel, options) {
 
+    final override fun build(channel: Channel, callOptions: CallOptions): T = buildWith(channel, callOptions)
+
+    actual abstract fun buildWith(channel: Channel, callOptions: CallOptions): T
+
     actual suspend fun <T, R> unaryCall(
         method: MethodDescriptor<T, R>,
         request: T,

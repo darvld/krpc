@@ -24,7 +24,7 @@ import java.io.OutputStream
 
 /**Build a file using [FileSpec.Builder] and write it to [output].*/
 @CompilerDsl
-inline fun buildFile(
+inline fun writeFile(
     withPackage: String,
     fileName: String,
     output: OutputStream,

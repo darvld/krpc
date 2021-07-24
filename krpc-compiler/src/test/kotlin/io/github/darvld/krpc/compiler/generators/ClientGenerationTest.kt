@@ -80,7 +80,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(ClientGenerator.buildServiceMethodOverride(unaryMethod(), definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(unaryMethod()))
         }
 
         generated.assertContentEquals(
@@ -112,7 +112,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(ClientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(method))
         }
 
         generated.assertContentEquals(
@@ -143,7 +143,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(ClientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(method))
         }
 
         generated.assertContentEquals(
@@ -176,7 +176,7 @@ class ClientGenerationTest : CodeGenerationTest() {
             addSuperinterface(definition.className)
 
             ClientGenerator.buildServiceMethodOverride(
-                unaryMethod(request = NoRequest, returnType = UNIT), definition.descriptorName
+                unaryMethod(request = NoRequest, returnType = UNIT)
             ).let(::addFunction)
         }
 
@@ -204,7 +204,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(ClientGenerator.buildServiceMethodOverride(bidiStreamMethod(), definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(bidiStreamMethod()))
         }
 
         generated.assertContentEquals(
@@ -237,7 +237,7 @@ class ClientGenerationTest : CodeGenerationTest() {
         val generated = temporaryFolder.newObject("Client") {
             addSuperinterface(definition.className)
 
-            addFunction(ClientGenerator.buildServiceMethodOverride(method, definition.descriptorName))
+            addFunction(ClientGenerator.buildServiceMethodOverride(method))
         }
 
         generated.assertContentEquals(

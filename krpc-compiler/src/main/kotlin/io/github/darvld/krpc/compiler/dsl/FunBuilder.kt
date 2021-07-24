@@ -22,6 +22,11 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
 
 @CompilerDsl
+inline fun buildFunction(name: String, block: FunSpec.Builder.() -> Unit): FunSpec {
+    return FunSpec.builder(name).apply(block).build()
+}
+
+@CompilerDsl
 inline fun FunSpec.Builder.parameter(
     name: String,
     returns: TypeName,

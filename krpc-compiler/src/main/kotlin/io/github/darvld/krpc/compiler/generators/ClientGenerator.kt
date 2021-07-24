@@ -27,31 +27,52 @@ import io.github.darvld.krpc.compiler.model.*
 import io.grpc.MethodDescriptor.MethodType.*
 import java.io.OutputStream
 
+/**Generates a service client implementation.
+ *
+ * The generated component is *final*, and can be directly instantiated.
+ * ```
+ * val channel = ManagedChannelBuilder.forAddress(SERVER_ADDRESS, SERVER_PORT)
+ *     .usePlaintext() // Disable TLS for this example
+ *     .build()
+ *
+ * val client = GpsClient(channel, BinarySerializationProvider(ProtoBuf))
+ * ```*/
 object ClientGenerator : ServiceComponentGenerator {
-    const val CHANNEL_PARAM = "channel"
-    const val CALL_OPTIONS_PARAM = "callOptions"
+    private const val CHANNEL_PARAM = "channel"
+    private const val CALL_OPTIONS_PARAM = "callOptions"
 
-    val CHANNEL = ClassName("io.github.darvld.krpc", "Channel")
-    val CALL_OPTIONS = ClassName("io.github.darvld.krpc", "CallOptions")
+    private val CHANNEL = ClassName("io.github.darvld.krpc", "Channel")
+    private val CALL_OPTIONS = ClassName("io.github.darvld.krpc", "CallOptions")
 
-    val DEFAULT_CALL_OPTIONS = buildCode(
+    private val DEFAULT_CALL_OPTIONS = buildCode(
         "%M()",
         MemberName("io.github.darvld.krpc", "defaultCallOptions")
     )
 
+    private fun methodBuilderForType(methodType: MethodType): String = when (methodType) {
+        UNARY -> "unaryCall"
+        CLIENT_STREAMING -> "clientStreamCall"
+        SERVER_STREAMING -> "serverStreamCall"
+        BIDI_STREAMING -> "bidiStreamCall"
+        else -> reportError(null, "Unknown method type: ${methodType.name})")
+    }
+
+    private fun wrapRequest(methodType: MethodType, requestType: TypeName): TypeName {
+        return if (methodType.clientSendsOneMessage()) requestType else FLOW.parameterizedBy(requestType)
+    }
+
     override fun getFilename(service: ServiceDefinition): String = service.clientName
 
     override fun generateComponent(output: OutputStream, service: ServiceDefinition) {
-        buildFile(withPackage = service.packageName, fileName = service.clientName, output) {
+        writeFile(service.packageName, service.clientName, output) {
             addClass {
                 markAsGenerated()
 
                 addKdoc(
                     """
-                    Generated [%T] client implementation using a specific [SerializationProvider]
+                    Generated [${service.declaredName}] client implementation using a specific [SerializationProvider]
                     to marshall requests and responses.
-                    """.trimIndent(),
-                    service.className
+                    """.trimIndent()
                 )
 
                 addSuperinterface(service.className)
@@ -88,9 +109,8 @@ object ClientGenerator : ServiceComponentGenerator {
                     )
                 }
 
-                // Build method override
-                // TODO: Abstract this into the Common module (currently this will work on JVM only)
-                function("build", OVERRIDE) {
+                // Builder method override
+                function("buildWith", OVERRIDE) {
                     markAsGenerated()
 
                     addParameter(CHANNEL_PARAM, CHANNEL)
@@ -103,65 +123,47 @@ object ClientGenerator : ServiceComponentGenerator {
 
                 // Implement delegated service methods
                 for (method in service.methods) {
-                    addFunction(buildServiceMethodOverride(method, service.descriptorName))
+                    if (method.request is CompositeRequest)
+                        addImport(service.packageName, service.descriptorName, method.request.wrapperName)
+
+                    addFunction(buildServiceMethodOverride(method))
                 }
             }
         }
     }
 
-    fun buildServiceMethodOverride(method: ServiceMethodDefinition, serviceDescriptorName: String): FunSpec {
-        return FunSpec.builder(method.declaredName).apply {
-            addModifiers(OVERRIDE)
-            markAsGenerated()
+    fun buildServiceMethodOverride(method: ServiceMethodDefinition): FunSpec = buildFunction(method.declaredName) {
+        returns(method.returnType)
+        markAsGenerated()
 
-            if (method.isSuspending) addModifiers(SUSPEND)
+        addModifiers(OVERRIDE)
+        if (method.isSuspending) addModifiers(SUSPEND)
 
-            val callArgument: String
+        val callArgument: String
+        when (method.request) {
+            is SimpleRequest -> {
+                val requestType = wrapRequest(method.methodType, method.request.type)
 
-            when (method.request) {
-                is SimpleRequest -> {
-                    val requestType =
-                        if (method.methodType == MethodType.CLIENT_STREAMING || method.methodType == MethodType.BIDI_STREAMING)
-                            FLOW.parameterizedBy(method.request.type)
-                        else
-                            method.request.type
-
-                    addParameter(method.request.parameterName, requestType)
-                    callArgument = method.request.parameterName
-                }
-                is CompositeRequest -> {
-                    for ((name, type) in method.request.parameters) {
-                        addParameter(name, type)
-                    }
-                    val wrapperReference = "$serviceDescriptorName.${method.request.wrapperName}"
-                    callArgument = "$wrapperReference(${method.request.parameters.keys.joinToString()})"
-                }
-                NoRequest -> {
-                    callArgument = "Unit"
-                }
+                addParameter(method.request.parameterName, requestType)
+                callArgument = method.request.parameterName
             }
+            is CompositeRequest -> {
+                for ((name, type) in method.request.parameters) {
+                    addParameter(name, type)
+                }
 
-            returns(method.returnType)
-
-            val builderName: String = when (method.methodType) {
-                UNARY -> "unaryCall"
-                CLIENT_STREAMING -> "clientStreamCall"
-                SERVER_STREAMING -> "serverStreamCall"
-                BIDI_STREAMING -> "bidiStreamCall"
-                else -> reportError(null, "Unknown method type (in method ${method.declaredName})")
+                // call the wrapper's constructor: MethodWrapper(foo, bar)
+                callArgument = "${method.request.wrapperName}(${method.request.parameters.keys.joinToString()})"
             }
+            NoRequest -> callArgument = "Unit"
+        }
 
-            val body = CodeBlock.builder().add(
-                "%L($DESCRIPTOR_PROPERTY.%L, %L, $CALL_OPTIONS_PARAM)",
-                // The appropriate method to call from ClientCalls
-                builderName,
-                // The descriptor `val` for this method
-                method.declaredName,
-                // Pass in the method's argument (request)
-                callArgument
-            ).build()
+        val body = buildCode(
+            "%L($DESCRIPTOR_PROPERTY.%L, %L, $CALL_OPTIONS_PARAM)",
+            // Template arguments: unaryCall¹(descriptor.foo², request³, callOptions)
+            methodBuilderForType(method.methodType), method.declaredName, callArgument
+        )
 
-            if (method.responseType != UNIT) addCode("return %L", body) else addCode(body)
-        }.build()
+        if (method.responseType == UNIT) addCode(body) else addCode("return %L", body)
     }
 }

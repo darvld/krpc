@@ -20,8 +20,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import io.github.darvld.krpc.MethodType
 import io.github.darvld.krpc.compiler.FLOW
-import io.grpc.MethodDescriptor.MethodType.BIDI_STREAMING
-import io.grpc.MethodDescriptor.MethodType.SERVER_STREAMING
 
 /**Model class used by [ServiceProcessor][io.github.darvld.krpc.compiler.ServiceProcessor] to store information
  * about individual service methods.
@@ -49,9 +47,9 @@ data class ServiceMethodDefinition(
 ) {
     /**The return type of this method (wrapped in Flow for server-stream and bidi-stream).*/
     val returnType: TypeName
-        get() = if (methodType == SERVER_STREAMING || methodType == BIDI_STREAMING) {
-            FLOW.parameterizedBy(responseType)
-        } else {
+        get() = if (methodType.serverSendsOneMessage()) {
             responseType
+        } else {
+            FLOW.parameterizedBy(responseType)
         }
 }

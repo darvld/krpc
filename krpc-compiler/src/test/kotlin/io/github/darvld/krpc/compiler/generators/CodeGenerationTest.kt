@@ -20,7 +20,7 @@ import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import io.github.darvld.krpc.compiler.dsl.buildFile
+import io.github.darvld.krpc.compiler.dsl.writeFile
 import io.github.darvld.krpc.compiler.model.RequestInfo
 import io.github.darvld.krpc.compiler.model.ServiceDefinition
 import io.github.darvld.krpc.compiler.model.ServiceMethodDefinition
@@ -43,7 +43,7 @@ abstract class CodeGenerationTest {
     ): File {
         val file = newFile("$name.kt")
         file.outputStream().use { stream ->
-            buildFile("com.test.generated", name, stream) {
+            writeFile("com.test.generated", name, stream) {
                 TypeSpec.objectBuilder(name).apply(block).build().also(::addType)
             }
         }

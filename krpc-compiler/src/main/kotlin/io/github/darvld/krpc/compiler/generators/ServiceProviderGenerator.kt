@@ -33,7 +33,7 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
     override fun getFilename(service: ServiceDefinition): String = service.providerName
 
     override fun generateComponent(output: OutputStream, service: ServiceDefinition) {
-        buildFile(service.packageName, service.providerName, output) {
+        writeFile(service.packageName, service.providerName, output) {
             addClass {
                 markAsGenerated()
                 addModifiers(ABSTRACT)

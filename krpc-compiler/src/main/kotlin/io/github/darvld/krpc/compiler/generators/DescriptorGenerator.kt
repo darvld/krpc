@@ -101,7 +101,7 @@ object DescriptorGenerator : ServiceComponentGenerator {
     override fun getFilename(service: ServiceDefinition): String = service.descriptorName
 
     override fun generateComponent(output: OutputStream, service: ServiceDefinition) {
-        buildFile(service.packageName, service.descriptorName, output) {
+        writeFile(service.packageName, service.descriptorName, output) {
             addClass {
                 markAsGenerated()
                 superclass(AbstractServiceDescriptor::class)
