@@ -32,6 +32,7 @@ import io.github.darvld.krpc.compiler.model.SimpleRequest
 import io.grpc.MethodDescriptor.MethodType.*
 import java.io.OutputStream
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**Generates an abstract service provider, allowing users to provide the final implementation of the service
  * by overriding this component.*/
@@ -56,10 +57,11 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
                     service.className,
                 )
 
-                // Primary constructor
                 addConstructor(primary = true) {
                     addParameter(SERIALIZATION_PROVIDER_PARAM, SERIALIZATION_PROVIDER)
-                    addParameter(COROUTINE_CONTEXT_PARAM, COROUTINE_CONTEXT)
+                    addParameter(COROUTINE_CONTEXT_PARAM, COROUTINE_CONTEXT) {
+                        defaultValue("%T", EmptyCoroutineContext::class)
+                    }
                 }
 
                 // Pass the coroutine context to the parent class
@@ -71,13 +73,13 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
                 }
 
                 // Override bindService
-                buildServiceBinder(service)
+                addFunction(buildServiceBinder(service))
             }
         }
     }
 
     private fun buildServiceBinder(service: ServiceDefinition): FunSpec {
-        return buildFunction(AbstractServiceProvider::bindService.name) {
+        return buildFunction("bindMethods") {
             markAsGenerated()
 
             addModifiers(FINAL, OVERRIDE)
@@ -106,7 +108,7 @@ object ServiceProviderGenerator : ServiceComponentGenerator {
                         }
                     }
 
-                    addStatement("register${builder}Method(definition.${method.declaredName}$implementation")
+                    addStatement("register${builder}Method($DESCRIPTOR_PROPERTY.${method.declaredName}$implementation")
                 }
             }
         }

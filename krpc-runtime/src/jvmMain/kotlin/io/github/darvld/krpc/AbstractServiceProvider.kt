@@ -26,12 +26,12 @@ actual abstract class AbstractServiceProvider actual constructor(
     context: CoroutineContext,
 ) : AbstractCoroutineServerImpl(context) {
 
-    protected actual abstract val definition: AbstractServiceDescriptor
+    protected actual abstract val descriptor: AbstractServiceDescriptor
 
     actual abstract fun ServiceRegistrar.bindMethods()
 
     final override fun bindService(): ServerServiceDefinition {
-        return ServerServiceDefinition.builder(definition.serviceName).apply {
+        return ServerServiceDefinition.builder(descriptor.serviceName).apply {
             asServiceDefinition(context).bindMethods()
         }.build()
     }

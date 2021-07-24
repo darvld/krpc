@@ -49,11 +49,11 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
         reportError(function, "Service methods must provide a valid type annotation")
     }
 
-    private fun KSFunctionDeclaration.requireSuspending(required: Boolean, message: String) {
+    private fun KSFunctionDeclaration.requireSuspending(required: Boolean) {
         if (required && Modifier.SUSPEND !in modifiers) {
-            reportError(this, message)
+            reportError(this, "Unary and client-streaming methods must be marked with the 'suspend' modifier.")
         } else if (!required && Modifier.SUSPEND in modifiers) {
-            reportError(this, message)
+            reportError(this, "Server-streaming rpc methods must not be marked with 'suspend' modifier.")
         }
     }
 
@@ -72,28 +72,23 @@ class ServiceMethodVisitor : KSEmptyVisitor<Unit, ServiceMethodDefinition>() {
             BidiStream::class.simpleName -> BIDI_STREAMING
             else -> return null
         }
+        declaration.requireSuspending(methodType.serverSendsOneMessage())
+        val requestType = RequestInfo.extractFrom(declaration, flowExpected = !methodType.clientSendsOneMessage())
 
-        val clientStreaming =
-            methodType == CLIENT_STREAMING || methodType == BIDI_STREAMING
-        val serverStreaming =
-            methodType == SERVER_STREAMING || methodType == BIDI_STREAMING
-
-        val requestType = RequestInfo.extractFrom(declaration, flowExpected = clientStreaming)
-
-        val responseType = if (serverStreaming) {
+        val responseType = if (methodType.serverSendsOneMessage()) {
+            declaration.returnType?.resolveAsTypeName() ?: UNIT
+        } else {
             declaration.returnType?.resolveAsParameterizedName()?.typeArguments?.singleOrNull()
                 ?: reportError(
                     declaration,
                     message = "Server-streaming rpc methods must return a Flow of a serializable type."
                 )
-        } else {
-            declaration.returnType?.resolveAsTypeName() ?: UNIT
         }
 
         return ServiceMethodDefinition(
             declaredName = declaration.simpleName.asString(),
             methodName = declaration.extractMethodName(annotation),
-            isSuspending = !serverStreaming,
+            isSuspending = methodType.serverSendsOneMessage(),
             methodType = methodType,
             request = requestType,
             responseType = responseType

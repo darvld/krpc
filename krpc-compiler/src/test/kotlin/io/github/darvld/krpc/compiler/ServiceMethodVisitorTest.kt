@@ -24,7 +24,7 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.COMPILATION_ERROR
+import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.INTERNAL_ERROR
 import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
 import com.tschuchort.compiletesting.SourceFile
 import io.github.darvld.krpc.compiler.model.CompositeRequest
@@ -38,6 +38,7 @@ import io.grpc.MethodDescriptor
 import io.grpc.MethodDescriptor.MethodType.*
 import org.intellij.lang.annotations.Language
 import org.junit.Test
+import kotlin.test.assertEquals
 import kotlin.test.fail
 
 class ServiceMethodVisitorTest {
@@ -120,20 +121,20 @@ class ServiceMethodVisitorTest {
         }
 
         whenCompiling(using = provider, source) {
-            exitCode shouldBe COMPILATION_ERROR
+            assertEquals(INTERNAL_ERROR, exitCode, messages)
             messages shouldContain errorMessage
         }
     }
 
     @Test
     fun `fails for method without annotations`() = assertExtractionFailsWith(
-        errorMessage = "Service methods must provide the corresponding type annotation",
+        errorMessage = "Service methods must provide a valid type annotation",
         definitionBlock = "suspend fun invalid(request: Int): String",
     )
 
     @Test
     fun `fails to extract unary call without suspend modifier`() = assertExtractionFailsWith(
-        errorMessage = "UnaryCall rpc methods must be marked with 'suspend' modifier",
+        errorMessage = "Unary and client-streaming methods must be marked with the 'suspend' modifier.",
         definitionBlock = """
         @UnaryCall
         fun invalid(request: Int): String
@@ -142,7 +143,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `fails to extract client stream call without suspend modifier`() = assertExtractionFailsWith(
-        errorMessage = "ClientStream rpc methods must be marked with 'suspend' modifier",
+        errorMessage = "Unary and client-streaming methods must be marked with the 'suspend' modifier",
         imports = "import kotlinx.coroutines.flow.Flow",
         definitionBlock = """
         @ClientStream
@@ -172,7 +173,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `fails to extract server stream call with non-flow return type`() = assertExtractionFailsWith(
-        errorMessage = "ServerStream rpc methods must return a Flow of a serializable type.",
+        errorMessage = "Server-streaming rpc methods must return a Flow of a serializable type.",
         definitionBlock = """
         @ServerStream
         fun invalid(request: Int): String
@@ -181,7 +182,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `fails to extract server stream call with suspend modifier`() = assertExtractionFailsWith(
-        errorMessage = "ServerStream rpc methods must not be marked with 'suspend' modifier.",
+        errorMessage = "Server-streaming rpc methods must not be marked with 'suspend' modifier.",
         imports = "import kotlinx.coroutines.flow.Flow",
         definitionBlock = """
         @ServerStream
@@ -211,7 +212,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `fails to extract bidi stream call with non-flow return type`() = assertExtractionFailsWith(
-        errorMessage = "BidiStream rpc methods must return a Flow of a serializable type.",
+        errorMessage = "Server-streaming rpc methods must return a Flow of a serializable type.",
         imports = "import kotlinx.coroutines.flow.Flow",
         definitionBlock = """
         @BidiStream
@@ -221,7 +222,7 @@ class ServiceMethodVisitorTest {
 
     @Test
     fun `fails to extract bidi stream call with suspend modifier`() = assertExtractionFailsWith(
-        errorMessage = "BidiStream rpc methods must not be marked with 'suspend' modifier.",
+        errorMessage = "Server-streaming rpc methods must not be marked with 'suspend' modifier.",
         imports = "import kotlinx.coroutines.flow.Flow",
         definitionBlock = """
         @BidiStream

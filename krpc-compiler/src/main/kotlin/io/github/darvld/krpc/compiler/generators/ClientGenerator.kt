@@ -46,9 +46,7 @@ object ClientGenerator : ServiceComponentGenerator {
 
     private val DEFAULT_CALL_OPTIONS = CodeBlock.of(
         "%M()",
-        arrayOf<Any>(
-            MemberName("io.github.darvld.krpc", "defaultCallOptions")
-        )
+        MemberName("io.github.darvld.krpc", "defaultCallOptions")
     )
 
     private fun methodBuilderForType(methodType: MethodType): String = when (methodType) {
@@ -87,8 +85,8 @@ object ClientGenerator : ServiceComponentGenerator {
                     addModifiers(PRIVATE)
 
                     addParameter(CHANNEL_PARAM, CHANNEL)
-                    addParameter(DESCRIPTOR_PROPERTY, service.descriptorClassName)
                     addParameter(CALL_OPTIONS_PARAM, CALL_OPTIONS, DEFAULT_CALL_OPTIONS)
+                    addParameter(DESCRIPTOR_PROPERTY, service.descriptorClassName)
                 }
 
                 // Service descriptor val (to be merged into constructor)
@@ -106,8 +104,8 @@ object ClientGenerator : ServiceComponentGenerator {
 
                     callThisConstructor(
                         CHANNEL_PARAM,
-                        "${service.declaredName}($SERIALIZATION_PROVIDER_PARAM)",
-                        CALL_OPTIONS_PARAM
+                        CALL_OPTIONS_PARAM,
+                        "${service.descriptorName}($SERIALIZATION_PROVIDER_PARAM)",
                     )
                 }
 
@@ -126,7 +124,7 @@ object ClientGenerator : ServiceComponentGenerator {
                 // Implement delegated service methods
                 for (method in service.methods) {
                     if (method.request is CompositeRequest)
-                        addImport(service.packageName, service.descriptorName, method.request.wrapperName)
+                        addImport(service.packageName, "${service.descriptorName}.${method.request.wrapperName}")
 
                     addFunction(buildServiceMethodOverride(method))
                 }
@@ -163,9 +161,7 @@ object ClientGenerator : ServiceComponentGenerator {
         val body = CodeBlock.of(
             "%L($DESCRIPTOR_PROPERTY.%L, %L, $CALL_OPTIONS_PARAM)",
             // Template arguments: unaryCall¹(descriptor.foo², request³, callOptions)
-            arrayOf<Any>(
-                methodBuilderForType(method.methodType), method.declaredName, callArgument
-            )
+            methodBuilderForType(method.methodType), method.declaredName, callArgument
         )
 
         if (method.responseType == UNIT) addCode(body) else addCode("return %L", body)

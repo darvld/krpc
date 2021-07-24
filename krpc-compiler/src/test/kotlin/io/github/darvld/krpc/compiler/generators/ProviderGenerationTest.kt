@@ -35,7 +35,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         }
 
         generated.assertContentEquals(
-            singleMethodProvider("registerUnaryMethod(definition.unary, ::unary)")
+            singleMethodProvider("registerUnaryMethod(descriptor.unary, ::unary)")
         )
     }
 
@@ -51,7 +51,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         }
 
         generated.assertContentEquals(
-            singleMethodProvider("registerUnaryMethod(definition.unary) { unary(it.id, it.name, it.age) }")
+            singleMethodProvider("registerUnaryMethod(descriptor.unary) { unary(it.id, it.name, it.age) }")
         )
     }
 
@@ -66,7 +66,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         }
 
         generated.assertContentEquals(
-            singleMethodProvider("registerUnaryMethod(definition.unary) { unary() }")
+            singleMethodProvider("registerUnaryMethod(descriptor.unary) { unary() }")
         )
     }
 
@@ -81,7 +81,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         }
 
         generated.assertContentEquals(
-            singleMethodProvider("registerBidiStreamMethod(definition.bidiStream, ::bidiStream)")
+            singleMethodProvider("registerBidiStreamMethod(descriptor.bidiStream, ::bidiStream)")
         )
     }
 
@@ -106,7 +106,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
           serializationProvider: SerializationProvider,
           context: CoroutineContext = EmptyCoroutineContext
         ) : AbstractServiceProvider(context), TestService {
-          protected final override val definition: TestServiceDescriptor =
+          protected final override val descriptor: TestServiceDescriptor =
               TestServiceDescriptor(serializationProvider)
         
           @Generated("io.github.darvld.krpc")

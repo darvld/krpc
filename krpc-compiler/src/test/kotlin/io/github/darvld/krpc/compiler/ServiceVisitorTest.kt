@@ -22,8 +22,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.STRING
-import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.COMPILATION_ERROR
-import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.OK
+import com.tschuchort.compiletesting.KotlinCompilation.ExitCode.*
 import com.tschuchort.compiletesting.SourceFile
 import io.github.darvld.krpc.Service
 import io.github.darvld.krpc.compiler.model.ServiceDefinition
@@ -71,7 +70,7 @@ class ServiceVisitorTest {
         val provider = singleServiceProcessorProvider { accept(serviceVisitor, Unit) }
 
         whenCompiling(using = provider, source) {
-            exitCode shouldBe COMPILATION_ERROR
+            exitCode shouldBe INTERNAL_ERROR
             messages shouldContain errorMessage
         }
     }

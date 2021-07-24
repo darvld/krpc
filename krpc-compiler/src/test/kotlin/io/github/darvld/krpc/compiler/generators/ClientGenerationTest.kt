@@ -59,15 +59,8 @@ class ClientGenerationTest : CodeGenerationTest() {
               ) : this(channel, callOptions, TestServiceDescriptor(serializationProvider))
 
               @Generated("io.github.darvld.krpc")
-              public override fun build(channel: Channel, callOptions: CallOptions): TestClient =
+              public override fun buildWith(channel: Channel, callOptions: CallOptions): TestClient =
                   TestClient(channel, callOptions, descriptor)
-
-              /**
-               * Returns a new client using [serializationProvider] to marshall requests and responses.
-               */
-              @Generated("io.github.darvld.krpc")
-              public fun withSerializationProvider(serializationProvider: SerializationProvider): TestClient =
-                  TestClient(channel, callOptions, TestServiceDescriptor(serializationProvider))
             }
 
             """.trimIndent()
@@ -161,8 +154,7 @@ class ClientGenerationTest : CodeGenerationTest() {
                 id: Long,
                 name: String,
                 age: Int
-              ): String = unaryCall(descriptor.unary, TestServiceDescriptor.UnaryRequest(id, name, age),
-                  callOptions)
+              ): String = unaryCall(descriptor.unary, UnaryRequest(id, name, age), callOptions)
             }
 
             """.trimIndent()

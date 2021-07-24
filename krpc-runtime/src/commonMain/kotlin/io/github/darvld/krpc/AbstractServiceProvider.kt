@@ -30,7 +30,7 @@ expect abstract class AbstractServiceProvider(
     context: CoroutineContext = EmptyCoroutineContext,
 ) {
     /**A descriptor for the provided service.*/
-    protected abstract val definition: AbstractServiceDescriptor
+    protected abstract val descriptor: AbstractServiceDescriptor
 
     /**Bind method implementations using a [ServiceRegistrar].
      *
