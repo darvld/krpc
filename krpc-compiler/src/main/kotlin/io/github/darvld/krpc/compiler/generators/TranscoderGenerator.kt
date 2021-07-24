@@ -17,10 +17,12 @@
 package io.github.darvld.krpc.compiler.generators
 
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.KModifier.PRIVATE
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.darvld.krpc.compiler.SERIALIZATION_PROVIDER_PARAM
 import io.github.darvld.krpc.compiler.TRANSCODER
 import io.github.darvld.krpc.compiler.TRANSCODER_EXTENSION_MEMBER
+import io.github.darvld.krpc.compiler.dsl.addProperty
 import io.github.darvld.krpc.compiler.dsl.markAsGenerated
 
 private val TypeName.uniqueSimpleName: String
@@ -50,12 +52,8 @@ fun TypeSpec.Builder.addTranscoder(typeName: TypeName) {
     // Avoid re-generating the same marshaller
     propertySpecs.find { it.name == propName }?.let { return }
 
-    addProperty(
-        PropertySpec.builder(propName, TRANSCODER.parameterizedBy(typeName))
-            .addModifiers(KModifier.PRIVATE)
-            .markAsGenerated()
-            .mutable(false)
-            .initializer("$SERIALIZATION_PROVIDER_PARAM.%M()", TRANSCODER_EXTENSION_MEMBER)
-            .build()
-    )
+    addProperty(propName, TRANSCODER.parameterizedBy(typeName), PRIVATE) {
+        markAsGenerated()
+        initializer("$SERIALIZATION_PROVIDER_PARAM.%M()", TRANSCODER_EXTENSION_MEMBER)
+    }
 }
