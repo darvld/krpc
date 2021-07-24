@@ -18,12 +18,10 @@ package io.github.darvld.krpc.compiler.dsl
 
 import com.squareup.kotlinpoet.*
 
-@CompilerDsl
 inline fun buildClass(name: String, block: TypeSpec.Builder.() -> Unit): TypeSpec {
     return TypeSpec.classBuilder(name).apply(block).build()
 }
 
-@CompilerDsl
 inline fun TypeSpec.Builder.constructor(
     primary: Boolean = false,
     block: FunSpec.Builder.() -> Unit = {}
@@ -35,7 +33,6 @@ inline fun TypeSpec.Builder.constructor(
     return impl
 }
 
-@CompilerDsl
 inline fun TypeSpec.Builder.function(
     name: String,
     vararg modifiers: KModifier,
@@ -50,7 +47,6 @@ inline fun TypeSpec.Builder.function(
     return impl
 }
 
-@CompilerDsl
 inline fun TypeSpec.Builder.property(
     name: String,
     type: TypeName,

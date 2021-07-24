@@ -20,7 +20,6 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 
-@CompilerDsl
 inline fun buildProperty(
     name: String,
     type: TypeName,

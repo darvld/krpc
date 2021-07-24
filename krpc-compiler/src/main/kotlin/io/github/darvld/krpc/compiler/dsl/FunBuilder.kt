@@ -21,12 +21,10 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.TypeName
 
-@CompilerDsl
 inline fun buildFunction(name: String, block: FunSpec.Builder.() -> Unit): FunSpec {
     return FunSpec.builder(name).apply(block).build()
 }
 
-@CompilerDsl
 inline fun FunSpec.Builder.parameter(
     name: String,
     returns: TypeName,
@@ -42,7 +40,6 @@ inline fun FunSpec.Builder.parameter(
     return param
 }
 
-@CompilerDsl
 inline fun FunSpec.Builder.code(block: CodeBlock.Builder.() -> Unit): CodeBlock {
     return CodeBlock.builder().apply(block).build().also {
         addCode(it)

@@ -19,12 +19,10 @@ package io.github.darvld.krpc.compiler.dsl
 
 import com.squareup.kotlinpoet.CodeBlock
 
-@CompilerDsl
 inline fun buildCode(block: CodeBlock.Builder.() -> Unit): CodeBlock {
     return CodeBlock.builder().apply(block).build()
 }
 
-@CompilerDsl
 inline fun buildCode(format: String, vararg args: Any): CodeBlock {
     return CodeBlock.of(format, args)
 }

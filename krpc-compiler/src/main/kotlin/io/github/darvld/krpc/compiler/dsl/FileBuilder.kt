@@ -23,7 +23,6 @@ import java.io.OutputStream
 
 
 /**Build a file using [FileSpec.Builder] and write it to [output].*/
-@CompilerDsl
 inline fun writeFile(
     withPackage: String,
     fileName: String,
@@ -36,7 +35,6 @@ inline fun writeFile(
 }
 
 /**Build a class using [TypeSpec.classBuilder] and automatically add it to the current file.*/
-@CompilerDsl
 inline fun FileSpec.Builder.addClass(
     packageName: String = this.packageName,
     className: String = this.name,
