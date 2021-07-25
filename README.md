@@ -2,7 +2,7 @@
 
 [![CodeFactor](https://www.codefactor.io/repository/github/darvld/krpc/badge/main)](https://www.codefactor.io/repository/github/darvld/krpc/overview/main)
 [![CI](https://github.com/darvld/krpc/actions/workflows/ci.yml/badge.svg)](https://github.com/darvld/krpc/actions/workflows/ci.yml)
-[![Download](https://img.shields.io/maven-central/v/io.github.darvld.krpc/krpc-runtime/0.2.0?color=green)](https://search.maven.org/artifact/io.github.darvld.krpc/krpc-runtime/0.2.0/pom)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.darvld.krpc/krpc-runtime.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.darvld.krpc%22%20AND%20a:%22krpc-runtime%22)
 
 A Kotlin Multiplatform library to generate and consume gRPC services directly from Kotlin. Check out
 the [Sample project](https://github.com/darvld/krpc/tree/main/sample) to see a full list of available features, or see
