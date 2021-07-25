@@ -24,7 +24,7 @@ plugins {
 
 dependencies {
     // Runtime, containing the annotations and other utils
-    implementation "com.github.darvld.krpc:krpc-runtime:$krpcVersion"
+    implementation "io.github.darvld.krpc:krpc-runtime:$krpcVersion"
 
     // A serial format is needed to provide runtime serialization
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serializationVersion"

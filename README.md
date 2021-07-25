@@ -1,10 +1,14 @@
 # Kotlin RPC
+
 [![CodeFactor](https://www.codefactor.io/repository/github/darvld/krpc/badge/main)](https://www.codefactor.io/repository/github/darvld/krpc/overview/main)
-[![CI](https://github.com/darvld/krpc/actions/workflows/ci.yml/badge.svg)](https://github.com/darvld/krpc/actions/workflows/ci.yml) 
+[![CI](https://github.com/darvld/krpc/actions/workflows/ci.yml/badge.svg)](https://github.com/darvld/krpc/actions/workflows/ci.yml)
+[![Download](https://img.shields.io/maven-central/v/io.github.darvld.krpc/krpc-runtime/0.1.0?color=green)](https://search.maven.org/artifact/io.github.darvld.krpc/krpc-runtime/0.1.0/pom)
 
-A Kotlin Multiplatform library to generate and consume gRPC services directly from Kotlin. Check out the [Sample project](https://github.com/darvld/krpc/tree/main/sample) to see a full list of available features, or see the [Quick Start](docs/Basic.md) guide to add kRPC to your project.
+A Kotlin Multiplatform library to generate and consume gRPC services directly from Kotlin. Check out
+the [Sample project](https://github.com/darvld/krpc/tree/main/sample) to see a full list of available features, or see
+the [Quick Start](docs/Basic.md) guide on how to add kRPC to your project.
 
-> **Note:** At the moment, only Kotlin/JVM is supported.
+> **Note:** At the moment, only Kotlin/JVM is supported as a target platform for code generation.
 
 ## Overview
 
@@ -22,7 +26,8 @@ interface GpsService {
 The methods inside the service definitions should have the proper annotation to reflect the type of RPC call:
 
 - `@UnaryCall` defines a single-request, single-response rpc method, suspending until the server replies.
-- `@ServerStream` takes a single request and returns a response `Flow`, which you can later use to consume the responses streamed by the server. Server-stream methods don't suspend, instead the returned flow collector will suspend until
+- `@ServerStream` takes a single request and returns a response `Flow`, which you can later use to consume the responses
+  streamed by the server. Server-stream methods don't suspend, instead the returned flow collector will suspend until
   the first value is received.
 - `@ClientStream` takes a request flow and returns a single response, suspending until it is received.
 - `@BidiStream` takes a request flow and returns response flow, thus enabling bidirectional streaming. Like
@@ -37,8 +42,9 @@ descriptors (on JVM) and can be used to create your own custom client/server imp
 ## Implementation
 
 The kRPC compiler uses Google's [KSP](https://github.com/google/ksp) to process the annotations and then generates code
-with [KotlinPoet](). On JVM, the runtime and generated stubs are implemented on top of the [grpc-kotlin-stub](https://github.com/grpc/grpc-kotlin)
-runtime. 
+with [KotlinPoet](). On JVM, the runtime and generated stubs are implemented on top of
+the [grpc-kotlin-stub](https://github.com/grpc/grpc-kotlin)
+runtime.
 
 ## Resources
 
@@ -46,4 +52,5 @@ runtime. 
 - [Service Definitions](docs/Advanced.md)
 - [Roadmap](docs/Roadmap.md)
 
-If you find the project useful, have an idea on how to improve it or if you find a bug, consider making a contribution or opening a new issue. Pull requests are welcome.
+If you find the project useful, have an idea on how to improve it or if you find a bug, consider making a contribution
+or opening a new issue. Pull requests are welcome.

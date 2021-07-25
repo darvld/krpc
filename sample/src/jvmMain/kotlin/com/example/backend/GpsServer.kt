@@ -22,7 +22,8 @@ import com.example.Simulation.randomLocation
 import com.example.Simulation.shortDelay
 import com.example.model.Location
 import com.example.model.Vehicle
-import com.github.darvld.krpc.SerializationProvider
+import io.github.darvld.krpc.SerializationProvider
+import io.github.darvld.krpc.metadata.contextKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlin.random.Random
@@ -34,6 +35,11 @@ class GpsServer(
 
     private val vehicles = MutableList(5) {
         Vehicle(Random.nextLong(1000, 9999), "SampleVehicle-SV$it")
+    }
+
+    override suspend fun handshake() {
+        val username = SessionToken.get()
+        println("[Server] User $username has connected to the service.")
     }
 
     override suspend fun addVehicle(id: Long, info: String, location: Location): Boolean {
@@ -94,5 +100,9 @@ class GpsServer(
         })
 
         println("[Server] Now exiting continuous tracking mode")
+    }
+
+    companion object {
+        val SessionToken = contextKey<String>("session_token")
     }
 }

@@ -8,12 +8,14 @@ plugins {
 
 // Configure ksp with the kRPC compiler
 dependencies {
-    ksp project(":krpc-compiler")
+    // ksp project(":krpc-compiler")
 }
 
 kotlin {
     // Kotlin Multiplatform targets
-    jvm()
+    jvm( {
+
+    })
 
     sourceSets {
         all {
@@ -31,6 +33,8 @@ kotlin {
 
                 // Serial format shared by all platforms (could be Json, or any other)
                 implementation "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serializationVersion"
+
+                configurations.getByName("ksp").dependencies.add(project.dependencies.create(project(":krpc-compiler")))
             }
         }
 
@@ -40,7 +44,7 @@ kotlin {
                 implementation "io.grpc:grpc-netty:$grpcVersion"
             }
         }
-        
+
         // Test module used in CI
         jvmTest {
             dependencies {

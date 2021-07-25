@@ -34,7 +34,6 @@ ext {
     }
 }
 
-
 // Sonatype OSSRH publication setup
 nexusPublishing {
     repositories {
@@ -65,9 +64,19 @@ subprojects {
         sign publishing.publications
     }
 
+    // Stub javadoc to comply with MavenCentral requirements
+    task javadocJar(type: Jar) {
+        archiveClassifier.set('javadoc')
+    }
+
     // Setup metadata for all Maven publications
     extensions.getByType(PublishingExtension).publications.withType(MavenPublication).configureEach {
+
+        // Include the stub javadoc
+        artifact javadocJar
+
         pom {
+            name.set project.name
             description.set "Idiomatic gRPC library for Kotlin Multiplatform"
             url.set "https://github.com/darvld/krpc"
 

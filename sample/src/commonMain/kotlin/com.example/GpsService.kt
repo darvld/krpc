@@ -18,12 +18,19 @@ package com.example
 
 import com.example.model.Location
 import com.example.model.Vehicle
-import com.github.darvld.krpc.*
+import io.github.darvld.krpc.*
+import io.github.darvld.krpc.metadata.metadataKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.protobuf.ProtoBuf
 
 /**A GPS tracking service used to manage the [Location] of different [Vehicle] instances.*/
 @Service
 interface GpsService {
+
+    /**Authentication handshake using the gRPC Metadata API.*/
+    @UnaryCall
+    suspend fun handshake()
 
     /**Returns a list of all the vehicles currently tracked by this service.*/
     @UnaryCall
@@ -57,4 +64,9 @@ interface GpsService {
     @BidiStream
     fun continuousTracking(vehicles: Flow<Vehicle>): Flow<Location>
 
+    companion object {
+        /**Metadata used to validate client calls. Tokens are obtained from a separate Authorization service.*/
+        @OptIn(ExperimentalSerializationApi::class)
+        val SESSION_TOKEN = metadataKey<String>("session_token", ProtoBuf.transcoder())
+    }
 }
