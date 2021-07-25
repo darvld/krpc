@@ -22,6 +22,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.validate
 import io.github.darvld.krpc.Service
 import io.github.darvld.krpc.compiler.generators.ServiceComponentGenerator
@@ -41,6 +42,7 @@ class ServiceProcessor(
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotated = resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
+            .map { it as KSDeclaration }
         val unprocessed = annotated.filterNot { it.validate() }
 
         annotated.forEach { declaration ->
@@ -51,7 +53,7 @@ class ServiceProcessor(
                 // Report errors through the logger instead of unhandled exceptions
                 try {
                     environment.codeGenerator.createNewFile(
-                        dependencies = Dependencies(true),
+                        dependencies = Dependencies(aggregating = true, declaration.containingFile!!),
                         packageName = service.packageName,
                         fileName = component.getFilename(service)
                     ).use { stream ->
