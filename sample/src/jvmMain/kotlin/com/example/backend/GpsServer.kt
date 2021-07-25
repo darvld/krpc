@@ -20,11 +20,10 @@ import com.example.GpsServiceProvider
 import com.example.Simulation.moderateDelay
 import com.example.Simulation.randomLocation
 import com.example.Simulation.shortDelay
-import com.example.backend.ServerAuthInterceptor.SessionToken
 import com.example.model.Location
 import com.example.model.Vehicle
 import io.github.darvld.krpc.SerializationProvider
-import io.github.darvld.krpc.metadata.getValue
+import io.github.darvld.krpc.metadata.contextKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlin.random.Random
@@ -39,7 +38,7 @@ class GpsServer(
     }
 
     override suspend fun handshake() {
-        val username by SessionToken
+        val username = SessionToken.get()
         println("[Server] User $username has connected to the service.")
     }
 
@@ -101,5 +100,9 @@ class GpsServer(
         })
 
         println("[Server] Now exiting continuous tracking mode")
+    }
+
+    companion object {
+        val SessionToken = contextKey<String>("session_token")
     }
 }

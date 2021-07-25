@@ -28,6 +28,7 @@ import io.github.darvld.krpc.BinarySerializationProvider
 import io.github.darvld.krpc.shutdownAndJoin
 import io.grpc.ManagedChannelBuilder
 import io.grpc.ServerBuilder
+import io.grpc.ServerInterceptors
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.take

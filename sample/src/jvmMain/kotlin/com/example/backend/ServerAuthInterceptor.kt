@@ -19,20 +19,17 @@ package com.example.backend
 
 import com.example.GpsService
 import io.github.darvld.krpc.metadata.ServerMetadataInterceptor
-import io.github.darvld.krpc.metadata.contextKey
 import io.grpc.Context
 import io.grpc.Metadata
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 
 object ServerAuthInterceptor : ServerMetadataInterceptor() {
-    val SessionToken = contextKey<String>("session_token")
-
     override fun intercept(context: Context, metadata: Metadata): Context {
         val token = metadata.get(GpsService.SESSION_TOKEN)
             ?: throw StatusRuntimeException(Status.UNAUTHENTICATED)
 
-        return context.withValue(SessionToken, token)
+        return context.withValue(GpsServer.SessionToken, token)
     }
 }
 
