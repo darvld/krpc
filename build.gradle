@@ -71,7 +71,6 @@ subprojects {
 
     // Setup metadata for all Maven publications
     extensions.getByType(PublishingExtension).publications.withType(MavenPublication).configureEach {
-
         // Include the stub javadoc
         artifact javadocJar
 

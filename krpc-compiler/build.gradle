@@ -2,6 +2,10 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
+publishing.publications {
+    maven(MavenPublication)
+}
+
 dependencies {
     implementation project(":krpc-runtime")
     implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
