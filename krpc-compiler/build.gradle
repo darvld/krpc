@@ -2,10 +2,6 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
 }
 
-publishing.publications {
-    maven(MavenPublication)
-}
-
 dependencies {
     implementation project(":krpc-runtime")
     implementation "com.google.devtools.ksp:symbol-processing-api:$kspVersion"
@@ -16,7 +12,17 @@ dependencies {
     testImplementation "com.github.tschuchortdev:kotlin-compile-testing-ksp:$compileTestingVersion"
 }
 
-sourceSets.all {
-    languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
+sourceSets {
+    all {
+        languageSettings.useExperimentalAnnotation('kotlin.RequiresOptIn')
+    }
+
+    main {
+        publishing.publications {
+            maven(MavenPublication) {
+                from components.java
+            }
+        }
+    }
 }
 
