@@ -17,6 +17,7 @@
 package io.github.darvld.krpc.compiler
 
 import com.google.devtools.ksp.symbol.KSTypeReference
+import com.google.devtools.ksp.symbol.Nullability
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -37,8 +38,12 @@ fun KSTypeReference.resolveAsTypeName(): TypeName {
     with(resolve()) {
         val baseName = ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
 
-        if (arguments.isEmpty()) return baseName
+        val name = if (arguments.isEmpty()) {
+            baseName
+        } else {
+            baseName.parameterizedBy(arguments.map { it.type?.resolveAsTypeName() ?: STAR })
+        }
 
-        return baseName.parameterizedBy(arguments.map { it.type?.resolveAsTypeName() ?: STAR })
+        return name.copy(nullable = nullability == Nullability.NULLABLE)
     }
 }
