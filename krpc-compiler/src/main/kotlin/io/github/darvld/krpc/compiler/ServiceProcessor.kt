@@ -46,12 +46,13 @@ class ServiceProcessor(
         val unprocessed = annotated.filterNot { it.validate() }
 
         annotated.forEach { declaration ->
-            // Extract the service definition using the visitor
-            val service = declaration.accept(serviceVisitor, Unit)
+            try {
+                // Extract the service definition using the visitor
+                val service = declaration.accept(serviceVisitor, Unit)
 
-            generators.forEach { component ->
-                // Report errors through the logger instead of unhandled exceptions
-                try {
+                generators.forEach { component ->
+                    // Report errors through the logger instead of unhandled exceptions
+
                     environment.codeGenerator.createNewFile(
                         dependencies = Dependencies(aggregating = true, declaration.containingFile!!),
                         packageName = service.packageName,
@@ -59,9 +60,9 @@ class ServiceProcessor(
                     ).use { stream ->
                         component.generateComponent(stream, service)
                     }
-                } catch (e: ProcessingError) {
-                    environment.logger.error(e.message, e.symbol)
                 }
+            } catch (e: ProcessingError) {
+                environment.logger.error(e.message, e.symbol)
             }
         }
 

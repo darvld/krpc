@@ -26,9 +26,7 @@ import kotlin.coroutines.EmptyCoroutineContext
  * @see AbstractServiceClient
  * @see AbstractServiceDescriptor
  * @see ServiceRegistrar*/
-expect abstract class AbstractServiceProvider(
-    context: CoroutineContext = EmptyCoroutineContext,
-) {
+expect abstract class AbstractServiceProvider(context: CoroutineContext = EmptyCoroutineContext) {
     /**A descriptor for the provided service.*/
     protected abstract val descriptor: AbstractServiceDescriptor
 

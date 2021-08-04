@@ -18,6 +18,7 @@ package io.github.darvld.krpc.compiler
 
 import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.symbol.ClassKind.INTERFACE
+import com.google.devtools.ksp.symbol.KSAnnotation
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSNode
 import com.google.devtools.ksp.validate
@@ -40,25 +41,27 @@ class ServiceVisitor(
         reportError(node, "Service visitor can only visit service definition interfaces")
     }
 
+    private fun KSAnnotation.getArgument(name: String): String? {
+        return arguments.find { it.name?.getShortName() == name }?.value as? String
+    }
+
     override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit): ServiceDefinition {
         if (classDeclaration.classKind != INTERFACE)
             reportError(classDeclaration, "Service definitions must be interfaces.")
 
         // The annotation arguments contain the names for the service, the provider and the client (if specified)
-        val annotationArgs = classDeclaration.annotations.find {
-            it.shortName.getShortName() == Service::class.simpleName
-        }?.arguments ?: reportError(classDeclaration, "Service definitions must be annotated with @Service.")
-
-        val (service, provider, client) = annotationArgs.map { argument ->
-            argument.value?.toString().takeUnless { it.isNullOrBlank() }
-        }
+        val annotation = classDeclaration.annotations.find { it.shortName.getShortName() == Service::class.simpleName }
+            ?: reportError(classDeclaration, "Service definitions must be annotated with @Service.")
 
         // Provide defaults for the names
-        val serviceName = service ?: classDeclaration.simpleName.getShortName()
-        val providerName = provider ?: "${serviceName}Provider"
-        val clientName = client ?: serviceName.replace(Regex("(.+)Service\\z")) {
-            "${it.destructured.component1()}Client"
-        }
+        val serviceName = annotation.getArgument(Service::overrideName.name)
+            ?: classDeclaration.simpleName.getShortName()
+
+        val providerName = annotation.getArgument(Service::providerName.name)
+            ?: "${serviceName}Provider"
+
+        val clientName = annotation.getArgument(Service::clientName.name)
+            ?: serviceName.replace(Regex("(.+)Service\\z")) { "${it.destructured.component1()}Client" }
 
         // Generate method definitions
         val methods = classDeclaration.getDeclaredFunctions().filter { it.validate() }.map {

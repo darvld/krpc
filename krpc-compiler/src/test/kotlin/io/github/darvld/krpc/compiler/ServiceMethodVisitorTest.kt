@@ -315,6 +315,22 @@ class ServiceMethodVisitorTest {
         )
 
     @Test
+    fun `extracts valid unary call definition with nullable types`() =
+        validateMethodExtraction(
+            declaredName = "unary",
+            methodName = "unaryCall",
+            type = UNARY,
+            request = SimpleRequest("request", INT.copy(nullable = true)),
+            responseType = LIST.parameterizedBy(STRING.copy(nullable = true)).copy(nullable = true),
+            suspending = true,
+            imports = "import kotlin.collections.List",
+            definitionBlock = """
+            @UnaryCall("unaryCall")
+            suspend fun unary(request: Int?): List<String?>?
+            """.trimIndent()
+        )
+
+    @Test
     fun `extracts valid server stream call definition`() =
         validateMethodExtraction(
             declaredName = "stream",

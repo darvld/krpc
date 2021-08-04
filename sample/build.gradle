@@ -6,16 +6,9 @@ plugins {
     id 'com.google.devtools.ksp'
 }
 
-// Configure ksp with the kRPC compiler
-dependencies {
-    // ksp project(":krpc-compiler")
-}
-
 kotlin {
     // Kotlin Multiplatform targets
-    jvm( {
-
-    })
+    jvm()
 
     sourceSets {
         all {
@@ -34,6 +27,7 @@ kotlin {
                 // Serial format shared by all platforms (could be Json, or any other)
                 implementation "org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serializationVersion"
 
+                // Add the krpc compiler as a KSP dependency. This workaround is only necessary in KMP
                 configurations.getByName("ksp").dependencies.add(project.dependencies.create(project(":krpc-compiler")))
             }
         }

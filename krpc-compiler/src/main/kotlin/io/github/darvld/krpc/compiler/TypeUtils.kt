@@ -16,7 +16,9 @@
 
 package io.github.darvld.krpc.compiler
 
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSTypeReference
+import com.google.devtools.ksp.symbol.Nullability
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -29,16 +31,34 @@ fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName? {
     return resolveAsTypeName() as? ParameterizedTypeName
 }
 
+
 /**Resolves this ksp [KSTypeReference] as a kotlinPoet [TypeName].
  *
  * For non-generic types, this method returns a simple [ClassName]. For generics, it recursively resolves
  * type arguments.*/
 fun KSTypeReference.resolveAsTypeName(): TypeName {
     with(resolve()) {
-        val baseName = ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
 
-        if (arguments.isEmpty()) return baseName
+        val baseName = ClassName(
+            declaration.packageName.asString(),
+            *declaration.getQualifiedName().split(".").toTypedArray()
+        )
 
-        return baseName.parameterizedBy(arguments.map { it.type?.resolveAsTypeName() ?: STAR })
+        val name = if (arguments.isEmpty()) {
+            baseName
+        } else {
+            baseName.parameterizedBy(arguments.map { it.type?.resolveAsTypeName() ?: STAR })
+        }
+
+        return name.copy(nullable = nullability == Nullability.NULLABLE)
     }
+}
+
+private fun KSDeclaration.getQualifiedName(): String {
+    val name = simpleName.asString()
+
+    return parentDeclaration?.let {
+        val parents = it.getQualifiedName()
+        "$parents.$name"
+    } ?: name
 }
