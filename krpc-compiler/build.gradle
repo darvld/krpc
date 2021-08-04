@@ -20,6 +20,8 @@ sourceSets {
     main {
         publishing.publications {
             maven(MavenPublication) {
+                artifact kotlinSourcesJar
+
                 from components.java
             }
         }
