@@ -16,6 +16,7 @@
 
 package io.github.darvld.krpc.compiler
 
+import com.google.devtools.ksp.symbol.KSDeclaration
 import com.google.devtools.ksp.symbol.KSTypeReference
 import com.google.devtools.ksp.symbol.Nullability
 import com.squareup.kotlinpoet.ClassName
@@ -30,13 +31,18 @@ fun KSTypeReference.resolveAsParameterizedName(): ParameterizedTypeName? {
     return resolveAsTypeName() as? ParameterizedTypeName
 }
 
+
 /**Resolves this ksp [KSTypeReference] as a kotlinPoet [TypeName].
  *
  * For non-generic types, this method returns a simple [ClassName]. For generics, it recursively resolves
  * type arguments.*/
 fun KSTypeReference.resolveAsTypeName(): TypeName {
     with(resolve()) {
-        val baseName = ClassName(declaration.packageName.asString(), declaration.simpleName.asString())
+
+        val baseName = ClassName(
+            declaration.packageName.asString(),
+            *declaration.getQualifiedName().split(".").toTypedArray()
+        )
 
         val name = if (arguments.isEmpty()) {
             baseName
@@ -46,4 +52,13 @@ fun KSTypeReference.resolveAsTypeName(): TypeName {
 
         return name.copy(nullable = nullability == Nullability.NULLABLE)
     }
+}
+
+private fun KSDeclaration.getQualifiedName(): String {
+    val name = simpleName.asString()
+
+    return parentDeclaration?.let {
+        val parents = it.getQualifiedName()
+        "$parents.$name"
+    } ?: name
 }
