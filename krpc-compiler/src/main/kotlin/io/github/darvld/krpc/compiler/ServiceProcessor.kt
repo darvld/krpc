@@ -16,7 +16,6 @@
 
 package io.github.darvld.krpc.compiler
 
-import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -39,7 +38,6 @@ class ServiceProcessor(
     private val generators: List<ServiceComponentGenerator>,
 ) : SymbolProcessor {
 
-    @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val annotated = resolver.getSymbolsWithAnnotation(Service::class.qualifiedName!!)
             .map { it as KSDeclaration }

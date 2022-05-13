@@ -104,7 +104,7 @@ class ProviderGenerationTest : CodeGenerationTest() {
         @Generated("io.github.darvld.krpc")
         public abstract class TestServiceProvider(
           serializationProvider: SerializationProvider,
-          context: CoroutineContext = EmptyCoroutineContext
+          context: CoroutineContext = EmptyCoroutineContext,
         ) : AbstractServiceProvider(context), TestService {
           protected final override val descriptor: TestServiceDescriptor =
               TestServiceDescriptor(serializationProvider)

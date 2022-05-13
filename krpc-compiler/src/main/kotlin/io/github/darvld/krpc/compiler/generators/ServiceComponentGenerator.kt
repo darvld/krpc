@@ -16,8 +16,6 @@
 
 package io.github.darvld.krpc.compiler.generators
 
-import com.google.devtools.ksp.processing.Dependencies
-import com.google.devtools.ksp.processing.Resolver
 import io.github.darvld.krpc.compiler.model.ServiceDefinition
 import java.io.OutputStream
 

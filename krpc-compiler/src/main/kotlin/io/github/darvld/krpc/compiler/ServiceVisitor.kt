@@ -54,13 +54,13 @@ class ServiceVisitor(
             ?: reportError(classDeclaration, "Service definitions must be annotated with @Service.")
 
         // Provide defaults for the names
-        val serviceName = annotation.getArgument(Service::overrideName.name)
+        val serviceName = annotation.getArgument(Service::overrideName.name).takeUnless { it.isNullOrBlank() }
             ?: classDeclaration.simpleName.getShortName()
 
-        val providerName = annotation.getArgument(Service::providerName.name)
+        val providerName = annotation.getArgument(Service::providerName.name).takeUnless { it.isNullOrBlank() }
             ?: "${serviceName}Provider"
 
-        val clientName = annotation.getArgument(Service::clientName.name)
+        val clientName = annotation.getArgument(Service::clientName.name).takeUnless { it.isNullOrBlank() }
             ?: serviceName.replace(Regex("(.+)Service\\z")) { "${it.destructured.component1()}Client" }
 
         // Generate method definitions

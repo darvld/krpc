@@ -52,7 +52,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
              */
             @Generated("io.github.darvld.krpc")
             public class TestServiceDescriptor(
-              serializationProvider: SerializationProvider
+              serializationProvider: SerializationProvider,
             ) : AbstractServiceDescriptor() {
               public override val serviceName: String = "TestService"
             }
@@ -91,7 +91,7 @@ class DescriptorGenerationTest : CodeGenerationTest() {
               internal data class UnaryRequest(
                 public val request: Int,
                 public val content: String,
-                public val extra: String
+                public val extra: String,
               )
             }
             

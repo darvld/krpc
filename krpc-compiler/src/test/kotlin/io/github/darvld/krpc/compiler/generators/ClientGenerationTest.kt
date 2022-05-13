@@ -49,13 +49,13 @@ class ClientGenerationTest : CodeGenerationTest() {
             public class TestClient private constructor(
               channel: Channel,
               callOptions: CallOptions = defaultCallOptions(),
-              private val descriptor: TestServiceDescriptor
+              private val descriptor: TestServiceDescriptor,
             ) : AbstractServiceClient<TestClient>(channel, callOptions), TestService {
               @Generated("io.github.darvld.krpc")
               public constructor(
                 channel: Channel,
                 serializationProvider: SerializationProvider,
-                callOptions: CallOptions = defaultCallOptions()
+                callOptions: CallOptions = defaultCallOptions(),
               ) : this(channel, callOptions, TestServiceDescriptor(serializationProvider))
 
               @Generated("io.github.darvld.krpc")
@@ -153,7 +153,7 @@ class ClientGenerationTest : CodeGenerationTest() {
               public override suspend fun unary(
                 id: Long,
                 name: String,
-                age: Int
+                age: Int,
               ): String = unaryCall(descriptor.unary, UnaryRequest(id, name, age), callOptions)
             }
 
